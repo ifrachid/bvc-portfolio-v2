@@ -1,0 +1,10 @@
+{
+  "name": "bvc-portfolio-prices",
+  "version": "1.0.4",
+  "description": "BVC stock prices API and static portfolio app",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "18.x"
+  }
+}
