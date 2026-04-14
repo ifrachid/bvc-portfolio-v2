@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BVC Portfolio">
@@ -47,7 +47,7 @@ input::placeholder{color:#4b5563}
 .dtab{flex:1;padding:10px 0;border-radius:11px;font-size:12px;font-weight:600;text-align:center;cursor:pointer;touch-action:manipulation;min-height:42px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
 .spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(37,99,235,0.3);border-top-color:#2563eb;border-radius:50%;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-#v-port,#v-div,#v-detail,#v-add,#v-sim,#v-sync,#v-debug{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#v-port,#v-div,#v-detail,#v-add,#v-sim,#v-sync,#v-edit{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 #list,#div-list{padding:0 12px 90px}
 ::-webkit-scrollbar{display:none}
 </style>
@@ -64,9 +64,9 @@ input::placeholder{color:#4b5563}
         <div id="hn" style="font-size:12px;color:#6b7280;margin-top:2px">Chargement...</div>
       </div>
       <div style="text-align:right">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;justify-content:flex-end;cursor:pointer" onclick="fetchPrices()">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;justify-content:flex-end">
           <div id="dot" style="width:7px;height:7px;border-radius:50%;background:#f59e0b;box-shadow:0 0 6px rgba(245,158,11,0.5)"></div>
-          <div id="timer" style="font-size:10px;color:#4b5563;font-weight:500;user-select:none">...</div>
+
         </div>
         <div id="upd" style="font-size:10px;color:#6b7280">—</div>
       </div>
@@ -89,47 +89,61 @@ input::placeholder{color:#4b5563}
       </div>
     </div>
 
-    <!-- Edit stock modal -->
-    <div id="edit-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px)" onclick="closeEdit()">
-      <div onclick="event.stopPropagation()" style="position:absolute;bottom:0;left:0;right:0;background:#1a1f2e;border-radius:20px 20px 0 0;padding:20px 16px;padding-bottom:max(32px,env(safe-area-inset-bottom))">
-        <div style="width:40px;height:4px;background:#374151;border-radius:2px;margin:0 auto 16px"></div>
-        <div id="edit-title" style="font-size:14px;font-weight:700;color:#f9fafb;margin-bottom:14px"></div>
-        <div style="display:flex;flex-direction:column;gap:10px">
+  <!-- EDIT PAGE -->
+  <div id="v-edit" style="display:none">
+    <div style="padding:12px 14px 80px">
+      <button onclick="closeEdit()" style="display:flex;align-items:center;gap:6px;margin-bottom:14px;cursor:pointer;background:none;border:none;padding:0;font-family:inherit;touch-action:manipulation">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        <span style="font-size:12px;color:#9ca3af">Retour</span>
+      </button>
+      <div id="edit-title" style="font-size:17px;font-weight:700;color:#f9fafb;margin-bottom:18px"></div>
+
+      <div style="background:#1a1f2e;border-radius:14px;padding:14px;margin-bottom:12px">
+        <div style="font-size:10px;color:#60a5fa;font-weight:700;letter-spacing:0.5px;margin-bottom:12px">POSITION</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div>
-            <div class="lbl" style="margin-bottom:4px">QUANTITÉ</div>
-            <input id="edit-q" type="number" min="1" style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:12px;color:#f9fafb;font-size:16px;width:100%;outline:none;-webkit-appearance:none">
+            <div class="lbl" style="margin-bottom:6px">QUANTITÉ</div>
+            <input id="edit-q" type="number" min="1" style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:13px;color:#f9fafb;font-size:16px;width:100%;outline:none;-webkit-appearance:none">
           </div>
           <div>
-            <div class="lbl" style="margin-bottom:4px">PRIX ACHAT (MAD)</div>
-            <input id="edit-b" type="number" step="0.01" style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:12px;color:#f9fafb;font-size:16px;width:100%;outline:none;-webkit-appearance:none">
+            <div class="lbl" style="margin-bottom:6px">PRIX ACHAT (MAD)</div>
+            <input id="edit-b" type="number" step="0.01" style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:13px;color:#f9fafb;font-size:16px;width:100%;outline:none;-webkit-appearance:none">
           </div>
-          <div style="height:1px;background:rgba(255,255,255,0.06);margin:2px 0"></div>
-          <div style="font-size:10px;color:#f0a500;font-weight:600;letter-spacing:0.5px">🌿 DIVIDENDE (optionnel)</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
-            <div>
-              <div class="lbl" style="margin-bottom:4px">DPA (MAD/action)</div>
-              <input id="edit-dpa" type="number" step="0.01" min="0" placeholder="0" style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:12px;color:#f9fafb;font-size:16px;width:100%;outline:none;-webkit-appearance:none">
-            </div>
-            <div>
-              <div class="lbl" style="margin-bottom:4px">ANNÉE</div>
-              <input id="edit-an" type="text" placeholder="2025" maxlength="4" style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:12px;color:#f9fafb;font-size:16px;width:100%;outline:none;-webkit-appearance:none">
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
-            <div>
-              <div class="lbl" style="margin-bottom:4px">DATE DÉTACHEMENT</div>
-              <input id="edit-det" type="date" style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:12px;color:#f9fafb;font-size:14px;width:100%;outline:none;-webkit-appearance:none">
-            </div>
-            <div>
-              <div class="lbl" style="margin-bottom:4px">DATE PAIEMENT</div>
-              <input id="edit-pay" type="date" style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:12px;color:#f9fafb;font-size:14px;width:100%;outline:none;-webkit-appearance:none">
-            </div>
-          </div>
-          <button onclick="saveEdit()" class="btn" style="margin-top:4px;background:linear-gradient(135deg,#2563eb,#1d4ed8)">✓ Enregistrer</button>
-          <button onclick="closeEdit()" style="width:100%;padding:12px;border-radius:13px;border:none;background:#111318;color:#6b7280;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer">Annuler</button>
         </div>
       </div>
+
+      <div style="background:#1a1f2e;border-radius:14px;padding:14px;margin-bottom:16px">
+        <div style="font-size:10px;color:#f0a500;font-weight:700;letter-spacing:0.5px;margin-bottom:12px">🌿 DIVIDENDE</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div>
+            <div class="lbl" style="margin-bottom:6px">DPA (MAD/action)</div>
+            <input id="edit-dpa" type="number" step="0.01" min="0" placeholder="0" style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:13px;color:#f9fafb;font-size:16px;width:100%;outline:none;-webkit-appearance:none">
+          </div>
+          <div>
+            <div class="lbl" style="margin-bottom:6px">ANNÉE</div>
+            <input id="edit-an" type="text" placeholder="2025" maxlength="4" style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:13px;color:#f9fafb;font-size:16px;width:100%;outline:none;-webkit-appearance:none">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <div class="lbl" style="margin-bottom:6px">DATE DÉTACHEMENT</div>
+            <input id="edit-det" type="date" style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:13px;color:#f9fafb;font-size:14px;width:100%;outline:none;-webkit-appearance:none">
+          </div>
+          <div>
+            <div class="lbl" style="margin-bottom:6px">DATE PAIEMENT</div>
+            <input id="edit-pay" type="date" style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:13px;color:#f9fafb;font-size:14px;width:100%;outline:none;-webkit-appearance:none">
+          </div>
+        </div>
+      </div>
+
+      <button onclick="saveEdit()" class="btn" style="background:linear-gradient(135deg,#2563eb,#1d4ed8);margin-bottom:10px">
+        ✓ Enregistrer les modifications
+      </button>
+      <button onclick="deleteFromEdit()" style="width:100%;padding:14px;border-radius:13px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.08);color:#ef4444;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation">
+        Supprimer cette action
+      </button>
     </div>
+  </div>
 
     <!-- Dividendes banner -->
     <div style="background:linear-gradient(135deg,rgba(240,165,0,0.15),rgba(240,165,0,0.05));border:1px solid rgba(240,165,0,0.25);border-radius:12px;padding:9px 12px;margin-bottom:9px">
@@ -147,7 +161,6 @@ input::placeholder{color:#4b5563}
       <div id="t-add"  class="tab" onclick="showTab('add')"  style="background:rgba(255,255,255,0.05);color:#9ca3af">➕</div>
       <div id="t-sim"  class="tab" onclick="showTab('sim')"  style="background:rgba(255,255,255,0.05);color:#9ca3af">🎯</div>
       <div id="t-sync"  class="tab" onclick="showTab('sync')" style="background:rgba(255,255,255,0.05);color:#9ca3af">💫</div>
-      <div id="t-debug" class="tab" onclick="showTab('debug')" style="background:rgba(255,255,255,0.05);color:#9ca3af;font-size:10px">🔧</div>
     </div>
   </div>
 
@@ -264,21 +277,10 @@ input::placeholder{color:#4b5563}
         <div id="gs-status" style="display:none;font-size:10px;text-align:center;padding:10px;border-radius:8px;margin-top:8px;line-height:1.6"></div>
       </div>
 
-      <!-- AI AUTO FETCH (fallback) -->
-      <div style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:14px;padding:12px;margin-bottom:14px">
-        <div style="font-size:10px;color:#a78bfa;font-weight:700;margin-bottom:8px">✨ FALLBACK — RÉCUP AUTOMATIQUE</div>
-        <button id="ai-fetch-btn" onclick="fetchPricesWithAI()" class="btn" style="background:rgba(124,58,237,0.3);border:1px solid rgba(139,92,246,0.4);font-size:12px;padding:11px">
-          ✨ Tenter récupération auto
-        </button>
-        <div id="ai-status" style="display:none;font-size:10px;color:#a78bfa;text-align:center;padding:8px;background:rgba(139,92,246,0.1);border-radius:8px;line-height:1.6;margin-top:8px"></div>
-      </div>
-
       <!-- MANUAL FALLBACK -->
       <div style="background:#1a1f2e;border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.06)">
         <div style="font-size:10px;color:#9ca3af;font-weight:700;letter-spacing:0.5px;margin-bottom:10px">OU SAISIE MANUELLE</div>
-        <button onclick="openCasablancaLink()" class="btn" style="background:#1a2a4a;color:#60a5fa;border:1px solid rgba(37,99,235,0.4);margin-bottom:10px;font-size:12px">
-          📊 Ouvrir casablancabourse.com
-        </button>
+
         <button onclick="pasteFromClipboard()" class="btn" style="background:rgba(5,150,105,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3);margin-bottom:6px;font-size:12px">
           📋 Coller depuis presse-papier
         </button>
@@ -300,43 +302,6 @@ input::placeholder{color:#4b5563}
     </div>
   </div>
 
-  <!-- DEBUG (Ticker Mapping) -->
-  <div id="v-debug" style="display:none">
-    <div style="padding:14px 14px 80px">
-      <div style="background:#1a2a4a;border-radius:12px;padding:14px;margin-bottom:14px">
-        <div style="font-size:12px;color:#60a5fa;margin-bottom:10px;font-weight:600">🔧 VÉRIFY STOCKS</div>
-        <div style="font-size:10px;color:#6b7280;margin-bottom:12px">Compare tes stocks avec casablancabourse.com</div>
-      </div>
-
-      <div style="margin-bottom:14px">
-        <button onclick="fetchAndDebugPrices()" class="btn" style="background:#10b981">🔍 Scan Casablanca</button>
-      </div>
-
-      <div id="debug-results" style="display:none;margin-bottom:14px">
-        <div style="font-size:10px;color:#4b5563;margin-bottom:8px;font-weight:600">RÉSULTATS DU SCAN</div>
-        
-        <div style="margin-bottom:12px">
-          <div style="font-size:9px;color:#10b981;font-weight:600;margin-bottom:6px">✅ TROUVÉS (14/17)</div>
-          <div id="debug-found" style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px"></div>
-        </div>
-
-        <div style="margin-bottom:12px">
-          <div style="font-size:9px;color:#ef4444;font-weight:600;margin-bottom:6px">❌ NON TROUVÉS</div>
-          <div id="debug-notfound" style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px"></div>
-        </div>
-
-        <div>
-          <div style="font-size:9px;color:#f0a500;font-weight:600;margin-bottom:6px">📋 NOMS TROUVÉS SUR SITE</div>
-          <div id="debug-rawnames" style="background:#0f1520;border-radius:8px;padding:10px;font-family:monospace;font-size:9px;color:#60a5fa;max-height:200px;overflow-y:auto"></div>
-        </div>
-      </div>
-
-      <div style="background:#1a1f2e;border-radius:12px;padding:14px;margin-top:14px">
-        <div style="font-size:10px;color:#9ca3af;margin-bottom:10px;font-weight:600">👇 TES STOCKS (17)</div>
-        <div id="debug-stocks" style="display:grid;grid-template-columns:1fr;gap:6px;max-height:300px;overflow-y:auto"></div>
-      </div>
-    </div>
-  </div>
 
 </div>
 
@@ -367,22 +332,49 @@ let stocks = [
 ];
 
 const allBVC=[
-  {t:'ATW',n:'Attijariwafa Bank',live:711},{t:'IAM',n:'Maroc Telecom',live:96},
-  {t:'BCP',n:'BCP',live:244},{t:'CIH',n:'CIH Bank',live:380},
-  {t:'CFG',n:'CFG Bank',live:208},{t:'MNG',n:'Managem',live:11934},
-  {t:'SMI',n:'SMI',live:8240},{t:'NKL',n:'Ennakl',live:52},
-  {t:'TGC',n:'TGCC',live:775},{t:'ADI',n:'Alliances',live:437.90},
-  {t:'RDS',n:'Résidences Dar Saada',live:143.10},{t:'IMO',n:'Immorente',live:91},
-  {t:'AKT',n:'Akdital',live:1195},{t:'CSR',n:'Cosumar',live:193},
-  {t:'DYT',n:'Disty Technologies',live:335},{t:'HPS',n:'HPS',live:545},
-  {t:'S2M',n:'S2M',live:560},{t:'CMG',n:'CMGP Group',live:385},
-  {t:'CAP',n:'Cash Plus',live:300},{t:'FBR',n:'Fenie Brossette',live:297.90},
-  {t:'STR',n:'Stroc Industrie',live:164.10},{t:'MUT',n:'Mutandis',live:238},
-  {t:'SNA',n:'Stockvis',live:72},{t:'TQM',n:'TAQA Morocco',live:1864},
-  {t:'LBV',n:'Label Vie',live:4200},{t:'CMA',n:'Ciments du Maroc',live:1769},
+  {t:'ATW',n:'Attijariwafa Bank',live:0},{t:'IAM',n:'Maroc Telecom',live:0},
+  {t:'BCP',n:'Banque Centrale Populaire',live:0},{t:'MNG',n:'Managem',live:0},
+  {t:'LBV',n:'Label Vie',live:0},{t:'TQM',n:'TAQA Morocco',live:0},
+  {t:'CMA',n:'Ciments du Maroc',live:0},{t:'HPS',n:'HPS',live:0},
+  {t:'SMI',n:'SMI',live:0},{t:'AKT',n:'Akdital',live:0},
+  {t:'CDM',n:'Crédit du Maroc',live:0},{t:'BOA',n:'Bank of Africa',live:0},
+  {t:'CIH',n:'CIH Bank',live:0},{t:'WAA',n:'Wafa Assurance',live:0},
+  {t:'MRS',n:'Marsa Maroc',live:0},{t:'TGC',n:'TGCC',live:0},
+  {t:'NKL',n:'Ennakl Automobiles',live:0},{t:'DYT',n:'Disty Technologies',live:0},
+  {t:'FBR',n:'Fenie Brossette',live:0},{t:'S2M',n:'S2M',live:0},
+  {t:'STR',n:'Stroc Industrie',live:0},{t:'MUT',n:'Mutandis',live:0},
+  {t:'IMO',n:'Immorente Invest',live:0},{t:'CSR',n:'Cosumar',live:0},
+  {t:'ADI',n:'Alliances',live:0},{t:'CFG',n:'CFG Bank',live:0},
+  {t:'SNA',n:'Stockvis Nord Afrique',live:0},{t:'CMG',n:'CMGP Group',live:0},
+  {t:'CAP',n:'Cash Plus',live:0},{t:'RDS',n:'Résidences Dar Saada',live:0},
+  {t:'TMA',n:'TotalEnergies Maroc',live:0},{t:'GAZ',n:'Afriquia Gaz',live:0},
+  {t:'SLF',n:'Salafin',live:0},{t:'EQD',n:'Crédit Eqdom',live:0},
+  {t:'ALM',n:'Aluminium du Maroc',live:0},{t:'MLE',n:'Maghrebail',live:0},
+  {t:'MOX',n:'Maghreb Oxygène',live:0},{t:'OUL',n:'Oulmes',live:0},
+  {t:'DOU',n:'Dari Couspate',live:0},{t:'TIM',n:'Timar',live:0},
+  {t:'UNI',n:'Unimer',live:0},{t:'NEJ',n:'Auto Nejma',live:0},
+  {t:'PRM',n:'Promopharm',live:0},{t:'AGM',n:'AGMA',live:0},
+  {t:'BAL',n:'Balima',live:0},{t:'M2M',n:'M2M Group',live:0},
+  {t:'ZEL',n:'Zellidja',live:0},{t:'MAR',n:'Maroc Leasing',live:0},
+  {t:'DIA',n:'Diac Salaf',live:0},{t:'DLV',n:'Delattre Levivier',live:0},
+  {t:'IBC',n:'IB-Maroc.com',live:0},{t:'CRS',n:'Cartier Saada',live:0},
+  {t:'REB',n:'Rebab Company',live:0},{t:'SAM',n:'Samir',live:0},
+  {t:'AFM',n:'AFMA',live:0},{t:'INV',n:'Involys',live:0},
+  {t:'AFI',n:'Afric Industries',live:0},{t:'CCI',n:'Colorado',live:0},
+  {t:'SOT',n:'Sothema',live:0},{t:'ADD',n:'Douja Prom Addoha',live:0},
+  {t:'ATL',n:'Atlantasanad',live:0},{t:'ARC',n:'Aradei Capital',live:0},
+  {t:'DHO',n:'Delta Holding',live:0},{t:'LAC',n:'Lafarge Holcim Maroc',live:0},
+  {t:'RIS',n:'Risma',live:0},{t:'SNP',n:'SNEP',live:0},
+  {t:'LES',n:'Lesieur Cristal',live:0},{t:'BMC',n:'BMCI',live:0},
+  {t:'MDA',n:'Microdata',live:0},{t:'MEP',n:'Med Paper',live:0},
+  {t:'CTM',n:'CTM',live:0},{t:'JTC',n:'Jet Contractors',live:0},
+  {t:'GTM',n:'SGTM',live:0},{t:'AHL',n:'Auto Hall',live:0},
+  {t:'VIC',n:'Vicenne',live:0},{t:'SBM',n:'Sonasid',live:0},
+  {t:'CMT',n:'CMT',live:0},{t:'SON',n:'Sonasid',live:0},
+  {t:'SAH',n:'Sanlam Maroc',live:0},{t:'CGI',n:'CGI',live:0},
 ];
 
-let curFilter='all', curTab='port', selBVC=null, cdIv=null, countdown=15;
+let curFilter='all', curTab='port', selBVC=null;
 
 // ─── CALCULS ──────────────────────────────────────
 function calc(b,c,q){
@@ -448,7 +440,6 @@ function findTickerInMapping(websiteName) {
 const BVC_SOURCE_URL = 'https://www.casablancabourse.com/fr/live-market/marche-actions-groupement';
 const SAME_ORIGIN_API_URL = new URL('/api/prices', window.location.origin).href;
 const PUBLIC_PROXY_URL = 'https://api.allorigins.win/get?url=' + encodeURIComponent(BVC_SOURCE_URL);
-const REFRESH_INTERVAL_MS = 15000;
 let activePriceFetch = null;
 
 function buildFreshUrl(baseUrl) {
@@ -624,7 +615,7 @@ async function fetchPrices(force = false){
   if (activePriceFetch && !force) return activePriceFetch;
 
   document.getElementById('dot').style.background='#f59e0b';
-  document.getElementById('upd').textContent='⏳ Sync live...';
+  document.getElementById('upd').textContent='⏳ Chargement...';
 
   activePriceFetch = (async () => {
     try {
@@ -715,10 +706,13 @@ function updateHeader(){
     tv+=r.val; ti+=r.inv; tn+=r.net;
     if(r.net>=0){pos++;totalProfit+=r.net;}else{neg++;totalPerte+=r.net;}
   });
+  // Valeur totale du portfolio = somme des valeurs live
   document.getElementById('hv').textContent=f(tv)+' MAD';
   const el=document.getElementById('hn');
+  const pctTotal = ti>0 ? ((tv-ti)/ti*100) : 0;
   el.style.color=tn>=0?'#10b981':'#ef4444';
-  el.textContent=(tn>=0?'▲ +':'▼ ')+f(Math.abs(tn))+' MAD net · '+(tn>=0?'+':'')+((tn/ti)*100).toFixed(2)+'%';
+  el.textContent=(tn>=0?'▲ +':'▼ ')+f(Math.abs(tn))+' MAD net · '+(pctTotal>=0?'+':'')+pctTotal.toFixed(2)+'%';
+  // KPIs
   document.getElementById('hi').textContent=f(ti)+' DH';
   document.getElementById('hp').textContent=(totalProfit>0?'+':'')+f(totalProfit)+' DH';
   document.getElementById('hng').textContent=f(totalPerte)+' DH';
@@ -937,6 +931,7 @@ let editIdx = -1;
 function openEdit(i) {
   editIdx = i;
   const s = stocks[i];
+  // Populate edit view
   document.getElementById('edit-title').innerHTML =
     '<span style="color:#60a5fa">' + s.t + '</span> · ' + s.n;
   document.getElementById('edit-q').value = s.q;
@@ -945,12 +940,13 @@ function openEdit(i) {
   document.getElementById('edit-an').value = s.an || '';
   document.getElementById('edit-det').value = s.det || '';
   document.getElementById('edit-pay').value = s.pay || '';
-  document.getElementById('edit-modal').style.display = 'block';
+  // Navigate to edit page
+  showTab('edit');
 }
 
 function closeEdit() {
-  document.getElementById('edit-modal').style.display = 'none';
   editIdx = -1;
+  showTab('detail');
 }
 
 function saveEdit() {
@@ -967,13 +963,22 @@ function saveEdit() {
   s.an = document.getElementById('edit-an').value.trim() || null;
   s.det = document.getElementById('edit-det').value || null;
   s.pay = document.getElementById('edit-pay').value || null;
-  closeEdit();
+  const savedIdx = editIdx;
+  editIdx = -1;
   renderAll();
-  // Reopen detail with updated data
-  openDetail(editIdx);
+  openDetail(savedIdx);
 }
 
 function removeStock(i){stocks.splice(i,1);renderAll();showTab('port');}
+
+function deleteFromEdit(){
+  if(editIdx < 0) return;
+  if(!confirm('Supprimer cette action ?')) return;
+  stocks.splice(editIdx,1);
+  editIdx=-1;
+  renderAll();
+  showTab('port');
+}
 function prefillSim(i){showTab('sim');document.getElementById('ss').value=i;document.getElementById('sp').value='';document.getElementById('sr').style.display='none';}
 
 function updateSel(){
@@ -1057,9 +1062,9 @@ function addStock(){
 }
 
 function showTab(t){
-  ['port','div','detail','add','sim','sync','debug'].forEach(x=>document.getElementById('v-'+x).style.display=x===t?'flex':'none');
+  ['port','div','detail','add','sim','sync','edit'].forEach(x=>document.getElementById('v-'+x).style.display=x===t?'flex':'none');
   document.getElementById('v-'+t).style.flexDirection='column';
-  ['port','div','add','sim','sync','debug'].forEach(x=>{
+  ['port','div','add','sim','sync'].forEach(x=>{
     const el=document.getElementById('t-'+x);
     if(!el)return;
     el.style.background=x===t?'linear-gradient(135deg,#2563eb,#1d4ed8)':'rgba(255,255,255,0.05)';
@@ -1072,7 +1077,6 @@ function showTab(t){
     const isSafari=/Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
     renderSyncPrices();
   }
-  if(t==='debug')renderDebugPanel();
 }
 
 // ─── SYNC FUNCTIONS ──────────────────────────────
@@ -1749,23 +1753,6 @@ async function fetchAndDebugPrices(){
   }
 }
 
-function startCountdown(){
-  clearInterval(cdIv);
-  countdown = Math.floor(REFRESH_INTERVAL_MS / 1000);
-  const paint = () => {
-    const m = Math.floor(countdown/60), s = countdown%60;
-    document.getElementById('timer').textContent = '🔄 ' + (m>0?m+'m ':'') + String(s).padStart(2,'0') + 's';
-  };
-  paint();
-  cdIv = setInterval(()=>{
-    countdown--;
-    paint();
-    if(countdown<=0){
-      clearInterval(cdIv);
-      fetchPrices(true).finally(startCountdown);
-    }
-  }, 1000);
-}
 
 // ─── INIT ─────────────────────────────────────────
 try{
@@ -1785,19 +1772,10 @@ try{
   console.error('❌ Init error:', e);
   alert('Erreur: '+e.message);
 }
-// Fetch fresh prices immediately on app load, then start countdown
-try{
-  fetchPrices(true).then(()=>startCountdown()).catch(()=>startCountdown());
-}catch(e){
-  console.error('❌ Fetch error:', e);
-  startCountdown();
-}
-
-window.addEventListener('online', () => fetchPrices(true).finally(startCountdown));
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') {
-    fetchPrices(true).finally(startCountdown);
-  }
+// Manual sync only — no auto-refresh
+window.addEventListener('online', () => {
+  document.getElementById('dot').style.background = '#f59e0b';
+  document.getElementById('upd').textContent = '🟡 En ligne — appuie sur Sync';
 });
 
 if ('serviceWorker' in navigator) {
