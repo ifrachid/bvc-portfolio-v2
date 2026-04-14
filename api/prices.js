@@ -1,37 +1,95 @@
 export default async function handler(req, res) {
-  try {
-    const url = "https://www.casablanca-bourse.com/fr/live-market/marche-actions-groupement?pwa";
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
 
-    const response = await fetch(url);
-    const html = await response.text();
+  const targetUrl = "https://www.casablanca-bourse.com/fr/live-market/marche-actions-groupement?pwa";
 
+  async function fetchText(url, options = {}) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      return await response.text();
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  function extractPrices(html) {
     const prices = {};
 
-    // استخراج tickers و prices
-    const regex = /"ticker":"(.*?)".*?"last":(.*?),/g;
-    let match;
+    const patterns = [
+      /"ticker":"(.*?)".*?"last":(.*?),/g,
+      /"symbol":"(.*?)".*?"last":(.*?),/g,
+      /"ticker":"(.*?)".*?"price":"(.*?)"/g
+    ];
 
-    while ((match = regex.exec(html)) !== null) {
-      const ticker = match[1];
-      const price = parseFloat(match[2]);
+    for (const regex of patterns) {
+      let match;
+      while ((match = regex.exec(html)) !== null) {
+        const ticker = String(match[1] || "").trim().toUpperCase();
+        const raw = String(match[2] || "").replace(",", ".").trim();
+        const price = parseFloat(raw);
 
-      if (!isNaN(price)) {
-        prices[ticker] = price;
+        if (ticker && !Number.isNaN(price)) {
+          prices[ticker] = price;
+        }
       }
     }
 
-    res.setHeader("Cache-Control", "no-store");
+    return prices;
+  }
 
-    res.status(200).json({
+  try {
+    let html = "";
+
+    try {
+      html = await fetchText(targetUrl, {
+        headers: {
+          "User-Agent": "Mozilla/5.0",
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        }
+      });
+    } catch (directError) {
+      const proxyUrl =
+        "https://api.allorigins.win/raw?url=" + encodeURIComponent(targetUrl);
+
+      html = await fetchText(proxyUrl, {
+        headers: {
+          "User-Agent": "Mozilla/5.0"
+        }
+      });
+    }
+
+    const prices = extractPrices(html);
+
+    if (!Object.keys(prices).length) {
+      return res.status(502).json({
+        success: false,
+        error: "No prices parsed from source"
+      });
+    }
+
+    return res.status(200).json({
       success: true,
       count: Object.keys(prices).length,
-      prices
+      prices,
+      updatedAt: new Date().toISOString()
     });
-
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message || "fetch failed"
     });
   }
 }
