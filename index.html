@@ -238,19 +238,41 @@ input::placeholder{color:#4b5563}
   <div id="v-sync" style="display:none">
     <div style="padding:14px 14px 80px">
 
-      <!-- AI AUTO FETCH -->
-      <div style="background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(139,92,246,0.05));border:1px solid rgba(139,92,246,0.35);border-radius:16px;padding:16px;margin-bottom:14px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-          <div style="width:28px;height:28px;border-radius:8px;background:rgba(139,92,246,0.25);display:flex;align-items:center;justify-content:center;font-size:15px">✨</div>
+      <!-- GOOGLE SHEETS SYNC -->
+      <div style="background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(16,185,129,0.04));border:1px solid rgba(16,185,129,0.3);border-radius:16px;padding:16px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <div style="width:32px;height:32px;border-radius:9px;background:rgba(16,185,129,0.2);display:flex;align-items:center;justify-content:center;font-size:18px">📗</div>
           <div>
-            <div style="font-size:12px;color:#a78bfa;font-weight:700">MISE À JOUR IA</div>
-            <div style="font-size:10px;color:#6b7280">Recherche les prix BVC en temps réel</div>
+            <div style="font-size:12px;color:#10b981;font-weight:700">GOOGLE SHEETS SYNC</div>
+            <div style="font-size:10px;color:#6b7280">Prix automatiques via ta Google Sheet</div>
           </div>
         </div>
-        <button id="ai-fetch-btn" onclick="fetchPricesWithAI()" class="btn" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);margin-bottom:8px;font-size:13px">
-          ✨ Récupérer tous les prix maintenant
+
+        <div id="gs-setup" style="display:none">
+          <div style="font-size:10px;color:#9ca3af;margin-bottom:6px;font-weight:600">URL DE TA GOOGLE SHEET (CSV public)</div>
+          <input id="gs-url" type="url" placeholder="https://docs.google.com/spreadsheets/d/.../export?format=csv" style="font-size:11px;margin-bottom:8px;border-radius:10px;padding:10px 12px">
+          <button onclick="saveGsUrl()" class="btn" style="background:#059669;font-size:12px;padding:11px;margin-bottom:6px">💾 Enregistrer l'URL</button>
+          <button onclick="document.getElementById('gs-setup').style.display='none'" style="width:100%;padding:8px;border:none;background:none;color:#6b7280;font-size:11px;font-family:inherit;cursor:pointer">Annuler</button>
+        </div>
+
+        <div id="gs-main">
+          <button id="gs-fetch-btn" onclick="fetchFromGoogleSheets()" class="btn" style="background:linear-gradient(135deg,#059669,#047857);margin-bottom:8px;font-size:13px">
+            📗 Sync depuis Google Sheets
+          </button>
+          <button onclick="document.getElementById('gs-setup').style.display='block';document.getElementById('gs-main').style.display='none'" style="width:100%;padding:8px;border:1px solid rgba(255,255,255,0.08);border-radius:10px;background:none;color:#6b7280;font-size:11px;font-family:inherit;cursor:pointer;touch-action:manipulation">
+            ⚙️ Configurer l'URL de la sheet
+          </button>
+        </div>
+        <div id="gs-status" style="display:none;font-size:10px;text-align:center;padding:10px;border-radius:8px;margin-top:8px;line-height:1.6"></div>
+      </div>
+
+      <!-- AI AUTO FETCH (fallback) -->
+      <div style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:14px;padding:12px;margin-bottom:14px">
+        <div style="font-size:10px;color:#a78bfa;font-weight:700;margin-bottom:8px">✨ FALLBACK — RÉCUP AUTOMATIQUE</div>
+        <button id="ai-fetch-btn" onclick="fetchPricesWithAI()" class="btn" style="background:rgba(124,58,237,0.3);border:1px solid rgba(139,92,246,0.4);font-size:12px;padding:11px">
+          ✨ Tenter récupération auto
         </button>
-        <div id="ai-status" style="display:none;font-size:10px;color:#a78bfa;text-align:center;padding:8px;background:rgba(139,92,246,0.1);border-radius:8px;line-height:1.6"></div>
+        <div id="ai-status" style="display:none;font-size:10px;color:#a78bfa;text-align:center;padding:8px;background:rgba(139,92,246,0.1);border-radius:8px;line-height:1.6;margin-top:8px"></div>
       </div>
 
       <!-- MANUAL FALLBACK -->
@@ -259,10 +281,11 @@ input::placeholder{color:#4b5563}
         <button onclick="openCasablancaLink()" class="btn" style="background:#1a2a4a;color:#60a5fa;border:1px solid rgba(37,99,235,0.4);margin-bottom:10px;font-size:12px">
           📊 Ouvrir casablancabourse.com
         </button>
-        <button onclick="pasteFromClipboard()" class="btn" style="background:rgba(5,150,105,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3);margin-bottom:10px;font-size:12px">
+        <button onclick="pasteFromClipboard()" class="btn" style="background:rgba(5,150,105,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3);margin-bottom:6px;font-size:12px">
           📋 Coller depuis presse-papier
         </button>
-        <textarea id="price-input" placeholder="ATW=700&#10;TGC=775&#10;SMI=8601&#10;..." style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:12px;color:#f9fafb;font-size:13px;font-family:monospace;width:100%;height:100px;resize:vertical;outline:none;line-height:1.5" oninput="previewParsed()"></textarea>
+        <div style="font-size:10px;color:#4b5563;background:#111318;border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.6">💡 <span style="color:#6b7280">Excel → sélectionne colonnes A-D → Ctrl+C → colle ici. L'app détecte le format automatiquement.</span></div>
+        <textarea id="price-input" placeholder="📊 Colle directement depuis Excel (Ctrl+C sur les colonnes)&#10;ou format manuel:&#10;ATW=700&#10;TGC=775&#10;SMI=8601" style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:12px;color:#f9fafb;font-size:13px;font-family:monospace;width:100%;height:100px;resize:vertical;outline:none;line-height:1.5" oninput="previewParsed()"></textarea>
         <div id="parse-preview" style="display:none;margin-top:8px;background:#0d2a1a;border-radius:9px;padding:10px;border:1px solid rgba(16,185,129,0.2)">
           <div style="font-size:10px;color:#10b981;font-weight:600;margin-bottom:5px">✅ <span id="parse-count">0</span> prix détectés</div>
           <div id="parse-list" style="font-size:10px;color:#6b7280;font-family:monospace;line-height:1.8"></div>
@@ -688,17 +711,19 @@ async function fetchPrices(force = false){
 function renderAll(){updateHeader();updateDivHeader();if(curTab==='port')renderList();if(curTab==='div')renderDivGlobal();updateSel();}
 
 function updateHeader(){
-  let tv=0,ti=0,tn=0,pos=0,neg=0;
-  stocks.forEach(s=>{const r=calc(s.b,s.live,s.q);tv+=r.val;ti+=r.inv;tn+=r.net;r.net>=0?pos++:neg++;});
+  let tv=0,ti=0,tn=0,pos=0,neg=0,totalProfit=0,totalPerte=0;
+  stocks.forEach(s=>{
+    const r=calc(s.b,s.live,s.q);
+    tv+=r.val; ti+=r.inv; tn+=r.net;
+    if(r.net>=0){pos++;totalProfit+=r.net;}else{neg++;totalPerte+=r.net;}
+  });
   document.getElementById('hv').textContent=f(tv)+' MAD';
   const el=document.getElementById('hn');
   el.style.color=tn>=0?'#10b981':'#ef4444';
   el.textContent=(tn>=0?'▲ +':'▼ ')+f(Math.abs(tn))+' MAD net · '+(tn>=0?'+':'')+((tn/ti)*100).toFixed(2)+'%';
-  let totalProfit=0, totalPerte=0;
-  stocks.forEach(s=>{const r=calc(s.b,s.live,s.q);if(r.net>=0)totalProfit+=r.net;else totalPerte+=r.net;});
-  document.getElementById('hi').textContent=f(ti);
-  document.getElementById('hp').textContent='+'+f(totalProfit);
-  document.getElementById('hng').textContent=f(totalPerte);
+  document.getElementById('hi').textContent=f(ti)+' DH';
+  document.getElementById('hp').textContent=(totalProfit>0?'+':'')+f(totalProfit)+' DH';
+  document.getElementById('hng').textContent=f(totalPerte)+' DH';
   document.getElementById('hp-count').textContent=pos?'('+pos+')':'';
   document.getElementById('hng-count').textContent=neg?'('+neg+')':'';
 }
@@ -723,14 +748,15 @@ function setRet(val,yr){
 }
 
 function toggleSummary(type) {
-  // Show popup with totals
   const isProfit = type === 'profit';
   const color = isProfit ? '#10b981' : '#ef4444';
-  const bgColor = isProfit ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)';
-  const borderColor = isProfit ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)';
+  const bgColor = isProfit ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)';
+  const borderColor = isProfit ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.25)';
   const emoji = isProfit ? '📈' : '📉';
   const filtered = stocks.filter(s => { const r=calc(s.b,s.live,s.q); return isProfit ? r.net>=0 : r.net<0; });
   const total = filtered.reduce((sum,s) => sum + calc(s.b,s.live,s.q).net, 0);
+  const totalInv = filtered.reduce((sum,s) => sum + calc(s.b,s.live,s.q).inv, 0);
+  const pct = totalInv > 0 ? (total/totalInv)*100 : 0;
 
   document.getElementById('kpi-popup-title').innerHTML =
     '<span style="color:'+color+'">'+emoji+' '+(isProfit?'Total Profit Net':'Total Pertes Nettes')+'</span>';
@@ -738,23 +764,15 @@ function toggleSummary(type) {
   document.getElementById('kpi-popup-total').style.background = bgColor;
   document.getElementById('kpi-popup-total').style.border = '1px solid '+borderColor;
   document.getElementById('kpi-popup-total').innerHTML =
-    '<span style="font-size:11px;color:#9ca3af">'+filtered.length+' position'+(filtered.length>1?'s':'')+' '+(isProfit?'en profit':'en perte')+'</span>' +
-    '<span style="font-size:18px;font-weight:700;color:'+color+'">'+(isProfit?'+':'')+f(total)+' DH</span>';
+    '<div>' +
+      '<div style="font-size:28px;font-weight:700;color:'+color+';letter-spacing:-1px">'+(isProfit?'+':'')+f(total)+' DH</div>' +
+      '<div style="font-size:11px;color:#6b7280;margin-top:3px">'+(isProfit?'▲':'▼')+' '+Math.abs(pct).toFixed(2)+'% · '+filtered.length+' position'+(filtered.length>1?'s':'')+'</div>' +
+    '</div>';
 
-  document.getElementById('kpi-popup-list').innerHTML = filtered
-    .sort((a,b) => { const ra=calc(a.b,a.live,a.q), rb=calc(b.b,b.live,b.q); return isProfit ? rb.net-ra.net : ra.net-rb.net; })
-    .map(s => {
-      const r = calc(s.b,s.live,s.q);
-      const pct = r.pct.toFixed(2);
-      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)">' +
-        '<div><div style="font-size:12px;font-weight:700;color:#f9fafb">'+s.t+'</div><div style="font-size:10px;color:#6b7280">'+s.n+' · '+s.q+'x</div></div>' +
-        '<div style="text-align:right"><div style="font-size:13px;font-weight:700;color:'+color+'">'+(r.net>=0?'+':'')+f(r.net)+' DH</div>' +
-        '<div style="font-size:10px;color:'+color+'">'+(r.pct>=0?'▲':'▼')+' '+Math.abs(pct)+'%</div></div>' +
-      '</div>';
-    }).join('');
+  // No list — just the total as requested
+  document.getElementById('kpi-popup-list').innerHTML = '';
 
   document.getElementById('kpi-popup').style.display = 'block';
-  // Also filter the list
   setFilter(type);
 }
 
@@ -1061,6 +1079,195 @@ function showTab(t){
 
 // ─── SYNC FUNCTIONS ──────────────────────────────
 
+// ─── GOOGLE SHEETS SYNC ──────────────────────────
+
+const GS_URL_KEY = 'gs_csv_url';
+
+function saveGsUrl() {
+  const url = document.getElementById('gs-url').value.trim();
+  if (!url || !url.includes('docs.google.com')) {
+    alert('URL invalide. Elle doit commencer par https://docs.google.com/...');
+    return;
+  }
+  // Force CSV export URL
+  let csvUrl = url;
+  if (!csvUrl.includes('export?format=csv') && !csvUrl.includes('/export')) {
+    // Convert regular sheet URL to CSV export
+    const match = csvUrl.match(/\/d\/([^\/]+)/);
+    if (match) {
+      const id = match[1];
+      const gidMatch = csvUrl.match(/gid=(\d+)/);
+      const gid = gidMatch ? gidMatch[1] : '0';
+      csvUrl = `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`;
+    }
+  }
+  localStorage.setItem(GS_URL_KEY, csvUrl);
+  document.getElementById('gs-setup').style.display = 'none';
+  document.getElementById('gs-main').style.display = 'block';
+  document.getElementById('gs-url').value = '';
+  const st = document.getElementById('gs-status');
+  st.style.display = 'block';
+  st.style.color = '#10b981';
+  st.style.background = 'rgba(16,185,129,0.08)';
+  st.innerHTML = '✅ URL enregistrée ! Appuie sur Sync pour charger les prix.';
+}
+
+function parseGsCSV(csv) {
+  const prices = {};
+  const allTickers = stocks.map(s => s.t);
+  const lines = csv.trim().split(/[\r\n]+/);
+
+  // Find header row to know which column is ticker and which is price
+  let tickerCol = 0, priceCol = 1;
+  const header = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g,''));
+  const tickerIdx = header.findIndex(h => ['ticker','symbol','code','valeur','action'].includes(h));
+  const priceIdx = header.findIndex(h => ['prix','price','cours','last','close','dernier'].includes(h));
+  if (tickerIdx >= 0) tickerCol = tickerIdx;
+  if (priceIdx >= 0) priceCol = priceIdx;
+
+  const dataLines = tickerIdx >= 0 || priceIdx >= 0 ? lines.slice(1) : lines;
+
+  dataLines.forEach(line => {
+    if (!line.trim()) return;
+    const cols = line.split(',').map(c => c.trim().replace(/"/g,''));
+    if (cols.length < 2) return;
+
+    // Try configured columns first
+    const t1 = cols[tickerCol]?.toUpperCase();
+    const p1 = parseFloat(cols[priceCol]?.replace(/\s/g,'').replace(',','.'));
+    if (t1 && allTickers.includes(t1) && p1 > 0 && p1 < 200000) {
+      prices[t1] = p1;
+      return;
+    }
+
+    // Scan all columns for ticker + price
+    for (let i = 0; i < cols.length; i++) {
+      const t = cols[i]?.toUpperCase().trim();
+      if (!allTickers.includes(t)) continue;
+      // Found ticker, look for price in nearby columns
+      for (let j = 0; j < cols.length; j++) {
+        if (j === i) continue;
+        const p = parseFloat(cols[j]?.replace(/\s/g,'').replace(',','.'));
+        if (p > 0 && p < 200000) {
+          prices[t] = p;
+          break;
+        }
+      }
+      if (prices[t]) break;
+    }
+  });
+
+  return prices;
+}
+
+async function fetchFromGoogleSheets() {
+  const savedUrl = localStorage.getItem(GS_URL_KEY);
+  const st = document.getElementById('gs-status');
+  const btn = document.getElementById('gs-fetch-btn');
+
+  if (!savedUrl) {
+    document.getElementById('gs-setup').style.display = 'block';
+    document.getElementById('gs-main').style.display = 'none';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Chargement...';
+  st.style.display = 'block';
+  st.style.color = '#60a5fa';
+  st.style.background = 'rgba(59,130,246,0.08)';
+  st.innerHTML = '📡 Connexion à Google Sheets...';
+
+  try {
+    // Google Sheets CSV export allows CORS — no proxy needed!
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 15000);
+    const res = await fetch(savedUrl, { signal: ctrl.signal, cache: 'no-store' });
+    clearTimeout(tid);
+
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' — vérifie que la sheet est bien publique');
+    const csv = await res.text();
+    if (!csv || csv.length < 10) throw new Error('Sheet vide ou inaccessible');
+
+    const prices = parseGsCSV(csv);
+    const found = Object.keys(prices).length;
+
+    if (found === 0) {
+      throw new Error('Aucun prix trouvé. Vérifie le format de ta sheet (colonnes Ticker + Prix)');
+    }
+
+    // Apply prices
+    let updated = 0;
+    const now = new Date().toLocaleString('fr-MA');
+    const details = [];
+
+    Object.entries(prices).forEach(([ticker, price]) => {
+      const stock = stocks.find(s => s.t === ticker);
+      if (stock) {
+        stock.live = price;
+        localStorage.setItem('price_' + ticker, String(price));
+        updated++;
+        details.push('<span style="color:#10b981;font-weight:700">' + ticker + '</span> ' + price.toFixed(2));
+      }
+      const bvc = allBVC.find(s => s.t === ticker);
+      if (bvc) bvc.live = price;
+    });
+
+    localStorage.setItem('price_date', now);
+
+    const missed = stocks.filter(s => !prices[s.t]).map(s => s.t);
+
+    st.style.color = '#10b981';
+    st.style.background = 'rgba(16,185,129,0.08)';
+    st.style.border = '1px solid rgba(16,185,129,0.2)';
+    st.style.borderRadius = '10px';
+    st.style.padding = '10px';
+    st.innerHTML = '✅ <strong>' + updated + ' prix mis à jour</strong><br>'
+      + '<div style="margin-top:6px;line-height:2;font-size:9px">' + details.join(' · ') + '</div>'
+      + (missed.length ? '<br><span style="color:#f59e0b">Non trouvés: ' + missed.join(', ') + '</span>' : '');
+
+    document.getElementById('dot').style.background = '#10b981';
+    document.getElementById('dot').style.boxShadow = '0 0 8px rgba(16,185,129,0.6)';
+    setTimeout(() => {
+      document.getElementById('dot').style.background = '#f59e0b';
+      document.getElementById('dot').style.boxShadow = '0 0 6px rgba(245,158,11,0.5)';
+    }, 4000);
+    document.getElementById('upd').textContent = '📗 Sheets · ' + updated + ' prix · ' + new Date().toLocaleTimeString('fr-MA');
+
+    renderAll();
+    renderSyncPrices();
+    setTimeout(() => showTab('port'), 1200);
+
+  } catch(e) {
+    st.style.color = '#ef4444';
+    st.style.background = 'rgba(239,68,68,0.08)';
+    st.style.border = '1px solid rgba(239,68,68,0.2)';
+    st.style.borderRadius = '10px';
+    st.style.padding = '10px';
+    st.innerHTML = '❌ ' + (e.message || 'Erreur de connexion')
+      + '<br><span style="color:#6b7280;font-size:9px">Vérifie que la sheet est bien publiée publiquement</span>';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📗 Sync depuis Google Sheets';
+  }
+}
+
+// Show setup if URL already saved on tab open
+function initGsSection() {
+  const DEFAULT_GS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQiTZzyjt1O8ks2MQGzY65MMLftLY-mCgDjIsHCW5Ea7TVswH_LTVTM_VzaCra5lhcWyl-HjBzYu3aZ/pub?gid=0&single=true&output=csv';
+  if (!localStorage.getItem(GS_URL_KEY)) {
+    localStorage.setItem(GS_URL_KEY, DEFAULT_GS_URL);
+  }
+  const st = document.getElementById('gs-status');
+  st.style.display = 'block';
+  st.style.color = '#10b981';
+  st.style.background = 'rgba(16,185,129,0.08)';
+  st.style.border = '1px solid rgba(16,185,129,0.2)';
+  st.style.borderRadius = '10px';
+  st.style.padding = '10px';
+  st.innerHTML = '✅ Google Sheet BVC connectée · Appuie sur <strong>📗 Sync</strong>';
+}
+
 async function fetchPricesWithAI() {
   const btn = document.getElementById('ai-fetch-btn');
   const statusEl = document.getElementById('ai-status');
@@ -1279,17 +1486,56 @@ function smartParseText(text) {
   const allTickers = [...new Set([...stocks.map(s=>s.t), ...allBVC.map(s=>s.t)])];
 
   function parsePrice(raw) {
-    // Handle "8 601,00" (space=thousands, comma=decimal) and "8601.00"
-    return parseFloat(raw.trim().replace(/\s/g,'').replace(/,/g,'.'));
+    if(!raw) return NaN;
+    // Handle "8 601,00" (space=thousands, comma=decimal) and "8601.00" and "8.601,00"
+    let s = raw.trim();
+    // Detect European format: if comma is decimal separator (e.g. "700,20" or "1 235,00")
+    if(/\d,\d{1,2}$/.test(s)) {
+      s = s.replace(/\s/g,'').replace(/\./g,'').replace(',','.');
+    } else {
+      s = s.replace(/\s/g,'').replace(/,/g,'.');
+    }
+    return parseFloat(s);
   }
 
-  const lines = text.split(/[\n\r]+/);
+  const lines = text.split(/[\n\r]+/).filter(l => l.trim());
 
-  // Strategy 1: Tab-separated table — name in col[0], price in col[1]
+  // ── Strategy 0: Excel format ─────────────────────────────────────────────
+  // Format: [num]\t[TICKER]\t[prix]\t[variation%]  (copier depuis Excel BVC)
+  // Ex: "10\tATW\t700,20\t0,03" or "10\tATW\t700.20\t0.03"
+  // Also handles header row "_NoLigne\tColumn1\tColumn2\tColumn3"
+  let excelDetected = false;
+  lines.forEach(line => {
+    const parts = line.split('\t').map(p => p.trim());
+    if(parts.length < 3) return;
+    // Check if col[0] is a number (row index) and col[1] is a ticker code
+    const isRowNum = /^\d+$/.test(parts[0]);
+    const isTicker = /^[A-Z0-9]{2,5}$/.test(parts[1]);
+    if(isRowNum && isTicker) {
+      const t = parts[1].toUpperCase();
+      if(allTickers.includes(t)) {
+        const p = parsePrice(parts[2]); // Column2 = prix
+        if(p > 0 && p < 200000) {
+          prices[t] = p;
+          excelDetected = true;
+        }
+      }
+    }
+  });
+
+  if(excelDetected) return prices; // Excel format matched — done!
+
+  // ── Strategy 1: Tab-separated — ticker/name in col[0], price in col[1] ──
   lines.forEach(line => {
     const parts = line.split('\t');
     if(parts.length < 2) return;
     const namePart = parts[0].trim().toUpperCase();
+    // Check if col[0] is directly a ticker
+    if(allTickers.includes(namePart) && !prices[namePart]) {
+      const p = parsePrice(parts[1]);
+      if(p > 0 && p < 200000) { prices[namePart] = p; return; }
+    }
+    // Check if col[0] matches a known name variant
     for(const [ticker, variants] of Object.entries(tickerMapping)) {
       if(prices[ticker]) continue;
       for(const v of variants) {
@@ -1301,20 +1547,19 @@ function smartParseText(text) {
     }
   });
 
-  // Strategy 2: Explicit TICKER=PRICE or TICKER:PRICE manual format
+  // ── Strategy 2: TICKER=PRIX or TICKER:PRIX manual ─────────────────────
   lines.forEach(line => {
     const m = line.match(/^\s*([A-Z0-9]{2,5})\s*[=:]\s*([\d.,\s]+)/i);
     if(m) {
       const t = m[1].toUpperCase();
-      if(allTickers.includes(t)) {
+      if(allTickers.includes(t) && !prices[t]) {
         const p = parsePrice(m[2]);
         if(p > 0) prices[t] = p;
       }
     }
   });
 
-  // Strategy 3: Name proximity scan — for anything still missing
-  // Handles "8 601,00" space-thousands format too
+  // ── Strategy 3: Name proximity — fallback for raw text ────────────────
   const remaining = allTickers.filter(t => !prices[t]);
   remaining.forEach(ticker => {
     const variants = [ticker, ...(tickerMapping[ticker]||[])].sort((a,b)=>b.length-a.length);

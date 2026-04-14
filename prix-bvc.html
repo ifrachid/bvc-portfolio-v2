@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Prix BVC">
+<title>Prix BVC</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0c10;
+  --surface:#12161f;
+  --surface2:#1a1f2e;
+  --border:rgba(255,255,255,0.07);
+  --text:#f0f4ff;
+  --muted:#4b5a72;
+  --accent:#3b82f6;
+  --green:#10b981;
+  --gold:#f0a500;
+}
+html{height:-webkit-fill-available;background:var(--bg)}
+body{
+  min-height:100vh;min-height:-webkit-fill-available;
+  background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;
+  padding:max(52px,env(safe-area-inset-top)) 16px max(32px,env(safe-area-inset-bottom));
+  overscroll-behavior:none;
+}
+h1{font-size:22px;font-weight:700;letter-spacing:-0.6px;margin-bottom:4px}
+.sub{font-size:13px;color:var(--muted);margin-bottom:24px}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:14px}
+.card-title{font-size:11px;font-weight:700;letter-spacing:0.8px;color:var(--muted);text-transform:uppercase;margin-bottom:14px}
+
+/* Source selector */
+.sources{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px}
+.src-btn{
+  padding:12px 8px;border-radius:12px;border:1.5px solid var(--border);
+  background:var(--surface2);color:var(--muted);
+  font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;
+  text-align:center;transition:all 0.15s;touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.src-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(59,130,246,0.1)}
+.src-btn:active{opacity:0.7;transform:scale(0.97)}
+
+/* Main fetch button */
+.fetch-btn{
+  width:100%;padding:17px;border-radius:15px;border:none;
+  background:linear-gradient(135deg,#2563eb,#1d4ed8);
+  color:#fff;font-size:15px;font-weight:700;
+  font-family:inherit;cursor:pointer;touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  letter-spacing:-0.3px;margin-bottom:12px;
+  transition:opacity 0.15s,transform 0.1s;
+}
+.fetch-btn:active{opacity:0.85;transform:scale(0.98)}
+.fetch-btn:disabled{opacity:0.5;background:#374151}
+
+/* Status */
+#status{
+  display:none;font-size:12px;line-height:1.6;
+  padding:12px 14px;border-radius:12px;
+  background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);
+  color:#93c5fd;margin-bottom:12px;
+}
+
+/* Results */
+#results{display:none}
+.result-header{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:14px;
+}
+.result-count{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:0.5px}
+.copy-all-btn{
+  padding:9px 16px;border-radius:10px;border:none;
+  background:linear-gradient(135deg,var(--green),#059669);
+  color:#fff;font-size:12px;font-weight:700;
+  font-family:inherit;cursor:pointer;touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  transition:opacity 0.15s,transform 0.1s;
+}
+.copy-all-btn:active{opacity:0.8;transform:scale(0.97)}
+
+.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px}
+.price-tile{
+  background:var(--surface2);border-radius:12px;padding:10px 8px;
+  text-align:center;border:1px solid var(--border);
+}
+.price-tile.found{border-color:rgba(16,185,129,0.2);background:rgba(16,185,129,0.05)}
+.price-tile.missing{border-color:rgba(239,68,68,0.15);background:rgba(239,68,68,0.04)}
+.tile-ticker{font-size:11px;font-weight:800;color:var(--text);letter-spacing:0.3px;margin-bottom:3px}
+.tile-price{font-size:12px;font-weight:700;color:var(--gold)}
+.tile-missing{font-size:10px;color:#ef4444}
+
+/* Output text */
+.output-box{
+  background:var(--bg);border:1px solid var(--border);border-radius:12px;
+  padding:14px;font-family:monospace;font-size:13px;
+  color:#10b981;line-height:2;word-break:break-all;
+  margin-bottom:10px;min-height:80px;max-height:200px;overflow-y:auto;
+}
+
+.copy-btn{
+  width:100%;padding:14px;border-radius:13px;border:none;
+  background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);
+  color:var(--green);font-size:14px;font-weight:700;
+  font-family:inherit;cursor:pointer;touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  transition:all 0.15s;
+}
+.copy-btn:active{opacity:0.75;transform:scale(0.98)}
+.copy-btn.copied{background:rgba(16,185,129,0.25);border-color:var(--green)}
+
+/* Instructions */
+.steps{list-style:none;counter-reset:steps}
+.steps li{
+  counter-increment:steps;display:flex;gap:12px;align-items:flex-start;
+  padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;color:#9ca3af;
+}
+.steps li:last-child{border-bottom:none}
+.steps li::before{
+  content:counter(steps);
+  min-width:22px;height:22px;border-radius:50%;
+  background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.4);
+  color:var(--accent);font-size:11px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;
+}
+.steps li span{color:var(--text);font-weight:600}
+
+/* Progress bar */
+.progress-wrap{height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-bottom:12px;overflow:hidden;display:none}
+.progress-bar{height:100%;background:linear-gradient(90deg,#2563eb,#10b981);border-radius:2px;transition:width 0.3s ease;width:0%}
+</style>
+</head>
+<body>
+
+<h1>📊 Prix BVC</h1>
+<p class="sub">Récupère les prix · Colle dans l'app</p>
+
+<!-- Source selection -->
+<div class="card">
+  <div class="card-title">Source de prix</div>
+  <div class="sources">
+    <button class="src-btn active" id="src-stooq" onclick="selectSource('stooq')">
+      📈 Stooq<br><span style="font-size:10px;color:#6b7280;font-weight:400">Recommandé</span>
+    </button>
+    <button class="src-btn" id="src-yahoo" onclick="selectSource('yahoo')">
+      🏦 Yahoo Finance<br><span style="font-size:10px;color:#6b7280;font-weight:400">Fallback</span>
+    </button>
+  </div>
+  <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:8px">
+    Les deux sources donnent les cours BVC en MAD
+  </div>
+</div>
+
+<!-- Fetch button -->
+<div class="card">
+  <div class="card-title">Récupération automatique</div>
+  <button class="fetch-btn" id="fetchBtn" onclick="fetchAllPrices()">
+    ⚡ Récupérer les prix maintenant
+  </button>
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+  <div id="status"></div>
+  <div id="results">
+    <div class="result-header">
+      <span class="result-count" id="resultCount"></span>
+      <button class="copy-all-btn" onclick="copyAll()">📋 Copier tout</button>
+    </div>
+    <div class="price-grid" id="priceGrid"></div>
+    <div class="output-box" id="outputBox"></div>
+    <button class="copy-btn" id="copyBtn" onclick="copyAll()">
+      📋 Copier · Coller dans BVC Portfolio
+    </button>
+  </div>
+</div>
+
+<!-- Instructions -->
+<div class="card">
+  <div class="card-title">Comment utiliser</div>
+  <ol class="steps">
+    <li>Appuie sur <span>⚡ Récupérer les prix</span> ci-dessus</li>
+    <li>Attends 5–15 secondes que les prix chargent</li>
+    <li>Appuie sur <span>📋 Copier tout</span></li>
+    <li>Ouvre <span>BVC Portfolio</span> → onglet 💫</li>
+    <li>Appuie <span>📋 Coller depuis presse-papier</span></li>
+    <li>Appuie <span>✓ Mettre à jour</span> — c'est fait !</li>
+  </ol>
+</div>
+
+<script>
+const STOCKS = [
+  {t:'ATW', n:'Attijariwafa Bank'},
+  {t:'DYT', n:'Disty Technologies'},
+  {t:'FBR', n:'Fenie Brossette'},
+  {t:'TGC', n:'TGCC'},
+  {t:'S2M', n:'S2M'},
+  {t:'NKL', n:'Ennakl'},
+  {t:'SMI', n:'SMI'},
+  {t:'STR', n:'Stroc Industrie'},
+  {t:'MUT', n:'Mutandis'},
+  {t:'AKT', n:'Akdital'},
+  {t:'IMO', n:'Immorente'},
+  {t:'CSR', n:'Cosumar'},
+  {t:'ADI', n:'Alliances'},
+  {t:'CFG', n:'CFG Bank'},
+  {t:'SNA', n:'Stockvis Nord Afrique'},
+  {t:'CMG', n:'CMGP Group'},
+  {t:'CAP', n:'Cash Plus'},
+];
+
+let currentSource = 'stooq';
+let fetchedPrices = {};
+
+function selectSource(src) {
+  currentSource = src;
+  document.querySelectorAll('.src-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('src-' + src).classList.add('active');
+}
+
+function setStatus(html, color='#93c5fd') {
+  const el = document.getElementById('status');
+  el.style.display = 'block';
+  el.style.color = color;
+  el.style.borderColor = color === '#93c5fd' ? 'rgba(59,130,246,0.2)' : 'rgba(16,185,129,0.25)';
+  el.style.background = color === '#ef4444' ? 'rgba(239,68,68,0.08)' : color === '#10b981' ? 'rgba(16,185,129,0.08)' : 'rgba(59,130,246,0.08)';
+  el.innerHTML = html;
+}
+
+function setProgress(pct) {
+  document.getElementById('progressWrap').style.display = 'block';
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+async function tryFetch(url, timeout=12000) {
+  const ctrl = new AbortController();
+  const tid = setTimeout(() => ctrl.abort(), timeout);
+  try {
+    const r = await fetch(url, { signal: ctrl.signal, cache: 'no-store' });
+    clearTimeout(tid);
+    return r;
+  } catch(e) {
+    clearTimeout(tid);
+    throw e;
+  }
+}
+
+// Stooq via allorigins (returns CSV)
+async function fetchStooqPrice(ticker) {
+  const stooqUrl = `https://stooq.com/q/l/?s=${ticker.toLowerCase()}.ma&f=sd2t2ohlcv&h&e=csv`;
+  const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(stooqUrl)}&t=${Date.now()}`;
+  const r = await tryFetch(proxyUrl, 12000);
+  const json = await r.json();
+  const csv = json.contents || '';
+  const lines = csv.trim().split('\n');
+  if (lines.length >= 2) {
+    const cols = lines[1].split(',');
+    const close = parseFloat(cols[6]);
+    if (close > 0 && close < 200000) return close;
+  }
+  return null;
+}
+
+// Yahoo Finance via allorigins
+async function fetchYahooPrice(ticker) {
+  const yhUrl = `https://query2.finance.yahoo.com/v8/finance/chart/${ticker}.MA?range=1d&interval=1d&includePrePost=false`;
+  const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(yhUrl)}&t=${Date.now()}`;
+  const r = await tryFetch(proxyUrl, 12000);
+  const json = await r.json();
+  const data = JSON.parse(json.contents || '{}');
+  const price = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
+  if (price > 0) return price;
+  return null;
+}
+
+async function fetchAllPrices() {
+  const btn = document.getElementById('fetchBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Chargement...';
+  document.getElementById('results').style.display = 'none';
+  setStatus('🔌 Connexion en cours...');
+  setProgress(5);
+  fetchedPrices = {};
+  const errors = [];
+
+  const fetchFn = currentSource === 'stooq' ? fetchStooqPrice : fetchYahooPrice;
+  const fallbackFn = currentSource === 'stooq' ? fetchYahooPrice : fetchStooqPrice;
+
+  // Fetch in small batches to show progress
+  const BATCH = 3;
+  for (let i = 0; i < STOCKS.length; i += BATCH) {
+    const batch = STOCKS.slice(i, i + BATCH);
+    setStatus(`📡 ${i+1}–${Math.min(i+BATCH, STOCKS.length)} / ${STOCKS.length} actions...`);
+    setProgress(10 + Math.round((i / STOCKS.length) * 75));
+
+    await Promise.all(batch.map(async (s) => {
+      try {
+        let p = await fetchFn(s.t);
+        if (!p) p = await fallbackFn(s.t); // fallback source
+        if (p) fetchedPrices[s.t] = p;
+        else errors.push(s.t);
+      } catch(e) {
+        // try fallback
+        try {
+          const p = await fallbackFn(s.t);
+          if (p) fetchedPrices[s.t] = p;
+          else errors.push(s.t);
+        } catch(e2) {
+          errors.push(s.t);
+        }
+      }
+    }));
+  }
+
+  setProgress(100);
+  const found = Object.keys(fetchedPrices).length;
+
+  if (found === 0) {
+    setStatus('❌ Impossible de récupérer les prix. Vérifie ta connexion et réessaie.', '#ef4444');
+    btn.disabled = false;
+    btn.textContent = '⚡ Récupérer les prix maintenant';
+    return;
+  }
+
+  // Build output
+  const lines = Object.entries(fetchedPrices).map(([t, p]) => `${t}=${p.toFixed(2)}`);
+  const outputText = lines.join('\n');
+
+  // Display grid
+  document.getElementById('priceGrid').innerHTML = STOCKS.map(s => {
+    const p = fetchedPrices[s.t];
+    return p
+      ? `<div class="price-tile found">
+          <div class="tile-ticker">${s.t}</div>
+          <div class="tile-price">${p.toFixed(2)}</div>
+        </div>`
+      : `<div class="price-tile missing">
+          <div class="tile-ticker">${s.t}</div>
+          <div class="tile-missing">—</div>
+        </div>`;
+  }).join('');
+
+  document.getElementById('outputBox').textContent = outputText;
+  document.getElementById('resultCount').textContent =
+    `✅ ${found}/${STOCKS.length} PRIX RÉCUPÉRÉS` + (errors.length ? ` · ❌ ${errors.join(', ')}` : '');
+
+  setStatus(
+    `✅ <strong>${found} prix chargés</strong> · ${new Date().toLocaleTimeString('fr-MA')}`
+    + (errors.length ? `<br><span style="color:#f59e0b">Non trouvés: ${errors.join(', ')}</span>` : ''),
+    '#10b981'
+  );
+
+  document.getElementById('results').style.display = 'block';
+  btn.disabled = false;
+  btn.textContent = '🔄 Actualiser';
+}
+
+async function copyAll() {
+  const text = document.getElementById('outputBox').textContent.trim();
+  if (!text) return;
+  const copyBtn = document.getElementById('copyBtn');
+  try {
+    await navigator.clipboard.writeText(text);
+    copyBtn.textContent = '✅ Copié ! Ouvre BVC Portfolio maintenant';
+    copyBtn.classList.add('copied');
+    setTimeout(() => {
+      copyBtn.textContent = '📋 Copier · Coller dans BVC Portfolio';
+      copyBtn.classList.remove('copied');
+    }, 3000);
+  } catch(e) {
+    // Safari fallback — select the text
+    const box = document.getElementById('outputBox');
+    const range = document.createRange();
+    range.selectNodeContents(box);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    document.execCommand('copy');
+    copyBtn.textContent = '✅ Copié !';
+    setTimeout(() => { copyBtn.textContent = '📋 Copier · Coller dans BVC Portfolio'; }, 2000);
+  }
+}
+</script>
+</body>
+</html>
