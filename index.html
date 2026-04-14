@@ -349,7 +349,7 @@ function findTickerInMapping(websiteName) {
   return null;
 }
 
-// ─── FETCH PRIX (API first, then browser proxy for iPhone/PWA, then local cache) ─────────────
+// ─── FETCH PRIX (same-origin API first, then public proxy) ─────────────
 const BVC_SOURCE_URL = 'https://www.casablancabourse.com/fr/live-market/marche-actions-groupement';
 const SAME_ORIGIN_API_URL = new URL('/api/prices', window.location.origin).href;
 const PUBLIC_PROXY_URL = 'https://api.allorigins.win/get?url=' + encodeURIComponent(BVC_SOURCE_URL);
@@ -382,7 +382,7 @@ function resolveAppTicker(rawKey) {
 }
 
 function escapeRegExp(value) {
-  return String(value || '').replace(/[.*+?^${}()|[\]\]/g, '\\$&');
+  return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function applyFetchedPrices(prices, label) {
@@ -420,7 +420,7 @@ function applyFetchedPrices(prices, label) {
   saveLivePrices();
   document.getElementById('dot').style.background = '#10b981';
   setTimeout(() => document.getElementById('dot').style.background = '#f59e0b', 2000);
-  document.getElementById('upd').textContent = '🟢 Live · ' + updated + '/' + stocks.length + ' · ' + new Date().toLocaleTimeString('fr-MA') + ' · ' + label;
+  document.getElementById('upd').textContent = '🟢 Live · ' + updated + '/' + stocks.length + ' · ' + new Date().toLocaleTimeString('fr-MA');
   renderAll();
 }
 
@@ -445,7 +445,7 @@ function extractPricesFromHtml(html) {
   let match;
   const patterns = [
     /"code"\s*:\s*"([^"]+)"[\s\S]{0,300}?(?:"lastPrice"|"cours"|"close")\s*:\s*"?([\d\s.,]+)"?/gi,
-    /([A-Z0-9]{2,6})[\s\S]{0,220}?(\d[\d\s.,]{0,20})\s*(?:MAD|DH|%|<|$)/gi
+    /\b([A-Z0-9]{2,6})\b[\s\S]{0,220}?(\d[\d\s.,]{0,20})\s*(?:MAD|DH|%|<|$)/gi
   ];
 
   for (const pattern of patterns) {
@@ -456,73 +456,13 @@ function extractPricesFromHtml(html) {
 
   const names = Object.values(tickerMapping).flat().sort((a,b)=>b.length-a.length);
   for (const name of names) {
-    const re = new RegExp(`${escapeRegExp(name)}[\s\S]{0,180}?(\d[\d\s.,]{0,20})\s*(?:MAD|DH|%|<|$)`, 'gi');
+    const re = new RegExp(`${escapeRegExp(name)}[\\s\\S]{0,180}?(\\d[\\d\\s.,]{0,20})\\s*(?:MAD|DH|%|<|$)`, 'gi');
     while ((match = re.exec(cleaned)) !== null) {
       assignPrice(name, match[1]);
     }
   }
 
   return prices;
-}
-
-function parseTradingViewPrice(html, symbol) {
-  const patterns = [
-    new RegExp(`current price of ${escapeRegExp(symbol)} is ([0-9.,]+)`, 'i'),
-    /"last_price"\s*:\s*([0-9.]+)/i,
-    /"close"\s*:\s*([0-9.]+)/i,
-    /"price"\s*:\s*"?([0-9.,]+)"?/i,
-    /"formatted_price"\s*:\s*"([0-9.,]+)"/i
-  ];
-
-  for (const pattern of patterns) {
-    const found = String(html || '').match(pattern);
-    if (found && found[1]) {
-      const n = parseFloat(String(found[1]).replace(',', '.'));
-      if (Number.isFinite(n) && n > 0) return n;
-    }
-  }
-  return null;
-}
-
-async function fetchBrowserProxyTradingViewPrices() {
-  const uniqueSymbols = [...new Set(stocks.map(s => s.t).filter(Boolean))];
-  const results = {};
-  const errors = [];
-
-  for (const symbol of uniqueSymbols) {
-    try {
-      const tvUrl = 'https://www.tradingview.com/symbols/CSEMA-' + encodeURIComponent(symbol) + '/';
-      const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(tvUrl) + '&_ts=' + Date.now();
-
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 12000);
-      const res = await fetch(proxyUrl, {
-        method: 'GET',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, max-age=0',
-          'Pragma': 'no-cache'
-        },
-        signal: controller.signal,
-        cache: 'reload'
-      });
-      clearTimeout(timeoutId);
-
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const html = await res.text();
-      const price = parseTradingViewPrice(html, symbol);
-      if (!price) throw new Error('price not found');
-      results[symbol] = price;
-    } catch (err) {
-      errors.push(symbol + ': ' + (err?.message || 'error'));
-    }
-  }
-
-  if (Object.keys(results).length === 0) {
-    throw new Error(errors[0] || 'No browser proxy prices found');
-  }
-
-  console.log('ℹ️ Browser proxy results:', results, errors);
-  return results;
 }
 
 async function fetchPrices(force = false){
@@ -532,9 +472,10 @@ async function fetchPrices(force = false){
   document.getElementById('upd').textContent='⏳ Sync live...';
 
   activePriceFetch = (async () => {
+    // PRIMARY: same-origin backend (/api/prices) when deployed on Vercel/Railway/etc.
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
       const res = await fetch(buildFreshUrl(SAME_ORIGIN_API_URL), {
         method: 'GET',
         headers: {
@@ -549,23 +490,15 @@ async function fetchPrices(force = false){
 
       if (!res.ok) throw new Error('API ' + res.status);
       const data = await res.json();
-      if (data?.success && data?.prices && Object.keys(data.prices).length) {
-        applyFetchedPrices(data.prices, 'Backend API');
-        return true;
-      }
-      throw new Error(data?.message || data?.error || 'API returned no prices');
+      if (!data?.success || !data?.prices) throw new Error('API returned no prices');
+
+      applyFetchedPrices(data.prices, 'Backend API');
+      return true;
     } catch (e) {
       console.warn('❌ Same-origin API failed:', e.message);
     }
 
-    try {
-      const prices = await fetchBrowserProxyTradingViewPrices();
-      applyFetchedPrices(prices, 'Browser proxy');
-      return true;
-    } catch (e) {
-      console.warn('❌ Browser proxy failed:', e.message);
-    }
-
+    // FALLBACK: public proxy for static hosting only.
     try{
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 12000);
@@ -591,12 +524,13 @@ async function fetchPrices(force = false){
         throw new Error('No prices extracted from HTML');
       }
 
-      applyFetchedPrices(prices, 'Casablanca proxy');
+      applyFetchedPrices(prices, 'Public proxy');
       return true;
     } catch (e) {
       console.warn('❌ Public proxy failed:', e.message);
     }
 
+    // FINAL FALLBACK: cached prices in localStorage / current in-memory values
     document.getElementById('dot').style.background = '#f59e0b';
     document.getElementById('upd').textContent = '🟡 Cache local · dernière sync ' + getLastSyncLabel();
     renderAll();

@@ -1,13 +1,63 @@
-# iPhone-friendly deployment
+# 🚀 Deploy Your Price API (Free)
 
-1. Upload all files to GitHub.
-2. Deploy on Vercel.
-3. Open the Vercel URL in Safari on iPhone.
-4. Test the app in Safari first.
-5. If prices load, use Share > Add to Home Screen.
+## Quick diagnosis of the original issue
 
-Notes:
-- `/api/prices` intentionally returns an empty/fallback response.
-- The app tries live prices from the browser through a public proxy.
-- If live fetch fails, the app keeps the last synced prices in local cache and shows the sync status.
-- On iPhone, remove the old Home Screen app before reinstalling a new version.
+The app was trying a public proxy first and even had a fallback to the Anthropic API without authentication headers. That fallback cannot work as written. I changed the app so it now:
+
+1. tries **your own `/api/prices` backend first**,
+2. falls back to a public proxy only if needed,
+3. keeps cached prices if both fail.
+
+I also fixed the PWA paths so the app works both at the domain root and inside a subfolder.
+
+---
+
+## Option 1: Deploy on Vercel (recommended)
+
+1. Push the project to GitHub.
+2. Import the repo into Vercel.
+3. Deploy.
+
+Once deployed, the frontend will automatically call:
+
+```text
+https://YOUR_PROJECT.vercel.app/api/prices
+```
+
+No extra change is needed in `index.html` anymore.
+
+---
+
+## Local test
+
+```bash
+npm install -g vercel
+vercel dev
+```
+
+Then open:
+
+- App: `http://localhost:3000`
+- API: `http://localhost:3000/api/prices`
+
+Expected API response:
+
+```json
+{
+  "success": true,
+  "count": 3,
+  "prices": {
+    "ATW": 711.5,
+    "TGC": 775.25,
+    "SMI": 8240
+  }
+}
+```
+
+---
+
+## Notes
+
+- `package.json` now uses ESM (`"type": "module"`) to match `export default` in `api/prices.js`.
+- The service worker and manifest now use relative paths, so they work better after deployment.
+- If you host only the static files (without serverless functions), the app will still try the public proxy as fallback.
