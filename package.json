@@ -1,10 +1,10 @@
 {
   "name": "bvc-portfolio-prices",
-  "version": "1.0.4",
-  "description": "BVC stock prices API and static portfolio app",
+  "version": "1.1.0",
+  "description": "BVC stock portfolio app with iPhone-friendly live fallback",
   "private": true,
   "type": "module",
   "engines": {
-    "node": "18.x"
+    "node": "24.x"
   }
 }
