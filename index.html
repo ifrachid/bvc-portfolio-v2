@@ -259,9 +259,7 @@ input::placeholder{color:#4b5563}
           <button id="gs-fetch-btn" onclick="fetchFromGoogleSheets()" class="btn" style="background:linear-gradient(135deg,#059669,#047857);margin-bottom:8px;font-size:13px">
             📗 Sync depuis Google Sheets
           </button>
-          <button onclick="document.getElementById('gs-setup').style.display='block';document.getElementById('gs-main').style.display='none'" style="width:100%;padding:8px;border:1px solid rgba(255,255,255,0.08);border-radius:10px;background:none;color:#6b7280;font-size:11px;font-family:inherit;cursor:pointer;touch-action:manipulation">
-            ⚙️ Configurer l'URL de la sheet
-          </button>
+
         </div>
         <div id="gs-status" style="display:none;font-size:10px;text-align:center;padding:10px;border-radius:8px;margin-top:8px;line-height:1.6"></div>
       </div>
@@ -1121,7 +1119,7 @@ function parseGsCSV(csv) {
   let tickerCol = 0, priceCol = 1;
   const header = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g,''));
   const tickerIdx = header.findIndex(h => ['ticker','symbol','code','valeur','action'].includes(h));
-  const priceIdx = header.findIndex(h => ['prix','price','cours','last','close','dernier'].includes(h));
+  const priceIdx = header.findIndex(h => h.includes('prix') || h.includes('price') || h.includes('cours') || h.includes('close') || h.includes('last') || h === 'dernier');
   if (tickerIdx >= 0) tickerCol = tickerIdx;
   if (priceIdx >= 0) priceCol = priceIdx;
 
@@ -1182,7 +1180,8 @@ async function fetchFromGoogleSheets() {
     // Google Sheets CSV export allows CORS — no proxy needed!
     const ctrl = new AbortController();
     const tid = setTimeout(() => ctrl.abort(), 15000);
-    const res = await fetch(savedUrl, { signal: ctrl.signal, cache: 'no-store' });
+    const bustUrl = savedUrl + (savedUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+    const res = await fetch(bustUrl, { signal: ctrl.signal, cache: 'no-store' });
     clearTimeout(tid);
 
     if (!res.ok) throw new Error('HTTP ' + res.status + ' — vérifie que la sheet est bien publique');
