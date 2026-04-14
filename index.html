@@ -174,26 +174,31 @@ input::placeholder{color:#374151}
   <div id="v-sync" style="display:none">
     <div style="padding:14px 14px 80px">
 
-      <!-- STEP 1: Ouvrir BVC -->
-      <div style="background:#1a2a4a;border-radius:14px;padding:14px;margin-bottom:12px">
-        <div style="font-size:10px;color:#60a5fa;font-weight:700;letter-spacing:0.5px;margin-bottom:10px">ÉTAPE 1 — OUVRIR LE SITE</div>
-        <button onclick="openCasablancaLink()" class="btn" style="background:linear-gradient(135deg,#2563eb,#1d4ed8)">
-          📊 Ouvrir casablancabourse.com
-        </button>
-        <div style="font-size:10px;color:#4b6080;margin-top:8px;line-height:1.6">
-          → Sélectionne tout le texte de la page (prix, tickers...)<br>
-          → Copie (Cmd+A puis Cmd+C sur Mac, ou "Sélectionner tout" sur mobile)
+      <!-- AI AUTO FETCH -->
+      <div style="background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(139,92,246,0.05));border:1px solid rgba(139,92,246,0.35);border-radius:16px;padding:16px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(139,92,246,0.25);display:flex;align-items:center;justify-content:center;font-size:15px">✨</div>
+          <div>
+            <div style="font-size:12px;color:#a78bfa;font-weight:700">MISE À JOUR IA</div>
+            <div style="font-size:10px;color:#6b7280">Recherche les prix BVC en temps réel</div>
+          </div>
         </div>
+        <button id="ai-fetch-btn" onclick="fetchPricesWithAI()" class="btn" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);margin-bottom:8px;font-size:13px">
+          ✨ Récupérer tous les prix maintenant
+        </button>
+        <div id="ai-status" style="display:none;font-size:10px;color:#a78bfa;text-align:center;padding:8px;background:rgba(139,92,246,0.1);border-radius:8px;line-height:1.6"></div>
       </div>
 
-      <!-- STEP 2: Coller -->
-      <div style="background:#1a1f2e;border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid rgba(37,99,235,0.3)">
-        <div style="font-size:10px;color:#60a5fa;font-weight:700;letter-spacing:0.5px;margin-bottom:10px">ÉTAPE 2 — COLLER LES PRIX</div>
-        <button onclick="pasteFromClipboard()" class="btn" style="background:linear-gradient(135deg,#059669,#047857);margin-bottom:10px">
+      <!-- MANUAL FALLBACK -->
+      <div style="background:#1a1f2e;border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.06)">
+        <div style="font-size:10px;color:#9ca3af;font-weight:700;letter-spacing:0.5px;margin-bottom:10px">OU SAISIE MANUELLE</div>
+        <button onclick="openCasablancaLink()" class="btn" style="background:#1a2a4a;color:#60a5fa;border:1px solid rgba(37,99,235,0.4);margin-bottom:10px;font-size:12px">
+          📊 Ouvrir casablancabourse.com
+        </button>
+        <button onclick="pasteFromClipboard()" class="btn" style="background:rgba(5,150,105,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3);margin-bottom:10px;font-size:12px">
           📋 Coller depuis presse-papier
         </button>
-        <div style="font-size:10px;color:#4b5563;text-align:center;margin-bottom:8px">— ou saisie manuelle —</div>
-        <textarea id="price-input" placeholder="Colle ici le texte copié du site BVC, ou saisis manuellement:&#10;ATW=700&#10;TGC=775&#10;SMI=8601&#10;&#10;L'app détecte les prix automatiquement." style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:12px;color:#f9fafb;font-size:13px;font-family:monospace;width:100%;height:130px;resize:vertical;outline:none;line-height:1.5" oninput="previewParsed()"></textarea>
+        <textarea id="price-input" placeholder="ATW=700&#10;TGC=775&#10;SMI=8601&#10;..." style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:12px;color:#f9fafb;font-size:13px;font-family:monospace;width:100%;height:100px;resize:vertical;outline:none;line-height:1.5" oninput="previewParsed()"></textarea>
         <div id="parse-preview" style="display:none;margin-top:8px;background:#0d2a1a;border-radius:9px;padding:10px;border:1px solid rgba(16,185,129,0.2)">
           <div style="font-size:10px;color:#10b981;font-weight:600;margin-bottom:5px">✅ <span id="parse-count">0</span> prix détectés</div>
           <div id="parse-list" style="font-size:10px;color:#6b7280;font-family:monospace;line-height:1.8"></div>
@@ -905,6 +910,215 @@ function showTab(t){
 }
 
 // ─── SYNC FUNCTIONS ──────────────────────────────
+
+async function fetchPricesWithAI() {
+  const btn = document.getElementById('ai-fetch-btn');
+  const statusEl = document.getElementById('ai-status');
+  btn.disabled = true;
+  btn.textContent = '⏳ Recherche en cours...';
+  statusEl.style.display = 'block';
+  statusEl.style.color = '#a78bfa';
+  statusEl.style.background = 'rgba(139,92,246,0.1)';
+  statusEl.style.padding = '10px';
+  statusEl.style.borderRadius = '8px';
+
+  const BVC_URL = 'https://www.casablancabourse.com/fr/live-market/marche-actions-groupement';
+  const PROXIES = [
+    url => 'https://api.allorigins.win/get?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+    url => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url),
+    url => 'https://corsproxy.io/?' + encodeURIComponent(url),
+    url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+  ];
+
+  // Also build TradingView URLs for individual stocks as fallback
+  const tvProxies = stocks.map(s => ({
+    ticker: s.t,
+    url: 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://www.tradingview.com/symbols/CSEMA-' + s.t + '/') + '&t=' + Date.now()
+  }));
+
+  function extractFromBVCHtml(html) {
+    const prices = {};
+    const allTickers = [...new Set([...stocks.map(s => s.t)])];
+
+    // Parse the JSON/data embedded in the BVC page
+    // Strategy 1: look for JSON data objects in scripts
+    const jsonMatches = html.match(/"symbol"\s*:\s*"([A-Z0-9]{2,5})"\s*,[\s\S]{0,200}?"last(?:Price)?"\s*:\s*([\d.]+)/gi) || [];
+    jsonMatches.forEach(m => {
+      const t = m.match(/"symbol"\s*:\s*"([A-Z0-9]{2,5})"/i)?.[1];
+      const p = m.match(/"last(?:Price)?"\s*:\s*([\d.]+)/i)?.[1];
+      if(t && p && allTickers.includes(t)) prices[t] = parseFloat(p);
+    });
+
+    // Strategy 2: table rows with ticker + price pattern
+    const tableRe = /\b([A-Z]{2,5})\b[^<\n]{0,60}?([\d\s]{1,5}[.,]\d{2})\s*(?:MAD|DH|%|<)/gi;
+    let m;
+    while((m = tableRe.exec(html)) !== null) {
+      const t = m[1];
+      if(allTickers.includes(t) && !prices[t]) {
+        const p = parseFloat(m[2].replace(/\s/g,'').replace(',','.'));
+        if(p > 0 && p < 200000) prices[t] = p;
+      }
+    }
+
+    // Strategy 3: name proximity
+    allTickers.filter(t => !prices[t]).forEach(ticker => {
+      const variants = [ticker, ...(tickerMapping[ticker]||[])].sort((a,b) => b.length-a.length);
+      for(const v of variants) {
+        const re = new RegExp(v.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '[^\\d\\n]{0,40}?(\\d[\\d ]{0,5}[,.]\\d{2}|\\d{2,6})', 'i');
+        const found = html.match(re);
+        if(found) {
+          const p = parseFloat(found[1].replace(/\s/g,'').replace(',','.'));
+          if(p > 0 && p < 200000) { prices[ticker] = p; break; }
+        }
+      }
+    });
+
+    return prices;
+  }
+
+  function extractTVPrice(html, ticker) {
+    const patterns = [
+      /"last_price"\s*:\s*([\d.]+)/i,
+      /"price"\s*:\s*([\d.]+)/i,
+      /data-price="([\d.]+)"/i,
+      /"regularMarketPrice"\s*:\s*\{[^}]*"value"\s*:\s*([\d.]+)/i,
+      new RegExp(ticker + '[^\\d]{0,60}?(\\d[\\d.,]{1,8})', 'i'),
+    ];
+    for(const re of patterns) {
+      const m = html.match(re);
+      if(m) {
+        const p = parseFloat(m[1].replace(',','.'));
+        if(p > 0 && p < 200000) return p;
+      }
+    }
+    return null;
+  }
+
+  async function tryFetch(url, timeoutMs=10000) {
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { signal: ctrl.signal, cache: 'no-store' });
+      clearTimeout(tid);
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      return await res.text();
+    } finally { clearTimeout(tid); }
+  }
+
+  let prices = {};
+  let source = '';
+
+  // === PHASE 1: Try BVC page via multiple proxies ===
+  statusEl.innerHTML = '🔍 Tentative 1/3 — Scraping BVC...';
+  for(let i=0; i<PROXIES.length; i++) {
+    try {
+      const proxyUrl = PROXIES[i](BVC_URL);
+      statusEl.innerHTML = '🔍 Proxy ' + (i+1) + '/' + PROXIES.length + ' — Casablancabourse.com...';
+      const raw = await tryFetch(proxyUrl, 12000);
+      // allorigins wraps in {contents:...}
+      let html = raw;
+      try { const j = JSON.parse(raw); if(j.contents) html = j.contents; } catch(e){}
+      prices = extractFromBVCHtml(html);
+      if(Object.keys(prices).length >= 5) { source = 'BVC proxy #'+(i+1); break; }
+    } catch(e) {
+      console.warn('Proxy ' + i + ' failed:', e.message);
+    }
+  }
+
+  // === PHASE 2: TradingView per-stock if BVC didn't work ===
+  if(Object.keys(prices).length < 5) {
+    statusEl.innerHTML = '🔍 Tentative 2/3 — TradingView stock par stock...';
+    const missing = stocks.filter(s => !prices[s.t]);
+    let tvFound = 0;
+    for(const s of missing) {
+      try {
+        const tvUrl = 'https://www.tradingview.com/symbols/CSEMA-' + s.t + '/';
+        const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(tvUrl) + '&t=' + Date.now();
+        const raw = await tryFetch(proxyUrl, 10000);
+        let html = raw;
+        try { const j = JSON.parse(raw); if(j.contents) html = j.contents; } catch(e){}
+        const p = extractTVPrice(html, s.t);
+        if(p) { prices[s.t] = p; tvFound++; }
+      } catch(e) { console.warn('TV failed for', s.t, e.message); }
+    }
+    if(tvFound > 0) source = 'TradingView';
+  }
+
+  // === PHASE 3: Stooq.com prices ===
+  if(Object.keys(prices).length < 5) {
+    statusEl.innerHTML = '🔍 Tentative 3/3 — Stooq...';
+    const missing = stocks.filter(s => !prices[s.t]);
+    for(const s of missing) {
+      try {
+        const stooqUrl = 'https://stooq.com/q/l/?s=' + s.t.toLowerCase() + '.ma&f=sd2t2ohlcv&h&e=csv';
+        const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(stooqUrl) + '&t=' + Date.now();
+        const raw = await tryFetch(proxyUrl, 8000);
+        let csv = raw;
+        try { const j = JSON.parse(raw); if(j.contents) csv = j.contents; } catch(e){}
+        // CSV format: Symbol,Date,Time,Open,High,Low,Close,Volume
+        const lines = csv.trim().split('\n');
+        if(lines.length >= 2) {
+          const cols = lines[1].split(',');
+          const p = parseFloat(cols[6]); // Close price
+          if(p > 0) { prices[s.t] = p; }
+        }
+      } catch(e) { console.warn('Stooq failed for', s.t, e.message); }
+    }
+    if(Object.keys(prices).length >= 5) source = source || 'Stooq';
+  }
+
+  // === APPLY ===
+  const found = Object.keys(prices).length;
+  if(found === 0) {
+    statusEl.innerHTML = '❌ Impossible de récupérer les prix.<br><span style="color:#6b7280;font-size:9px">Safari bloque tous les proxies. Utilise la saisie manuelle ci-dessous.</span>';
+    statusEl.style.color = '#ef4444';
+    btn.disabled = false;
+    btn.textContent = '✨ Récupérer tous les prix maintenant';
+    return;
+  }
+
+  let updated = 0;
+  const now = new Date().toLocaleString('fr-MA');
+  const details = [];
+
+  Object.entries(prices).forEach(([ticker, price]) => {
+    const t = ticker.toUpperCase();
+    const stock = stocks.find(s => s.t === t);
+    if(stock) {
+      stock.live = price;
+      localStorage.setItem('price_' + t, String(price));
+      updated++;
+      details.push('<span style="color:#10b981;font-weight:600">' + t + '</span> ' + price.toFixed(2));
+    }
+    const bvc = allBVC.find(s => s.t === t);
+    if(bvc) bvc.live = price;
+  });
+
+  localStorage.setItem('price_date', now);
+
+  document.getElementById('dot').style.background = '#10b981';
+  document.getElementById('dot').style.boxShadow = '0 0 8px rgba(16,185,129,0.6)';
+  setTimeout(() => {
+    document.getElementById('dot').style.background = '#f59e0b';
+    document.getElementById('dot').style.boxShadow = '0 0 6px rgba(245,158,11,0.5)';
+  }, 4000);
+  document.getElementById('upd').textContent = '✨ ' + updated + ' prix · ' + new Date().toLocaleTimeString('fr-MA');
+
+  const missed = stocks.filter(s => !prices[s.t]).map(s => s.t);
+  statusEl.style.color = '#10b981';
+  statusEl.style.background = 'rgba(16,185,129,0.08)';
+  statusEl.innerHTML = '✅ <strong>' + updated + ' prix mis à jour</strong> via ' + source +
+    '<br><div style="margin-top:8px;line-height:2;color:#6b7280">' + details.join(' &nbsp;') + '</div>' +
+    (missed.length ? '<br><span style="color:#f59e0b;font-size:9px">Non trouvés: ' + missed.join(', ') + '</span>' : '');
+
+  renderAll();
+  renderSyncPrices();
+  setTimeout(() => showTab('port'), 2000);
+
+  btn.disabled = false;
+  btn.textContent = '✨ Récupérer tous les prix maintenant';
+}
+
 function openCasablancaLink(){
   window.open('https://www.casablancabourse.com/fr/live-market/marche-actions-groupement','_blank');
 }
