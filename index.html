@@ -14,132 +14,41 @@
 <meta name="msapplication-config" content="./browserconfig.xml?v=rt4">
 <title>BVC Portfolio</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
-:root{
-  --bg:#09090f;
-  --surface:#10111a;
-  --surface2:#161723;
-  --surface3:#1c1d2e;
-  --border:rgba(255,255,255,0.06);
-  --border2:rgba(255,255,255,0.1);
-  --text:#eef0ff;
-  --muted:#5a5f7a;
-  --muted2:#8890b0;
-  --green:#00d68f;
-  --green2:rgba(0,214,143,0.12);
-  --red:#ff4d6a;
-  --red2:rgba(255,77,106,0.12);
-  --gold:#f5a623;
-  --gold2:rgba(245,166,35,0.12);
-  --blue:#4f8ef7;
-  --blue2:rgba(79,142,247,0.12);
-  --accent:#6c63ff;
-}
 *{box-sizing:border-box;margin:0;padding:0}
-html{height:100%;height:-webkit-fill-available}
-html,body{
-  width:100%;background:var(--bg);
-  font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;
-  -webkit-user-select:none;user-select:none;
-  color:var(--text);
-}
+html{height:100%;height:-webkit-fill-available;background:#0a0a0f}
+html,body{width:100%;background:#0a0a0f;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',sans-serif;-webkit-user-select:none;user-select:none;-webkit-font-smoothing:antialiased}
 body{overflow:hidden;-webkit-tap-highlight-color:transparent;min-height:100vh;min-height:-webkit-fill-available}
-.app{
-  width:100%;height:100vh;height:100dvh;background:var(--bg);
-  padding-top:max(47px,env(safe-area-inset-top));
+.app{width:100%;height:100vh;height:100dvh;background:#0a0a0f;color:#f5f5f7;
+  padding-top:max(54px,env(safe-area-inset-top));
   padding-bottom:max(20px,env(safe-area-inset-bottom));
-  padding-left:max(12px,env(safe-area-inset-left));
-  padding-right:max(12px,env(safe-area-inset-right));
-  display:flex;flex-direction:column;overflow:hidden
-}
-input,select{
-  background:var(--surface2);border:1px solid var(--border2);
-  border-radius:14px;padding:14px 16px;color:var(--text);
-  font-size:16px;font-family:'DM Sans',inherit;outline:none;
-  width:100%;-webkit-appearance:none;letter-spacing:-0.1px;
-  transition:border-color 0.2s;
-}
-input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,0.15)}
-input::placeholder{color:var(--muted)}
-.btn{
-  background:var(--accent);border:none;border-radius:16px;
-  padding:16px;color:#fff;font-size:15px;font-weight:600;
-  font-family:'DM Sans',inherit;cursor:pointer;width:100%;
-  touch-action:manipulation;letter-spacing:-0.2px;
-  -webkit-tap-highlight-color:transparent;
-  transition:opacity 0.15s,transform 0.1s;
-}
-.btn:active{opacity:0.85;transform:scale(0.97)}
-.card{
-  background:var(--surface2);border-radius:18px;
-  padding:14px 16px;margin-bottom:9px;
-  cursor:pointer;touch-action:manipulation;
-  -webkit-tap-highlight-color:transparent;
-  border:1px solid var(--border);
-  transition:border-color 0.15s,transform 0.1s;
-}
-.card:active{transform:scale(0.985);border-color:var(--border2)}
+  padding-left:max(0px,env(safe-area-inset-left));
+  padding-right:max(0px,env(safe-area-inset-right));
+  display:flex;flex-direction:column;overflow:hidden}
+input,select{background:#1c1c1e;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:13px 14px;color:#f5f5f7;font-size:16px;font-family:inherit;outline:none;width:100%;-webkit-appearance:none;letter-spacing:-0.2px}
+input:focus,select:focus{border-color:#0a84ff;box-shadow:0 0 0 3px rgba(10,132,255,0.2)}
+input::placeholder{color:#48484a}
+.btn{background:#0a84ff;border:none;border-radius:14px;padding:15px;color:#fff;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;width:100%;touch-action:manipulation;letter-spacing:-0.2px;-webkit-tap-highlight-color:transparent}
+.btn:active{opacity:0.8;transform:scale(0.97)}
+.card{background:#1c1c1e;border-radius:16px;padding:14px 16px;margin-bottom:10px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:opacity 0.12s}
+.card:active{opacity:0.6}
 .row{display:flex;justify-content:space-between;align-items:center}
-.lbl{font-size:10px;color:var(--muted2);margin-bottom:3px;font-weight:500;letter-spacing:0.4px;text-transform:uppercase}
-.kpi{
-  background:var(--surface2);border:1px solid var(--border);
-  border-radius:16px;padding:12px 13px;cursor:pointer;
-  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
-  transition:border-color 0.15s,transform 0.1s;
-}
-.kpi:active{transform:scale(0.95);border-color:var(--border2)}
-.dr{
-  display:flex;justify-content:space-between;
-  padding:11px 14px;background:var(--surface);
-  border-radius:13px;margin-bottom:6px;align-items:center;
-  border:1px solid var(--border);
-}
-.dl{font-size:12px;color:var(--muted2)}
+.lbl{font-size:11px;color:#8e8e93;margin-bottom:3px;font-weight:500;letter-spacing:0.1px}
+.kpi{background:#1c1c1e;border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:11px 13px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:opacity 0.12s}
+.kpi:active{opacity:0.6}
+.dr{display:flex;justify-content:space-between;padding:11px 14px;background:#1c1c1e;border-radius:12px;margin-bottom:6px;align-items:center}
+.dl{font-size:12px;color:#8e8e93;letter-spacing:-0.1px}
 .dv{font-size:13px;font-weight:600;letter-spacing:-0.3px}
-.tab{
-  flex:1;padding:11px 0;border-radius:13px;font-size:11px;
-  font-weight:600;text-align:center;cursor:pointer;
-  touch-action:manipulation;min-height:44px;
-  display:flex;align-items:center;justify-content:center;
-  transition:all 0.2s;-webkit-tap-highlight-color:transparent;
-  letter-spacing:0.2px;
-}
-.fb{
-  flex:1;padding:10px 0;border-radius:12px;font-size:12px;
-  font-weight:600;text-align:center;cursor:pointer;
-  touch-action:manipulation;border:1px solid var(--border2);
-  min-height:42px;display:flex;align-items:center;
-  justify-content:center;-webkit-tap-highlight-color:transparent;
-  transition:all 0.15s;
-}
-.fb:active{transform:scale(0.95)}
-.sug{
-  position:absolute;z-index:99;background:rgba(22,23,35,0.99);
-  backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);
-  border:1px solid var(--border2);border-radius:18px;
-  width:100%;top:calc(100% + 8px);left:0;
-  max-height:260px;overflow-y:auto;
-  box-shadow:0 20px 60px rgba(0,0,0,0.6);
-}
-.si{
-  padding:14px 16px;cursor:pointer;font-size:14px;
-  color:var(--text);border-bottom:1px solid var(--border);
-  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
-  display:flex;justify-content:space-between;align-items:center;
-}
-.si:active{background:rgba(255,255,255,0.04)}
+.tab{flex:1;padding:11px 0;border-radius:12px;font-size:11px;font-weight:600;text-align:center;cursor:pointer;touch-action:manipulation;min-height:46px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;-webkit-tap-highlight-color:transparent}
+.fb{flex:1;padding:10px 0;border-radius:12px;font-size:12px;font-weight:600;text-align:center;cursor:pointer;touch-action:manipulation;border:1px solid rgba(255,255,255,0.1);min-height:40px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+.sug{position:absolute;z-index:99;background:rgba(28,28,30,0.98);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);border:1px solid rgba(255,255,255,0.1);border-radius:16px;width:100%;top:calc(100% + 6px);left:0;max-height:280px;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.7)}
+.si{padding:14px 16px;cursor:pointer;font-size:15px;color:#f5f5f7;border-bottom:1px solid rgba(255,255,255,0.06);touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.si:active{background:rgba(255,255,255,0.08)}
 .pw{position:relative}
-.dtab{
-  flex:1;padding:10px 0;border-radius:12px;font-size:12px;
-  font-weight:600;text-align:center;cursor:pointer;
-  touch-action:manipulation;min-height:42px;
-  display:flex;align-items:center;justify-content:center;
-  -webkit-tap-highlight-color:transparent;transition:all 0.15s;
-}
-.spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(108,99,255,0.3);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite}
+.dtab{flex:1;padding:10px 0;border-radius:11px;font-size:12px;font-weight:600;text-align:center;cursor:pointer;touch-action:manipulation;min-height:42px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(10,132,255,0.3);border-top-color:#0a84ff;border-radius:50%;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #v-port,#v-div,#v-detail,#v-add,#v-sim,#v-sync,#v-edit{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-#list,#div-list{padding:0 12px 90px}
+#list,#div-list{padding:0 14px 100px}
 ::-webkit-scrollbar{display:none}
 </style>
 </head>
@@ -147,46 +56,35 @@ input::placeholder{color:var(--muted)}
 <div class="app">
 
   <!-- HEADER -->
-  <div style="background:rgba(9,9,15,0.97);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);padding:10px 16px 10px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.05)">
+  <div style="background:rgba(10,10,15,0.96);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);padding:12px 16px 10px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.07)">
 
-    <div class="row" style="margin-bottom:14px">
-      <div onclick="togglePortfolioValue()" style="cursor:pointer;-webkit-tap-highlight-color:transparent">
-        <div style="font-size:10px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">BVC Portfolio</div>
-        <div id="hv" style="font-size:30px;font-weight:700;color:var(--text);letter-spacing:-1.5px;line-height:1;font-family:'DM Sans',sans-serif">—</div>
-        <div id="hn" style="font-size:12px;color:var(--muted2);margin-top:5px;font-weight:500">Chargement...</div>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-        <div style="display:flex;align-items:center;gap:6px">
-          <div id="dot" style="width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px rgba(245,166,35,0.6)"></div>
-          <div id="upd" style="font-size:10px;color:var(--muted);font-weight:500">—</div>
-        </div>
-      </div>
+    <!-- Total portfolio -->
+    <div onclick="togglePortfolioValue()" style="margin-bottom:14px;cursor:pointer;-webkit-tap-highlight-color:transparent">
+      <div style="font-size:11px;color:#636366;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:3px">BVC Portfolio</div>
+      <div id="hv" style="font-size:30px;font-weight:700;color:#f5f5f7;letter-spacing:-1.5px;line-height:1.1">—</div>
+      <div id="hn" style="font-size:12px;color:#636366;margin-top:4px;font-weight:500">Chargement...</div>
     </div>
 
+    <!-- KPIs -->
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
       <div class="kpi" onclick="toggleInvesti()" id="k-inv">
-        <div class="lbl">Investi</div>
-        <div id="hi" style="font-size:13px;font-weight:700;color:var(--text);letter-spacing:-0.3px;margin-top:2px">—</div>
+        <div class="lbl">💰 Investi</div>
+        <div id="hi" style="font-size:12px;font-weight:700;color:#f5f5f7;margin-top:2px">—</div>
       </div>
-      <div class="kpi" onclick="setFilter('profit')" id="kp" style="position:relative;background:var(--green2);border-color:rgba(0,214,143,0.2)">
-        <div class="lbl" style="color:var(--green)">Profit <span id="hp-count" style="opacity:0.6;font-weight:400"></span></div>
-        <div id="hp" style="font-size:13px;font-weight:700;color:var(--green);letter-spacing:-0.3px;margin-top:2px">—</div>
+      <div class="kpi" onclick="setFilter('profit')" id="kp" style="background:rgba(52,199,89,0.08);border-color:rgba(52,199,89,0.2)">
+        <div class="lbl">📈 <span id="hp-count" style="color:#636366;font-weight:400"></span></div>
+        <div id="hp" style="font-size:12px;font-weight:700;color:#34c759;margin-top:2px">—</div>
       </div>
-      <div class="kpi" onclick="setFilter('perte')" id="kn" style="position:relative;background:var(--red2);border-color:rgba(255,77,106,0.2)">
-        <div class="lbl" style="color:var(--red)">Perte <span id="hng-count" style="opacity:0.6;font-weight:400"></span></div>
-        <div id="hng" style="font-size:13px;font-weight:700;color:var(--red);letter-spacing:-0.3px;margin-top:2px">—</div>
+      <div class="kpi" onclick="setFilter('perte')" id="kn" style="background:rgba(255,69,58,0.08);border-color:rgba(255,69,58,0.2)">
+        <div class="lbl">📉 <span id="hng-count" style="color:#636366;font-weight:400"></span></div>
+        <div id="hng" style="font-size:12px;font-weight:700;color:#ff453a;margin-top:2px">—</div>
       </div>
     </div>
 
-    <!-- Summary popup -->
-    <div id="kpi-popup" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;background:rgba(0,0,0,0.75)" onclick="closeKpiPopup()">
-      <div onclick="event.stopPropagation()" style="position:absolute;bottom:0;left:0;right:0;background:#1a1f2e;border-radius:22px 22px 0 0;padding:20px 18px;padding-bottom:max(36px,env(safe-area-inset-bottom));max-height:65vh;overflow-y:auto">
-        <div style="width:36px;height:4px;background:#2a3040;border-radius:2px;margin:0 auto 18px"></div>
-        <div id="kpi-popup-title" style="font-size:12px;font-weight:700;color:#9ca3af;letter-spacing:0.5px;margin-bottom:14px;text-transform:uppercase"></div>
-        <div id="kpi-popup-total" style="border-radius:14px;padding:16px;margin-bottom:16px"></div>
-        <div id="kpi-popup-list"></div>
-        <button onclick="closeKpiPopup()" style="width:100%;margin-top:8px;padding:14px;border-radius:13px;border:none;background:#111318;color:#6b7280;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation">Fermer</button>
-      </div>
+    <!-- dot + last sync -->
+    <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-bottom:10px">
+      <div id="dot" style="width:6px;height:6px;border-radius:50%;background:#ff9f0a;box-shadow:0 0 6px rgba(255,159,10,0.6)"></div>
+      <div id="upd" style="font-size:10px;color:#48484a;font-weight:500">—</div>
     </div>
 
   <!-- EDIT PAGE -->
@@ -198,79 +96,89 @@ input::placeholder{color:var(--muted)}
       </button>
       <div id="edit-title" style="font-size:17px;font-weight:700;color:#f9fafb;margin-bottom:18px"></div>
 
-      <div style="background:#1a1f2e;border-radius:14px;padding:14px;margin-bottom:12px">
-        <div style="font-size:10px;color:#60a5fa;font-weight:700;letter-spacing:0.5px;margin-bottom:12px">POSITION</div>
+      <div style="background:#1c1c1e;border-radius:14px;padding:14px;margin-bottom:12px">
+        <div style="font-size:10px;color:#4cc2ff;font-weight:700;letter-spacing:0.5px;margin-bottom:12px">POSITION</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div>
             <div class="lbl" style="margin-bottom:6px">QUANTITÉ</div>
-            <input id="edit-q" type="number" min="1" style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:13px;color:#f9fafb;font-size:16px;width:100%;outline:none;-webkit-appearance:none">
+            <input id="edit-q" type="number" min="1" style="background:#0a0a0f;border:1px solid #2a3040;border-radius:11px;padding:13px;color:#f9fafb;font-size:16px;width:100%;outline:none;-webkit-appearance:none">
           </div>
           <div>
             <div class="lbl" style="margin-bottom:6px">PRIX ACHAT (MAD)</div>
-            <input id="edit-b" type="number" step="0.01" style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:13px;color:#f9fafb;font-size:16px;width:100%;outline:none;-webkit-appearance:none">
+            <input id="edit-b" type="number" step="0.01" style="background:#0a0a0f;border:1px solid #2a3040;border-radius:11px;padding:13px;color:#f9fafb;font-size:16px;width:100%;outline:none;-webkit-appearance:none">
           </div>
         </div>
       </div>
 
-      <div style="background:#1a1f2e;border-radius:14px;padding:14px;margin-bottom:16px">
-        <div style="font-size:10px;color:#f0a500;font-weight:700;letter-spacing:0.5px;margin-bottom:12px">🌿 DIVIDENDE</div>
+      <div style="background:#1c1c1e;border-radius:14px;padding:14px;margin-bottom:16px">
+        <div style="font-size:10px;color:#ffd60a;font-weight:700;letter-spacing:0.5px;margin-bottom:12px">🌿 DIVIDENDE</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
           <div>
             <div class="lbl" style="margin-bottom:6px">DPA (MAD/action)</div>
-            <input id="edit-dpa" type="number" step="0.01" min="0" placeholder="0" style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:13px;color:#f9fafb;font-size:16px;width:100%;outline:none;-webkit-appearance:none">
+            <input id="edit-dpa" type="number" step="0.01" min="0" placeholder="0" style="background:#0a0a0f;border:1px solid #2a3040;border-radius:11px;padding:13px;color:#f9fafb;font-size:16px;width:100%;outline:none;-webkit-appearance:none">
           </div>
           <div>
             <div class="lbl" style="margin-bottom:6px">ANNÉE</div>
-            <input id="edit-an" type="text" placeholder="2025" maxlength="4" style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:13px;color:#f9fafb;font-size:16px;width:100%;outline:none;-webkit-appearance:none">
+            <input id="edit-an" type="text" placeholder="2025" maxlength="4" style="background:#0a0a0f;border:1px solid #2a3040;border-radius:11px;padding:13px;color:#f9fafb;font-size:16px;width:100%;outline:none;-webkit-appearance:none">
           </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div>
             <div class="lbl" style="margin-bottom:6px">DATE DÉTACHEMENT</div>
-            <input id="edit-det" type="date" style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:13px;color:#f9fafb;font-size:14px;width:100%;outline:none;-webkit-appearance:none">
+            <input id="edit-det" type="date" style="background:#0a0a0f;border:1px solid #2a3040;border-radius:11px;padding:13px;color:#f9fafb;font-size:14px;width:100%;outline:none;-webkit-appearance:none">
           </div>
           <div>
             <div class="lbl" style="margin-bottom:6px">DATE PAIEMENT</div>
-            <input id="edit-pay" type="date" style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:13px;color:#f9fafb;font-size:14px;width:100%;outline:none;-webkit-appearance:none">
+            <input id="edit-pay" type="date" style="background:#0a0a0f;border:1px solid #2a3040;border-radius:11px;padding:13px;color:#f9fafb;font-size:14px;width:100%;outline:none;-webkit-appearance:none">
           </div>
         </div>
       </div>
 
-      <button onclick="saveEdit()" class="btn" style="background:linear-gradient(135deg,#2563eb,#1d4ed8);margin-bottom:10px">
+      <button onclick="saveEdit()" class="btn" style="background:linear-gradient(135deg,#0a84ff,#0071e3);margin-bottom:10px">
         ✓ Enregistrer les modifications
       </button>
-      <button onclick="deleteFromEdit()" style="width:100%;padding:14px;border-radius:13px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.08);color:#ef4444;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation">
+      <button onclick="deleteFromEdit()" style="width:100%;padding:14px;border-radius:13px;border:1px solid rgba(255,69,58,0.3);background:rgba(255,69,58,0.08);color:#ef4444;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation">
         Supprimer cette action
       </button>
     </div>
   </div>
 
     <!-- Dividendes banner -->
-    <div style="background:var(--gold2);border:1px solid rgba(245,166,35,0.2);border-radius:14px;padding:10px 14px;margin-bottom:10px">
-      <div style="font-size:9px;color:var(--gold);font-weight:700;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:7px">🌿 Dividendes · retenue <span id="ret-label">11.25%</span> (2026)</div>
+    <div style="background:rgba(255,214,10,0.07);border:1px solid rgba(255,214,10,0.2);border-radius:12px;padding:9px 12px;margin-bottom:9px">
+      <div style="font-size:10px;color:#ffd60a;font-weight:700;letter-spacing:0.5px;margin-bottom:5px">🌿 DIVIDENDES — retenue <span id="ret-label">11.25%</span> (2026)</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
-        <div><div class="lbl">Brut annuel</div><div id="div-brut" style="font-size:12px;font-weight:700;color:var(--gold)">—</div></div>
-        <div><div class="lbl">Net encaissé</div><div id="div-net" style="font-size:12px;font-weight:700;color:var(--green)">—</div></div>
-        <div><div class="lbl">Yield</div><div id="div-yield" style="font-size:12px;font-weight:700;color:var(--gold)">—</div></div>
+        <div><div class="lbl">Brut annuel</div><div id="div-brut" style="font-size:11px;font-weight:700;color:#ffd60a">—</div></div>
+        <div><div class="lbl">Net encaissé</div><div id="div-net" style="font-size:11px;font-weight:700;color:#10b981">—</div></div>
+        <div><div class="lbl">Yield global</div><div id="div-yield" style="font-size:11px;font-weight:700;color:#ffd60a">—</div></div>
       </div>
     </div>
 
-    <div style="display:flex;gap:5px;background:var(--surface2);border-radius:15px;padding:4px">
-      <div id="t-port" class="tab" onclick="showTab('port')" style="background:var(--accent);color:#fff;border-radius:11px">Portfolio</div>
-      <div id="t-div"  class="tab" onclick="showTab('div')"  style="background:transparent;color:var(--muted)">🌿</div>
-      <div id="t-add"  class="tab" onclick="showTab('add')"  style="background:transparent;color:var(--muted)">＋</div>
-      <div id="t-sim"  class="tab" onclick="showTab('sim')"  style="background:transparent;color:var(--muted)">🎯</div>
-      <div id="t-sync" class="tab" onclick="showTab('sync')" style="background:transparent;color:var(--muted)">💫</div>
+    <div style="display:flex;gap:4px;background:#1c1c1e;border-radius:13px;padding:3px">
+      <div id="t-port" class="tab" onclick="showTab('port')" style="background:#0a84ff;color:#fff;border-radius:10px;font-size:11px">Portfolio</div>
+      <div id="t-div"  class="tab" onclick="showTab('div')"  style="background:transparent;color:#636366;border-radius:10px;font-size:13px">🌿</div>
+      <div id="t-add"  class="tab" onclick="showTab('add')"  style="background:transparent;color:#636366;border-radius:10px;font-size:13px">➕</div>
+      <div id="t-sim"  class="tab" onclick="showTab('sim')"  style="background:transparent;color:#636366;border-radius:10px;font-size:13px">🎯</div>
+      <div id="t-sync" class="tab" onclick="showTab('sync')" style="background:transparent;color:#636366;border-radius:10px;font-size:13px">💫</div>
     </div>
   </div>
 
   <!-- PORTFOLIO -->
   <div id="v-port">
-    <div style="display:flex;gap:6px;padding:8px 11px;flex-shrink:0;align-items:center">
-      <div id="f-all"    class="fb" onclick="setFilter('all')"    style="background:var(--accent);color:#fff;border-color:var(--accent)">Tout</div>
-      <div id="f-profit" class="fb" onclick="setFilter('profit')" style="color:var(--green);border-color:rgba(0,214,143,0.3)">▲</div>
-      <div id="f-perte"  class="fb" onclick="setFilter('perte')"  style="color:var(--red);border-color:rgba(255,77,106,0.3)">▼</div>
-      <button onclick="showTab('sync')" style="margin-left:auto;background:#1a1f2e;border:1px solid #2a3040;border-radius:10px;padding:6px 10px;color:#60a5fa;font-size:11px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation">💫 Sync</button>
+    <!-- Barre de recherche -->
+    <div style="padding:8px 14px 4px;flex-shrink:0">
+      <div style="position:relative">
+        <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:0.4" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f5f5f7" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input id="search-input" type="text" placeholder="Rechercher une action..." oninput="onSearchPortfolio()" autocomplete="off"
+          style="background:#1c1c1e;border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:10px 14px 10px 36px;color:#f5f5f7;font-size:15px;width:100%;outline:none;-webkit-appearance:none">
+        <button id="search-clear" onclick="clearSearchPortfolio()" style="display:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:none;border-radius:50%;width:18px;height:18px;color:#f5f5f7;font-size:11px;cursor:pointer;touch-action:manipulation;line-height:18px;text-align:center;padding:0">✕</button>
+      </div>
+    </div>
+    <!-- Filtres -->
+    <div style="display:flex;gap:6px;padding:6px 14px 6px;flex-shrink:0;align-items:center">
+      <div id="f-all"    class="fb" onclick="setFilter('all')"    style="background:#0a84ff;color:#fff;border-color:#0a84ff">Tout</div>
+      <div id="f-profit" class="fb" onclick="setFilter('profit')" style="color:#34c759;border-color:rgba(52,199,89,0.3)">📈</div>
+      <div id="f-perte"  class="fb" onclick="setFilter('perte')"  style="color:#ff453a;border-color:rgba(255,69,58,0.3)">📉</div>
+      <button onclick="showTab('sync')" style="margin-left:auto;background:#1c1c1e;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:7px 12px;color:#0a84ff;font-size:11px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation">💫 Sync</button>
     </div>
     <div id="list"></div>
   </div>
@@ -278,12 +186,12 @@ input::placeholder{color:var(--muted)}
   <!-- DIVIDENDES -->
   <div id="v-div" style="display:none">
     <div style="padding:8px 11px 80px">
-      <div style="background:#1a1f2e;border-radius:10px;padding:8px 11px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
+      <div style="background:#1c1c1e;border-radius:10px;padding:8px 11px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
         <span style="font-size:10px;color:#6b7280">Retenue source :</span>
         <div style="display:flex;gap:5px">
-          <div id="r25" onclick="setRet(0.125,'2025')" style="padding:3px 9px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;background:#1a1f2e;color:#6b7280;border:1px solid #2a3040;touch-action:manipulation">12.5%</div>
-          <div id="r26" onclick="setRet(0.1125,'2026')" style="padding:3px 9px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;background:#f0a500;color:#111318;border:1px solid #f0a500;touch-action:manipulation">11.25%</div>
-          <div id="r27" onclick="setRet(0.10,'2027')" style="padding:3px 9px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;background:#1a1f2e;color:#6b7280;border:1px solid #2a3040;touch-action:manipulation">10%</div>
+          <div id="r25" onclick="setRet(0.125,'2025')" style="padding:3px 9px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;background:#1c1c1e;color:#6b7280;border:1px solid #2a3040;touch-action:manipulation">12.5%</div>
+          <div id="r26" onclick="setRet(0.1125,'2026')" style="padding:3px 9px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;background:#ffd60a;color:#111318;border:1px solid #ffd60a;touch-action:manipulation">11.25%</div>
+          <div id="r27" onclick="setRet(0.10,'2027')" style="padding:3px 9px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;background:#1c1c1e;color:#6b7280;border:1px solid #2a3040;touch-action:manipulation">10%</div>
         </div>
       </div>
       <div id="div-list"></div>
@@ -299,8 +207,8 @@ input::placeholder{color:var(--muted)}
       </button>
     </div>
     <div style="display:flex;gap:5px;padding:0 14px;margin-bottom:10px">
-      <div id="dt-pos" class="dtab" onclick="showDTab('pos')" style="background:#2563eb;color:#fff">💰 Position</div>
-      <div id="dt-div" class="dtab" onclick="showDTab('div2')" style="background:#1a1f2e;color:#9ca3af">🌿 Dividende</div>
+      <div id="dt-pos" class="dtab" onclick="showDTab('pos')" style="background:#0a84ff;color:#fff">💰 Position</div>
+      <div id="dt-div" class="dtab" onclick="showDTab('div2')" style="background:#1c1c1e;color:#9ca3af">🌿 Dividende</div>
     </div>
     <div id="dv-pos" style="padding:0 14px 80px"></div>
     <div id="dv-div2" style="display:none;padding:0 14px 80px"></div>
@@ -315,7 +223,7 @@ input::placeholder{color:var(--muted)}
           <input id="ns" placeholder="ex: ATW, IAM..." oninput="onSearch()" autocomplete="off">
           <div id="sugg" class="sug" style="display:none"></div>
         </div>
-        <div id="sel-info" style="display:none;background:#172030;border-radius:11px;padding:10px 13px">
+        <div id="sel-info" style="display:none;background:#1c1c1e;border-radius:11px;padding:10px 13px">
           <div id="sel-name" style="font-size:13px;font-weight:600;color:#f9fafb;margin-bottom:2px"></div>
           <div id="sel-live" style="font-size:11px;color:#10b981"></div>
         </div>
@@ -323,7 +231,7 @@ input::placeholder{color:var(--muted)}
           <div><div class="lbl" style="margin-bottom:4px">QUANTITÉ</div><input id="nq" type="number" placeholder="100" min="1" oninput="updatePreview()"></div>
           <div><div class="lbl" style="margin-bottom:4px">PRIX ACHAT (MAD)</div><input id="nb" type="number" placeholder="250.00" step="0.01" oninput="updatePreview()"></div>
         </div>
-        <div style="background:#1a1f2e;border-radius:13px;padding:12px">
+        <div style="background:#1c1c1e;border-radius:13px;padding:12px">
           <div class="lbl" style="margin-bottom:7px">APERÇU</div>
           <div id="prev" style="color:#6b7280;font-size:11px;text-align:center">Sélectionne une action</div>
         </div>
@@ -339,7 +247,7 @@ input::placeholder{color:var(--muted)}
         <div><div class="lbl" style="margin-bottom:4px">ACTION</div><select id="ss" onchange="runSim()"></select></div>
         <div><div class="lbl" style="margin-bottom:4px">PRIX CIBLE (MAD)</div><input id="sp" type="number" step="0.01" placeholder="ex: 200.00" oninput="runSim()"></div>
         <div id="sr" style="display:none"></div>
-        <div style="background:#172030;border-radius:11px;padding:10px 13px">
+        <div style="background:#1c1c1e;border-radius:11px;padding:10px 13px">
           <div class="lbl" style="margin-bottom:4px">FORMULE</div>
           <div style="font-size:10px;color:#4b6080;line-height:1.7">Frais = (Val. vente × 0.7%) × 1.1<br>Bén. HT = Vente − Achat − Frais<br>TVA 15% = sur Bén. HT positif<br>Net = Bén. HT − TVA</div>
         </div>
@@ -354,7 +262,7 @@ input::placeholder{color:var(--muted)}
       <!-- GOOGLE SHEETS SYNC -->
       <div style="background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(16,185,129,0.04));border:1px solid rgba(16,185,129,0.3);border-radius:16px;padding:16px;margin-bottom:14px">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-          <div style="width:32px;height:32px;border-radius:9px;background:rgba(16,185,129,0.2);display:flex;align-items:center;justify-content:center;font-size:18px">📗</div>
+          <div style="width:32px;height:32px;border-radius:9px;background:rgba(52,199,89,0.2);display:flex;align-items:center;justify-content:center;font-size:18px">📗</div>
           <div>
             <div style="font-size:12px;color:#10b981;font-weight:700">GOOGLE SHEETS SYNC</div>
             <div style="font-size:10px;color:#6b7280">Prix automatiques via ta Google Sheet</div>
@@ -369,7 +277,10 @@ input::placeholder{color:var(--muted)}
         </div>
 
         <div id="gs-main">
-          <button id="gs-fetch-btn" onclick="fetchFromGoogleSheets()" class="btn" style="background:linear-gradient(135deg,#059669,#047857);margin-bottom:8px;font-size:13px">
+          <button id="gs-refresh-btn" onclick="triggerSheetRefresh()" class="btn" style="background:#1c2535;border:1px solid rgba(10,132,255,0.3);color:#4cc2ff;margin-bottom:8px;font-size:13px">
+            🔄 Actualiser les prix (script)
+          </button>
+          <button id="gs-fetch-btn" onclick="fetchFromGoogleSheets()" class="btn" style="background:linear-gradient(135deg,#059669,#047857);font-size:13px">
             📗 Sync depuis Google Sheets
           </button>
         </div>
@@ -377,15 +288,15 @@ input::placeholder{color:var(--muted)}
       </div>
 
       <!-- MANUAL FALLBACK -->
-      <div style="background:#1a1f2e;border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.06)">
+      <div style="background:#1c1c1e;border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.06)">
         <div style="font-size:10px;color:#9ca3af;font-weight:700;letter-spacing:0.5px;margin-bottom:10px">OU SAISIE MANUELLE</div>
 
         <button onclick="pasteFromClipboard()" class="btn" style="background:rgba(5,150,105,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3);margin-bottom:6px;font-size:12px">
           📋 Coller depuis presse-papier
         </button>
-        <div style="font-size:10px;color:#4b5563;background:#111318;border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.6">💡 <span style="color:#6b7280">Excel → sélectionne colonnes A-D → Ctrl+C → colle ici. L'app détecte le format automatiquement.</span></div>
-        <textarea id="price-input" placeholder="📊 Colle directement depuis Excel (Ctrl+C sur les colonnes)&#10;ou format manuel:&#10;ATW=700&#10;TGC=775&#10;SMI=8601" style="background:#111318;border:1px solid #2a3040;border-radius:11px;padding:12px;color:#f9fafb;font-size:13px;font-family:monospace;width:100%;height:100px;resize:vertical;outline:none;line-height:1.5" oninput="previewParsed()"></textarea>
-        <div id="parse-preview" style="display:none;margin-top:8px;background:#0d2a1a;border-radius:9px;padding:10px;border:1px solid rgba(16,185,129,0.2)">
+        <div style="font-size:10px;color:#4b5563;background:#0a0a0f;border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.6">💡 <span style="color:#6b7280">Excel → sélectionne colonnes A-D → Ctrl+C → colle ici. L'app détecte le format automatiquement.</span></div>
+        <textarea id="price-input" placeholder="📊 Colle directement depuis Excel (Ctrl+C sur les colonnes)&#10;ou format manuel:&#10;ATW=700&#10;TGC=775&#10;SMI=8601" style="background:#0a0a0f;border:1px solid #2a3040;border-radius:11px;padding:12px;color:#f9fafb;font-size:13px;font-family:monospace;width:100%;height:100px;resize:vertical;outline:none;line-height:1.5" oninput="previewParsed()"></textarea>
+        <div id="parse-preview" style="display:none;margin-top:8px;background:#0a1f0e;border-radius:9px;padding:10px;border:1px solid rgba(52,199,89,0.2)">
           <div style="font-size:10px;color:#10b981;font-weight:600;margin-bottom:5px">✅ <span id="parse-count">0</span> prix détectés</div>
           <div id="parse-list" style="font-size:10px;color:#6b7280;font-family:monospace;line-height:1.8"></div>
         </div>
@@ -603,7 +514,7 @@ function applyFetchedPrices(prices, label) {
   }
 
   saveLivePrices();
-  document.getElementById('dot').style.background = 'var(--green)';
+  document.getElementById('dot').style.background = '#34c759';
   setTimeout(() => document.getElementById('dot').style.background = '#f59e0b', 2000);
   document.getElementById('upd').textContent = '🟢 Live · ' + updated + '/' + stocks.length + ' · ' + new Date().toLocaleTimeString('fr-MA') + ' · ' + label;
   renderAll();
@@ -669,6 +580,46 @@ function parseTradingViewPrice(html, symbol) {
   return null;
 }
 
+async function fetchBrowserProxyTradingViewPrices() {
+  const uniqueSymbols = [...new Set(stocks.map(s => s.t).filter(Boolean))];
+  const results = {};
+  const errors = [];
+
+  for (const symbol of uniqueSymbols) {
+    try {
+      const tvUrl = 'https://www.tradingview.com/symbols/CSEMA-' + encodeURIComponent(symbol) + '/';
+      const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(tvUrl) + '&_ts=' + Date.now();
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
+      const res = await fetch(proxyUrl, {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, max-age=0',
+          'Pragma': 'no-cache'
+        },
+        signal: controller.signal,
+        cache: 'reload'
+      });
+      clearTimeout(timeoutId);
+
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const html = await res.text();
+      const price = parseTradingViewPrice(html, symbol);
+      if (!price) throw new Error('price not found');
+      results[symbol] = price;
+    } catch (err) {
+      errors.push(symbol + ': ' + (err?.message || 'error'));
+    }
+  }
+
+  if (Object.keys(results).length === 0) {
+    throw new Error(errors[0] || 'No browser proxy prices found');
+  }
+
+  console.log('ℹ️ Browser proxy results:', results, errors);
+  return results;
+}
 
 async function fetchPrices(force = false){
   if (activePriceFetch && !force) return activePriceFetch;
@@ -701,6 +652,14 @@ async function fetchPrices(force = false){
       throw new Error(data?.message || data?.error || 'API returned no prices');
     } catch (e) {
       console.warn('❌ Same-origin API failed:', e.message);
+    }
+
+    try {
+      const prices = await fetchBrowserProxyTradingViewPrices();
+      applyFetchedPrices(prices, 'Browser proxy');
+      return true;
+    } catch (e) {
+      console.warn('❌ Browser proxy failed:', e.message);
     }
 
     try{
@@ -750,6 +709,46 @@ async function fetchPrices(force = false){
 // ─── RENDER ───────────────────────────────────────
 function renderAll(){updateHeader();updateDivHeader();if(curTab==='port')renderList();if(curTab==='div')renderDivGlobal();updateSel();}
 
+let portfolioVisible = true;
+let investiVisible = true;
+
+function togglePortfolioValue() {
+  portfolioVisible = !portfolioVisible;
+  const hvEl = document.getElementById('hv');
+  const hnEl = document.getElementById('hn');
+  if (!portfolioVisible) {
+    hvEl.setAttribute('data-real', hvEl.textContent);
+    hnEl.setAttribute('data-real', hnEl.textContent);
+    hnEl.setAttribute('data-color', hnEl.style.color);
+    hvEl.textContent = '•••••••••';
+    hvEl.style.color = '#3a3a3c';
+    hvEl.style.letterSpacing = '4px';
+    hnEl.textContent = '•••••••••';
+    hnEl.style.color = '#3a3a3c';
+  } else {
+    hvEl.textContent = hvEl.getAttribute('data-real') || '—';
+    hvEl.style.color = '#f5f5f7';
+    hvEl.style.letterSpacing = '-1.5px';
+    hnEl.textContent = hnEl.getAttribute('data-real') || '';
+    hnEl.style.color = hnEl.getAttribute('data-color') || '#636366';
+  }
+}
+
+function toggleInvesti() {
+  investiVisible = !investiVisible;
+  const el = document.getElementById('hi');
+  if (!investiVisible) {
+    el.setAttribute('data-real', el.textContent);
+    el.textContent = '••••';
+    el.style.color = '#3a3a3c';
+    el.style.letterSpacing = '3px';
+  } else {
+    el.textContent = el.getAttribute('data-real') || '—';
+    el.style.color = '#f5f5f7';
+    el.style.letterSpacing = 'normal';
+  }
+}
+
 function updateHeader(){
   let tv=0,ti=0,tn=0,pos=0,neg=0,totalProfit=0,totalPerte=0;
   stocks.forEach(s=>{
@@ -757,16 +756,23 @@ function updateHeader(){
     tv+=r.val; ti+=r.inv; tn+=r.net;
     if(r.net>=0){pos++;totalProfit+=r.net;}else{neg++;totalPerte+=r.net;}
   });
-  // Valeur totale du portfolio = somme des valeurs live
-  document.getElementById('hv').textContent=f(tv)+' MAD';
-  const el=document.getElementById('hn');
   const pctTotal = ti>0 ? ((tv-ti)/ti*100) : 0;
-  el.style.color=tn>=0?'var(--green)':'var(--red)';
-  el.textContent=(tn>=0?'▲ +':'▼ ')+f(Math.abs(tn))+' MAD net · '+(pctTotal>=0?'+':'')+pctTotal.toFixed(2)+'%';
-  // KPIs
-  document.getElementById('hi').textContent=f(ti)+' DH';
-  document.getElementById('hp').textContent=(totalProfit>0?'+':'')+f(totalProfit)+' DH';
-  document.getElementById('hng').textContent=f(totalPerte)+' DH';
+  if(portfolioVisible){
+    document.getElementById('hv').textContent=f(tv)+' MAD';
+    document.getElementById('hv').style.color='#f5f5f7';
+    document.getElementById('hv').style.letterSpacing='-1.5px';
+    const el=document.getElementById('hn');
+    el.style.color=tn>=0?'#34c759':'#ff453a';
+    el.textContent=(tn>=0?'▲ +':'▼ ')+f(Math.abs(tn))+' MAD · '+(pctTotal>=0?'+':'')+pctTotal.toFixed(2)+'%';
+    el.setAttribute('data-color', el.style.color);
+    el.setAttribute('data-real', el.textContent);
+  }
+  if(investiVisible){
+    document.getElementById('hi').textContent=f(ti);
+    document.getElementById('hi').style.color='#f5f5f7';
+  }
+  document.getElementById('hp').textContent=(totalProfit>0?'+':'')+f(totalProfit);
+  document.getElementById('hng').textContent=f(totalPerte);
   document.getElementById('hp-count').textContent=pos?'('+pos+')':'';
   document.getElementById('hng-count').textContent=neg?'('+neg+')':'';
 }
@@ -785,119 +791,64 @@ function setRet(val,yr){
   ['r25','r26','r27'].forEach(id=>{const el=document.getElementById(id);el.style.background='#1a1f2e';el.style.color='#6b7280';el.style.borderColor='#2a3040';});
   const m={'2025':'r25','2026':'r26','2027':'r27'};
   const el=document.getElementById(m[yr]);
-  el.style.background='#f0a500';el.style.color='#111318';el.style.borderColor='#f0a500';
+  el.style.background='#ffd60a';el.style.color='#111318';el.style.borderColor='#ffd60a';
   document.getElementById('ret-label').textContent=Math.round(val*1000)/10+'%';
   updateDivHeader();if(curTab==='div')renderDivGlobal();
 }
 
-let investiVisible = true;
-let portfolioVisible = true;
+function toggleSummary(type){}
 
-function togglePortfolioValue() {
-  portfolioVisible = !portfolioVisible;
-  const hvEl = document.getElementById('hv');
-  const hnEl = document.getElementById('hn');
-  if (!portfolioVisible) {
-    hvEl.setAttribute('data-real', hvEl.textContent);
-    hnEl.setAttribute('data-real', hnEl.textContent);
-    hvEl.textContent = '••••••••';
-    hvEl.style.color = '#4b5563';
-    hvEl.style.letterSpacing = '4px';
-    hnEl.textContent = '••••• •••••';
-    hnEl.style.color = '#2a3040';
-  } else {
-    hvEl.textContent = hvEl.getAttribute('data-real') || '—';
-    hvEl.style.color = '#f9fafb';
-    hvEl.style.letterSpacing = '-1px';
-    hnEl.textContent = hnEl.getAttribute('data-real') || '';
-    hnEl.style.color = '#6b7280';
-  }
-}
-
-function toggleInvesti() {
-  investiVisible = !investiVisible;
-  const el = document.getElementById('hi');
-  if (!investiVisible) {
-    el.setAttribute('data-real', el.textContent);
-    el.textContent = '••••••';
-    el.style.color = '#4b5563';
-  } else {
-    el.textContent = el.getAttribute('data-real') || el.textContent;
-    el.style.color = '#f9fafb';
-  }
-}
-
-function toggleSummary(type) {
-  const isProfit = type === 'profit';
-  const color = isProfit ? 'var(--green)' : 'var(--red)';
-  const bgColor = isProfit ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)';
-  const borderColor = isProfit ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)';
-  const filtered = stocks.filter(s => { const r=calc(s.b,s.live,s.q); return isProfit ? r.net>=0 : r.net<0; });
-  const total = filtered.reduce((sum,s) => sum + calc(s.b,s.live,s.q).net, 0);
-  const totalInv = filtered.reduce((sum,s) => sum + calc(s.b,s.live,s.q).inv, 0);
-  const pct = totalInv > 0 ? (total/totalInv)*100 : 0;
-
-  document.getElementById('kpi-popup-title').textContent = isProfit ? 'Profit Net' : 'Pertes Nettes';
-
-  const totalEl = document.getElementById('kpi-popup-total');
-  totalEl.style.background = bgColor;
-  totalEl.style.border = '1px solid '+borderColor;
-  totalEl.innerHTML =
-    '<div style="text-align:center;width:100%">' +
-      '<div style="font-size:32px;font-weight:700;color:'+color+';letter-spacing:-1.5px;margin-bottom:6px">'+(isProfit?'+':'')+f(total)+' DH</div>' +
-      '<div style="font-size:12px;color:#6b7280">'+(isProfit?'▲':'▼')+' '+Math.abs(pct).toFixed(2)+'% · '+filtered.length+' position'+(filtered.length>1?'s':'')+'</div>' +
-    '</div>';
-
-  // Liste des positions
-  const sorted = filtered.sort((a,b) => {
-    const ra=calc(a.b,a.live,a.q), rb=calc(b.b,b.live,b.q);
-    return isProfit ? rb.net-ra.net : ra.net-rb.net;
-  });
-  document.getElementById('kpi-popup-list').innerHTML = sorted.map(s => {
-    const r = calc(s.b,s.live,s.q);
-    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-top:1px solid rgba(255,255,255,0.05)">' +
-      '<div>' +
-        '<div style="font-size:13px;font-weight:700;color:#f9fafb">'+s.t+'</div>' +
-        '<div style="font-size:10px;color:#6b7280">'+s.n+' · '+s.q+'×</div>' +
-      '</div>' +
-      '<div style="text-align:right">' +
-        '<div style="font-size:14px;font-weight:700;color:'+color+'">'+(r.net>=0?'+':'')+f(r.net)+' DH</div>' +
-        '<div style="font-size:10px;color:'+color+'">'+(r.pct>=0?'▲':'▼')+' '+Math.abs(r.pct).toFixed(2)+'%</div>' +
-      '</div>' +
-    '</div>';
-  }).join('');
-
-  document.getElementById('kpi-popup').style.display = 'block';
-}
-
-function closeKpiPopup() {
-  document.getElementById('kpi-popup').style.display = 'none';
-}
+function closeKpiPopup(){}
 
 function setFilter(flt){
   curFilter=curFilter===flt?'all':flt;
   const els={all:document.getElementById('f-all'),profit:document.getElementById('f-profit'),perte:document.getElementById('f-perte')};
   Object.entries(els).forEach(([k,el])=>{
     const active=k===curFilter;
-    if(k==='all'){el.style.background=active?'var(--accent)':'transparent';el.style.color=active?'#fff':'var(--muted2)';el.style.borderColor=active?'var(--accent)':'rgba(255,255,255,0.1)';}
-    else if(k==='profit'){el.style.background=active?'var(--green2)':'transparent';el.style.color=active?'var(--green)':'var(--muted2)';el.style.borderColor=active?'rgba(0,214,143,0.4)':'rgba(255,255,255,0.1)';}
-    else{el.style.background=active?'var(--red2)':'transparent';el.style.color=active?'var(--red)':'var(--muted2)';el.style.borderColor=active?'rgba(255,77,106,0.4)':'rgba(255,255,255,0.1)';}
+    if(k==='all'){el.style.background=active?'#0a84ff':'transparent';el.style.color=active?'#fff':'#636366';el.style.borderColor=active?'#0a84ff':'rgba(255,255,255,0.1)';}
+    else if(k==='profit'){el.style.background=active?'rgba(52,199,89,0.2)':'transparent';el.style.color=active?'#34c759':'#636366';el.style.borderColor=active?'rgba(52,199,89,0.4)':'rgba(255,255,255,0.1)';}
+    else{el.style.background=active?'rgba(239,68,68,0.2)':'rgba(255,255,255,0.05)';el.style.color=active?'#ff453a':'#9ca3af';el.style.borderColor=active?'rgba(239,68,68,0.5)':'rgba(255,255,255,0.1)';}
   });
   if(curTab!=='port')showTab('port');else renderList();
 }
 
+let searchQuery = '';
+
+function onSearchPortfolio() {
+  const val = document.getElementById('search-input').value.trim().toLowerCase();
+  searchQuery = val;
+  document.getElementById('search-clear').style.display = val ? 'block' : 'none';
+  renderList();
+}
+
+function clearSearchPortfolio() {
+  document.getElementById('search-input').value = '';
+  searchQuery = '';
+  document.getElementById('search-clear').style.display = 'none';
+  renderList();
+}
+
 function renderList(){
-  const filtered=stocks.filter(s=>{const r=calc(s.b,s.live,s.q);if(curFilter==='profit')return r.net>=0;if(curFilter==='perte')return r.net<0;return true;});
-  if(!filtered.length){document.getElementById('list').innerHTML='<div style="text-align:center;padding:40px;color:#6b7280;font-size:13px">Aucune action</div>';return;}
+  let filtered = stocks.filter(s=>{
+    const r=calc(s.b,s.live,s.q);
+    if(curFilter==='profit' && r.net<0) return false;
+    if(curFilter==='perte' && r.net>=0) return false;
+    if(searchQuery) {
+      const q = searchQuery;
+      return s.t.toLowerCase().includes(q) || s.n.toLowerCase().includes(q);
+    }
+    return true;
+  });
+  if(!filtered.length){document.getElementById('list').innerHTML='<div style="text-align:center;padding:40px;color:#636366;font-size:13px">'+(searchQuery?'Aucun résultat pour "'+searchQuery+'"':'Aucune action')+'</div>';return;}
   document.getElementById('list').innerHTML=filtered.map(s=>{
-    const i=stocks.indexOf(s),r=calc(s.b,s.live,s.q),pos=r.net>=0,c=pos?'var(--green)':'var(--red)';
+    const i=stocks.indexOf(s),r=calc(s.b,s.live,s.q),pos=r.net>=0,c=pos?'#34c759':'#ff453a';
     const hasDpa=s.dpa>0;
-    return `<div class="card" onclick="openDetail(${i})" style="background:${pos?'rgba(0,214,143,0.06)':'rgba(255,77,106,0.06)'};border:1px solid ${pos?'rgba(0,214,143,0.15)':'rgba(255,77,106,0.15)'}">
+    return `<div class="card" onclick="openDetail(${i})" style="background:${pos?'linear-gradient(135deg,rgba(52,199,89,0.08),rgba(52,199,89,0.03))':'linear-gradient(135deg,rgba(255,69,58,0.08),rgba(255,69,58,0.03))'};border:1px solid ${pos?'rgba(52,199,89,0.15)':'rgba(255,69,58,0.15)'}">
       <div class="row" style="margin-bottom:8px">
         <div style="display:flex;align-items:center;gap:10px">
-          <div style="width:40px;height:40px;border-radius:12px;background:${pos?'rgba(0,214,143,0.15)':'rgba(255,77,106,0.15)'};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:${c}">${s.t.substring(0,2)}</div>
+          <div style="width:40px;height:40px;border-radius:12px;background:${pos?'rgba(52,199,89,0.15)':'rgba(255,69,58,0.15)'};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:${c}">${s.t.substring(0,2)}</div>
           <div>
-            <div style="font-size:13px;font-weight:700;color:#f9fafb">${s.t} <span style="font-size:11px;color:#6b7280;font-weight:400">·${s.q}x</span>${hasDpa?'<span style="color:#f0a500;font-size:9px;margin-left:3px">🌿</span>':''}</div>
+            <div style="font-size:13px;font-weight:700;color:#f9fafb">${s.t} <span style="font-size:11px;color:#6b7280;font-weight:400">·${s.q}x</span>${hasDpa?'<span style="color:#ffd60a;font-size:9px;margin-left:3px">🌿</span>':''}</div>
             <div style="font-size:11px;color:#6b7280">${s.n}${s.chg!==0?'<span style="color:'+c+';margin-left:5px">'+(s.chg>0?'▲':'▼')+' '+Math.abs(s.chg).toFixed(2)+'%</span>':''}</div>
           </div>
         </div>
@@ -907,9 +858,9 @@ function renderList(){
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.05)">
-        <div style="text-align:center"><div class="lbl">Achat</div><div style="font-size:11px;color:#f0a500;font-weight:600">${s.b.toFixed(2)}</div></div>
+        <div style="text-align:center"><div class="lbl">Achat</div><div style="font-size:11px;color:#ffd60a;font-weight:600">${s.b.toFixed(2)}</div></div>
         <div style="text-align:center"><div class="lbl">Cours</div><div style="font-size:11px;color:#f9fafb;font-weight:600">${s.live.toFixed(2)}</div></div>
-        <div style="text-align:center"><div class="lbl">${hasDpa?'Div.net':'Net'}</div><div style="font-size:11px;color:${hasDpa?'#f0a500':c};font-weight:600">${hasDpa?'+'+f(s.dpa*s.q*(1-RET)):(pos?'+':'')+f(r.net)}</div></div>
+        <div style="text-align:center"><div class="lbl">${hasDpa?'Div.net':'Net'}</div><div style="font-size:11px;color:${hasDpa?'#ffd60a':c};font-weight:600">${hasDpa?'+'+f(s.dpa*s.q*(1-RET)):(pos?'+':'')+f(r.net)}</div></div>
       </div>
     </div>`;
   }).join('');
@@ -921,13 +872,13 @@ function renderDivGlobal(){
   const withDiv=stocks.filter(s=>s.dpa>0).sort((a,b)=>(b.dpa/b.b)-(a.dpa/a.b));
   const noDiv=stocks.filter(s=>s.dpa===0);
   let html=`<div style="background:rgba(240,165,0,0.1);border:1px solid rgba(240,165,0,0.3);border-radius:13px;padding:13px;margin-bottom:12px">
-    <div style="font-size:10px;color:#f0a500;font-weight:700;margin-bottom:9px">TOTAL PORTFOLIO — retenue ${Math.round(RET*1000)/10}% (${retYear})</div>
+    <div style="font-size:10px;color:#ffd60a;font-weight:700;margin-bottom:9px">TOTAL PORTFOLIO — retenue ${Math.round(RET*1000)/10}% (${retYear})</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px">
-      <div style="background:#111318;border-radius:8px;padding:8px;text-align:center"><div class="lbl">Brut</div><div style="font-size:12px;font-weight:700;color:#f0a500">${f(brut)} DH</div></div>
-      <div style="background:#111318;border-radius:8px;padding:8px;text-align:center"><div class="lbl">Retenue</div><div style="font-size:12px;font-weight:700;color:#ef4444">−${f(brut*RET)} DH</div></div>
-      <div style="background:#0d2a1a;border-radius:8px;padding:8px;text-align:center"><div class="lbl">Net</div><div style="font-size:12px;font-weight:700;color:#10b981">+${f(net)} DH</div></div>
+      <div style="background:#0a0a0f;border-radius:8px;padding:8px;text-align:center"><div class="lbl">Brut</div><div style="font-size:12px;font-weight:700;color:#ffd60a">${f(brut)} DH</div></div>
+      <div style="background:#0a0a0f;border-radius:8px;padding:8px;text-align:center"><div class="lbl">Retenue</div><div style="font-size:12px;font-weight:700;color:#ef4444">−${f(brut*RET)} DH</div></div>
+      <div style="background:#0a1f0e;border-radius:8px;padding:8px;text-align:center"><div class="lbl">Net</div><div style="font-size:12px;font-weight:700;color:#10b981">+${f(net)} DH</div></div>
     </div>
-    <div style="text-align:center;margin-top:8px;font-size:11px;color:#6b7280">Yield : <span style="color:#f0a500;font-weight:600">${yld.toFixed(2)}%</span> sur investissement total</div>
+    <div style="text-align:center;margin-top:8px;font-size:11px;color:#6b7280">Yield : <span style="color:#ffd60a;font-weight:600">${yld.toFixed(2)}%</span> sur investissement total</div>
   </div>`;
   withDiv.forEach((s,i)=>{
     const b=s.dpa*s.q,n=b*(1-RET),y=(s.dpa/s.b)*100;
@@ -935,65 +886,65 @@ function renderDivGlobal(){
     html+=`<div class="card" style="cursor:default">
       <div class="row" style="margin-bottom:7px">
         <div style="display:flex;align-items:center;gap:8px">
-          <div style="width:26px;height:26px;border-radius:7px;background:rgba(240,165,0,0.15);border:1px solid rgba(240,165,0,0.3);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#f0a500">#${i+1}</div>
+          <div style="width:26px;height:26px;border-radius:7px;background:rgba(240,165,0,0.15);border:1px solid rgba(240,165,0,0.3);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#ffd60a">#${i+1}</div>
           <div><div style="font-size:12px;font-weight:700;color:#f9fafb">${s.t} <span style="font-size:9px;color:#6b7280">×${s.q}</span></div><div style="font-size:9px;color:#6b7280">${s.n}${s.an?' · ex.'+s.an:''}</div></div>
         </div>
-        <div style="text-align:right"><div style="font-size:15px;font-weight:700;color:#f0a500">${y.toFixed(2)}%</div><div style="font-size:9px;color:#6b7280">yield/achat</div></div>
+        <div style="text-align:right"><div style="font-size:15px;font-weight:700;color:#ffd60a">${y.toFixed(2)}%</div><div style="font-size:9px;color:#6b7280">yield/achat</div></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:7px">
-        <div style="background:#111318;border-radius:7px;padding:6px 8px"><div class="lbl">📌 Détachement</div><div style="font-size:10px;font-weight:600;color:#60a5fa">${fdate(s.det)}</div></div>
-        <div style="background:#111318;border-radius:7px;padding:6px 8px"><div class="lbl">💳 Paiement${diff&&diff>0?' · dans '+diff+'j':''}</div><div style="font-size:10px;font-weight:600;color:#10b981">${fdate(s.pay)}</div></div>
+        <div style="background:#0a0a0f;border-radius:7px;padding:6px 8px"><div class="lbl">📌 Détachement</div><div style="font-size:10px;font-weight:600;color:#4cc2ff">${fdate(s.det)}</div></div>
+        <div style="background:#0a0a0f;border-radius:7px;padding:6px 8px"><div class="lbl">💳 Paiement${diff&&diff>0?' · dans '+diff+'j':''}</div><div style="font-size:10px;font-weight:600;color:#10b981">${fdate(s.pay)}</div></div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">
-        <div style="background:#111318;border-radius:6px;padding:5px;text-align:center"><div class="lbl">DPA</div><div style="font-size:10px;font-weight:600;color:#f0a500">${s.dpa.toFixed(2)}</div></div>
-        <div style="background:#111318;border-radius:6px;padding:5px;text-align:center"><div class="lbl">Brut</div><div style="font-size:10px;font-weight:600;color:#9ca3af">${f(b)}</div></div>
-        <div style="background:#111318;border-radius:6px;padding:5px;text-align:center"><div class="lbl">−${Math.round(RET*1000)/10}%</div><div style="font-size:10px;font-weight:600;color:#ef4444">−${f(b*RET)}</div></div>
-        <div style="background:#0d2a1a;border-radius:6px;padding:5px;text-align:center"><div class="lbl">Net</div><div style="font-size:10px;font-weight:700;color:#10b981">+${f(n)}</div></div>
+        <div style="background:#0a0a0f;border-radius:6px;padding:5px;text-align:center"><div class="lbl">DPA</div><div style="font-size:10px;font-weight:600;color:#ffd60a">${s.dpa.toFixed(2)}</div></div>
+        <div style="background:#0a0a0f;border-radius:6px;padding:5px;text-align:center"><div class="lbl">Brut</div><div style="font-size:10px;font-weight:600;color:#9ca3af">${f(b)}</div></div>
+        <div style="background:#0a0a0f;border-radius:6px;padding:5px;text-align:center"><div class="lbl">−${Math.round(RET*1000)/10}%</div><div style="font-size:10px;font-weight:600;color:#ef4444">−${f(b*RET)}</div></div>
+        <div style="background:#0a1f0e;border-radius:6px;padding:5px;text-align:center"><div class="lbl">Net</div><div style="font-size:10px;font-weight:700;color:#10b981">+${f(n)}</div></div>
       </div>
     </div>`;
   });
   if(noDiv.length){
     html+=`<div style="font-size:9px;color:#4b5563;margin:10px 0 6px">SANS DIVIDENDE (${noDiv.length})</div>`;
-    html+=noDiv.map(s=>`<div style="background:#0f1520;border-radius:8px;padding:7px 11px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:#374151;font-weight:600">${s.t}</span><span style="font-size:9px;color:#374151">${s.n}</span><span style="font-size:9px;color:#2a3a50;border:1px solid #1a2a40;padding:2px 6px;border-radius:4px">0%</span></div>`).join('');
+    html+=noDiv.map(s=>`<div style="background:#111111;border-radius:8px;padding:7px 11px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:#374151;font-weight:600">${s.t}</span><span style="font-size:9px;color:#374151">${s.n}</span><span style="font-size:9px;color:#2a3a50;border:1px solid #1a2a40;padding:2px 6px;border-radius:4px">0%</span></div>`).join('');
   }
   document.getElementById('div-list').innerHTML=html;
 }
 
 function openDetail(i){
-  const s=stocks[i],r=calc(s.b,s.live,s.q),pos=r.net>=0,c=pos?'var(--green)':'var(--red)';
+  const s=stocks[i],r=calc(s.b,s.live,s.q),pos=r.net>=0,c=pos?'#34c759':'#ff453a';
   showTab('detail');showDTab('pos');
   document.getElementById('dv-pos').innerHTML=`
-    <div style="background:#1a1f2e;border-radius:14px;padding:14px;margin-bottom:10px">
+    <div style="background:#1c1c1e;border-radius:14px;padding:14px;margin-bottom:10px">
       <div class="row" style="margin-bottom:10px">
         <div>
           <div style="font-size:15px;font-weight:700;color:#f9fafb">${s.t}</div>
           <div style="font-size:11px;color:#6b7280">${s.n} · ${s.q} actions</div>
-          ${s.chg!==0?`<div style="font-size:10px;color:${s.chg>0?'var(--green)':'var(--red)'};margin-top:2px">${s.chg>0?'▲':'▼'} ${Math.abs(s.chg).toFixed(2)}%</div>`:''}
+          ${s.chg!==0?`<div style="font-size:10px;color:${s.chg>0?'#34c759':'#ff453a'};margin-top:2px">${s.chg>0?'▲':'▼'} ${Math.abs(s.chg).toFixed(2)}%</div>`:''}
         </div>
         <div style="text-align:right">
-          <div style="font-size:20px;font-weight:700;color:#f0a500">${s.live.toFixed(2)} MAD</div>
+          <div style="font-size:20px;font-weight:700;color:#ffd60a">${s.live.toFixed(2)} MAD</div>
           <div style="font-size:10px;color:#6b7280">Cours BVC · ${new Date().toLocaleDateString('fr-MA',{day:'2-digit',month:'short',year:'numeric'})}</div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
-        <div style="background:#111318;border-radius:9px;padding:8px"><div class="lbl">Prix Achat</div><div style="font-size:12px;font-weight:600;color:#f9fafb">${s.b.toFixed(2)} MAD</div></div>
-        <div style="background:#111318;border-radius:9px;padding:8px"><div class="lbl">Val. Achat</div><div style="font-size:11px;font-weight:600;color:#9ca3af">${f(r.inv)} DH</div></div>
-        <div style="background:#111318;border-radius:9px;padding:8px"><div class="lbl">💹 Prix Vente <span style="color:#4b5563;font-size:9px">${new Date().toLocaleDateString('fr-MA',{day:'2-digit',month:'short'})}</span></div><div style="font-size:12px;font-weight:600;color:#f0a500">${s.live.toFixed(2)} MAD</div></div>
-        <div style="background:#111318;border-radius:9px;padding:8px"><div class="lbl">Val. Vente</div><div style="font-size:11px;font-weight:600;color:#9ca3af">${f(r.val)} DH</div></div>
+        <div style="background:#0a0a0f;border-radius:9px;padding:8px"><div class="lbl">Prix Achat</div><div style="font-size:12px;font-weight:600;color:#f9fafb">${s.b.toFixed(2)} MAD</div></div>
+        <div style="background:#0a0a0f;border-radius:9px;padding:8px"><div class="lbl">Val. Achat</div><div style="font-size:11px;font-weight:600;color:#9ca3af">${f(r.inv)} DH</div></div>
+        <div style="background:#0a0a0f;border-radius:9px;padding:8px"><div class="lbl">💹 Prix Vente <span style="color:#4b5563;font-size:9px">${new Date().toLocaleDateString('fr-MA',{day:'2-digit',month:'short'})}</span></div><div style="font-size:12px;font-weight:600;color:#ffd60a">${s.live.toFixed(2)} MAD</div></div>
+        <div style="background:#0a0a0f;border-radius:9px;padding:8px"><div class="lbl">Val. Vente</div><div style="font-size:11px;font-weight:600;color:#9ca3af">${f(r.val)} DH</div></div>
       </div>
-      <div class="dr"><span class="dl">Marge +/−</span><span class="dv" style="color:${r.gross>=0?'var(--green)':'var(--red)'}">${sg(r.pct)}${r.pct.toFixed(2)}% · ${sg(r.gross)}${f(r.gross)} DH</span></div>
+      <div class="dr"><span class="dl">Marge +/−</span><span class="dv" style="color:${r.gross>=0?'#34c759':'#ff453a'}">${sg(r.pct)}${r.pct.toFixed(2)}% · ${sg(r.gross)}${f(r.gross)} DH</span></div>
       <div class="dr"><span class="dl">Frais bank (×0.7%)×1.1</span><span class="dv" style="color:#ef4444">− ${f(r.fees)} DH</span></div>
-      <div class="dr"><span class="dl">Bénéfice HT</span><span class="dv" style="color:${r.benHT>=0?'var(--green)':'var(--red)'}">${sg(r.benHT)}${f(r.benHT)} DH</span></div>
-      <div class="dr"><span class="dl">TVA 15%</span><span class="dv" style="color:${r.tva>0?'var(--red)':'#6b7280'}">${r.tva>0?'− '+f(r.tva)+' DH':'—'}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:11px 13px;border-radius:10px;margin-top:2px;background:${pos?'#0d2a1a':'#2a0d0d'}">
-        <span style="font-size:12px;font-weight:600;color:${pos?'#059669':'#dc2626'}">Profit Net</span>
+      <div class="dr"><span class="dl">Bénéfice HT</span><span class="dv" style="color:${r.benHT>=0?'#34c759':'#ff453a'}">${sg(r.benHT)}${f(r.benHT)} DH</span></div>
+      <div class="dr"><span class="dl">TVA 15%</span><span class="dv" style="color:${r.tva>0?'#ff453a':'#6b7280'}">${r.tva>0?'− '+f(r.tva)+' DH':'—'}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:11px 13px;border-radius:10px;margin-top:2px;background:${pos?'#0a1f0e':'#1f0a0a'}">
+        <span style="font-size:12px;font-weight:600;color:${pos?'#34c759':'#ff453a'}">Profit Net</span>
         <span style="font-size:16px;font-weight:700;color:${c}">${sg(r.net)}${f(r.net)} DH</span>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-      <button onclick="openEdit(${i})" style="background:#172030;border:1px solid rgba(37,99,235,0.4);border-radius:12px;padding:10px;color:#60a5fa;font-size:11px;font-family:inherit;cursor:pointer;touch-action:manipulation">✏️ Modifier</button>
-      <button onclick="prefillSim(${i})" style="background:#1a1f2e;border:1px solid #2a3040;border-radius:12px;padding:10px;color:#9ca3af;font-size:11px;font-family:inherit;cursor:pointer;touch-action:manipulation">🎯 Simuler</button>
-      <button onclick="removeStock(${i})" style="background:#2a0d0d;border:1px solid #3a1010;border-radius:12px;padding:10px;color:#ef4444;font-size:11px;font-family:inherit;cursor:pointer;touch-action:manipulation">🗑️</button>
+      <button onclick="openEdit(${i})" style="background:#1c1c1e;border:1px solid rgba(10,132,255,0.4);border-radius:12px;padding:10px;color:#4cc2ff;font-size:11px;font-family:inherit;cursor:pointer;touch-action:manipulation">✏️ Modifier</button>
+      <button onclick="prefillSim(${i})" style="background:#1c1c1e;border:1px solid #2a3040;border-radius:12px;padding:10px;color:#9ca3af;font-size:11px;font-family:inherit;cursor:pointer;touch-action:manipulation">🎯 Simuler</button>
+      <button onclick="removeStock(${i})" style="background:#1f0a0a;border:1px solid #3a1010;border-radius:12px;padding:10px;color:#ef4444;font-size:11px;font-family:inherit;cursor:pointer;touch-action:manipulation">🗑️</button>
     </div>`;
   
   // Dividende tab
@@ -1002,18 +953,18 @@ function openDetail(i){
   document.getElementById('dv-div2').innerHTML=`
     <div style="background:rgba(240,165,0,0.1);border:1px solid rgba(240,165,0,0.25);border-radius:13px;padding:13px;margin-bottom:10px">
       <div class="row" style="margin-bottom:10px">
-        <div><div style="font-size:13px;font-weight:700;color:#f0a500">${s.t} — Dividende</div><div style="font-size:10px;color:#6b7280">${s.an?'Ex. '+s.an:''} · ${s.q} actions</div></div>
-        <div style="text-align:right"><div style="font-size:22px;font-weight:700;color:#f0a500">${yld.toFixed(2)}%</div><div style="font-size:9px;color:#6b7280">yield/achat</div></div>
+        <div><div style="font-size:13px;font-weight:700;color:#ffd60a">${s.t} — Dividende</div><div style="font-size:10px;color:#6b7280">${s.an?'Ex. '+s.an:''} · ${s.q} actions</div></div>
+        <div style="text-align:right"><div style="font-size:22px;font-weight:700;color:#ffd60a">${yld.toFixed(2)}%</div><div style="font-size:9px;color:#6b7280">yield/achat</div></div>
       </div>
       ${s.dpa>0?`
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
-        <div style="background:#111318;border-radius:8px;padding:8px"><div class="lbl">📌 Détachement</div><div style="font-size:11px;font-weight:600;color:#60a5fa">${fdate(s.det)}</div></div>
-        <div style="background:#111318;border-radius:8px;padding:8px"><div class="lbl">💳 Paiement</div><div style="font-size:11px;font-weight:600;color:#10b981">${fdate(s.pay)}</div></div>
-        <div style="background:#111318;border-radius:8px;padding:8px"><div class="lbl">DPA / action</div><div style="font-size:13px;font-weight:600;color:#f0a500">${s.dpa.toFixed(2)} MAD</div></div>
-        <div style="background:#111318;border-radius:8px;padding:8px"><div class="lbl">Retenue ${Math.round(RET*1000)/10}%</div><div style="font-size:12px;font-weight:600;color:#ef4444">−${f(ret)} DH</div></div>
+        <div style="background:#0a0a0f;border-radius:8px;padding:8px"><div class="lbl">📌 Détachement</div><div style="font-size:11px;font-weight:600;color:#4cc2ff">${fdate(s.det)}</div></div>
+        <div style="background:#0a0a0f;border-radius:8px;padding:8px"><div class="lbl">💳 Paiement</div><div style="font-size:11px;font-weight:600;color:#10b981">${fdate(s.pay)}</div></div>
+        <div style="background:#0a0a0f;border-radius:8px;padding:8px"><div class="lbl">DPA / action</div><div style="font-size:13px;font-weight:600;color:#ffd60a">${s.dpa.toFixed(2)} MAD</div></div>
+        <div style="background:#0a0a0f;border-radius:8px;padding:8px"><div class="lbl">Retenue ${Math.round(RET*1000)/10}%</div><div style="font-size:12px;font-weight:600;color:#ef4444">−${f(ret)} DH</div></div>
       </div>
       <div class="dr" style="padding:5px 9px"><span class="dl">Brut total (${s.dpa}×${s.q})</span><span class="dv" style="color:#f9fafb">${f(brut)} DH</span></div>
-      <div style="display:flex;justify-content:space-between;padding:9px 10px;background:#0d2a1a;border-radius:9px">
+      <div style="display:flex;justify-content:space-between;padding:9px 10px;background:#0a1f0e;border-radius:9px">
         <span style="font-size:11px;font-weight:600;color:#059669">Net reçu</span>
         <span style="font-size:14px;font-weight:700;color:#10b981">+ ${f(net)} DH</span>
       </div>`:'<div style="text-align:center;padding:15px;color:#374151;font-size:11px">Pas de dividende pour cette action.</div>'}
@@ -1022,9 +973,9 @@ function openDetail(i){
 
 function showDTab(t){
   ['pos','div2'].forEach(x=>{document.getElementById('dv-'+x).style.display=x===t?'block':'none';});
-  document.getElementById('dt-pos').style.background=t==='pos'?'#2563eb':'#1a1f2e';
+  document.getElementById('dt-pos').style.background=t==='pos'?'#0a84ff':'#1a1f2e';
   document.getElementById('dt-pos').style.color=t==='pos'?'#fff':'#9ca3af';
-  document.getElementById('dt-div').style.background=t==='div2'?'#2563eb':'#1a1f2e';
+  document.getElementById('dt-div').style.background=t==='div2'?'#0a84ff':'#1a1f2e';
   document.getElementById('dt-div').style.color=t==='div2'?'#fff':'#9ca3af';
 }
 
@@ -1035,7 +986,7 @@ function openEdit(i) {
   const s = stocks[i];
   // Populate edit view
   document.getElementById('edit-title').innerHTML =
-    '<span style="color:#60a5fa">' + s.t + '</span> · ' + s.n;
+    '<span style="color:#4cc2ff">' + s.t + '</span> · ' + s.n;
   document.getElementById('edit-q').value = s.q;
   document.getElementById('edit-b').value = s.b;
   document.getElementById('edit-dpa').value = s.dpa || '';
@@ -1093,21 +1044,21 @@ function runSim(){
   const i=parseInt(document.getElementById('ss').value),s=stocks[i];
   const price=parseFloat(document.getElementById('sp').value),res=document.getElementById('sr');
   if(isNaN(price)||price<=0){res.style.display='none';return;}
-  const r=calc(s.b,price,s.q),rL=calc(s.b,s.live,s.q),pos=r.net>=0,c=pos?'var(--green)':'var(--red)';
+  const r=calc(s.b,price,s.q),rL=calc(s.b,s.live,s.q),pos=r.net>=0,c=pos?'#34c759':'#ff453a';
   res.style.display='block';
-  res.innerHTML=`<div style="background:#1a1f2e;border-radius:13px;padding:13px">
+  res.innerHTML=`<div style="background:#1c1c1e;border-radius:13px;padding:13px">
     <div style="font-size:10px;color:#6b7280;margin-bottom:9px">${s.t} · ${s.q} actions · achat ${s.b.toFixed(2)} MAD</div>
     <div style="display:flex;gap:8px;margin-bottom:10px">
-      <div style="flex:1;background:#111318;border-radius:9px;padding:8px;text-align:center"><div style="font-size:9px;color:#6b7280">Cours actuel</div><div style="font-size:11px;font-weight:600;color:#f0a500;margin-top:2px">${s.live.toFixed(2)} MAD</div><div style="font-size:10px;color:${rL.net>=0?'var(--green)':'var(--red)'};font-weight:600">${rL.net>=0?'+':''}${f(rL.net)} DH</div></div>
-      <div style="flex:1;background:#111318;border-radius:9px;padding:8px;text-align:center"><div style="font-size:9px;color:#6b7280">Prix cible</div><div style="font-size:11px;font-weight:600;color:#2563eb;margin-top:2px">${price.toFixed(2)} MAD</div><div style="font-size:10px;color:${c};font-weight:600">${pos?'+':''}${f(r.net)} DH</div></div>
+      <div style="flex:1;background:#0a0a0f;border-radius:9px;padding:8px;text-align:center"><div style="font-size:9px;color:#6b7280">Cours actuel</div><div style="font-size:11px;font-weight:600;color:#ffd60a;margin-top:2px">${s.live.toFixed(2)} MAD</div><div style="font-size:10px;color:${rL.net>=0?'#34c759':'#ff453a'};font-weight:600">${rL.net>=0?'+':''}${f(rL.net)} DH</div></div>
+      <div style="flex:1;background:#0a0a0f;border-radius:9px;padding:8px;text-align:center"><div style="font-size:9px;color:#6b7280">Prix cible</div><div style="font-size:11px;font-weight:600;color:#0a84ff;margin-top:2px">${price.toFixed(2)} MAD</div><div style="font-size:10px;color:${c};font-weight:600">${pos?'+':''}${f(r.net)} DH</div></div>
     </div>
     <div class="dr"><span class="dl">Val. Achat</span><span class="dv" style="color:#f9fafb">${f(r.inv)} DH</span></div>
     <div class="dr"><span class="dl">Val. Vente</span><span class="dv" style="color:#f9fafb">${f(r.val)} DH</span></div>
     <div class="dr"><span class="dl">Frais bank</span><span class="dv" style="color:#ef4444">− ${f(r.fees)} DH</span></div>
-    <div class="dr"><span class="dl">Bénéfice HT</span><span class="dv" style="color:${r.benHT>=0?'var(--green)':'var(--red)'}">${r.benHT>=0?'+':''}${f(r.benHT)} DH</span></div>
-    <div class="dr"><span class="dl">TVA 15%</span><span class="dv" style="color:${r.tva>0?'var(--red)':'#6b7280'}">${r.tva>0?'− '+f(r.tva)+' DH':'—'}</span></div>
-    <div style="display:flex;justify-content:space-between;padding:10px 12px;border-radius:9px;background:${pos?'#0d2a1a':'#2a0d0d'}">
-      <span style="font-size:11px;font-weight:600;color:${pos?'#059669':'#dc2626'}">Profit Net</span>
+    <div class="dr"><span class="dl">Bénéfice HT</span><span class="dv" style="color:${r.benHT>=0?'#34c759':'#ff453a'}">${r.benHT>=0?'+':''}${f(r.benHT)} DH</span></div>
+    <div class="dr"><span class="dl">TVA 15%</span><span class="dv" style="color:${r.tva>0?'#ff453a':'#6b7280'}">${r.tva>0?'− '+f(r.tva)+' DH':'—'}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:10px 12px;border-radius:9px;background:${pos?'#0a1f0e':'#1f0a0a'}">
+      <span style="font-size:11px;font-weight:600;color:${pos?'#34c759':'#ff453a'}">Profit Net</span>
       <span style="font-size:13px;font-weight:700;color:${c}">${pos?'+':''}${f(r.net)} DH</span>
     </div>
   </div>`;
@@ -1120,7 +1071,7 @@ function onSearch(){
   const m=allBVC.filter(s=>s.t.toLowerCase().includes(q)||s.n.toLowerCase().includes(q)).slice(0,7);
   if(!m.length){box.style.display='none';return;}
   box.style.display='block';
-  box.innerHTML=m.map(s=>`<div class="si" onclick="selectBVC('${s.t}','${s.n.replace(/'/g,"\\'")}',${s.live||0})"><span style="color:#f0a500;font-weight:600">${s.t}</span> · <span style="font-size:12px;color:#9ca3af">${s.n}</span><span style="float:right;color:#10b981">${s.live?s.live.toFixed(2)+' MAD':''}</span></div>`).join('');
+  box.innerHTML=m.map(s=>`<div class="si" onclick="selectBVC('${s.t}','${s.n.replace(/'/g,"\\'")}',${s.live||0})"><span style="color:#ffd60a;font-weight:600">${s.t}</span> · <span style="font-size:12px;color:#9ca3af">${s.n}</span><span style="float:right;color:#10b981">${s.live?s.live.toFixed(2)+' MAD':''}</span></div>`).join('');
 }
 function selectBVC(t,n,p){
   selBVC={t,n,price:p};
@@ -1136,7 +1087,7 @@ function updatePreview(){
   const q=parseFloat(document.getElementById('nq').value),b=parseFloat(document.getElementById('nb').value);
   if(!selBVC||isNaN(q)||isNaN(b)||q<=0||b<=0)return;
   const r=calc(b,selBVC.price||b,q),pos=r.net>=0;
-  document.getElementById('prev').innerHTML=`<div style="display:flex;flex-direction:column;gap:4px"><div class="row"><span style="font-size:10px;color:#6b7280">Investi</span><span style="font-size:10px;color:#f9fafb">${f(r.inv)} DH</span></div><div class="row"><span style="font-size:10px;color:#6b7280">Frais bank</span><span style="font-size:10px;color:#ef4444">− ${f(r.fees)} DH</span></div><div class="row" style="border-top:1px solid #2a3040;padding-top:4px;margin-top:2px"><span style="font-size:11px;font-weight:600;color:#f9fafb">Net si vente</span><span style="font-size:11px;font-weight:700;color:${pos?'var(--green)':'var(--red)'}">${pos?'+':''}${f(r.net)} DH</span></div></div>`;
+  document.getElementById('prev').innerHTML=`<div style="display:flex;flex-direction:column;gap:4px"><div class="row"><span style="font-size:10px;color:#6b7280">Investi</span><span style="font-size:10px;color:#f9fafb">${f(r.inv)} DH</span></div><div class="row"><span style="font-size:10px;color:#6b7280">Frais bank</span><span style="font-size:10px;color:#ef4444">− ${f(r.fees)} DH</span></div><div class="row" style="border-top:1px solid #2a3040;padding-top:4px;margin-top:2px"><span style="font-size:11px;font-weight:600;color:#f9fafb">Net si vente</span><span style="font-size:11px;font-weight:700;color:${pos?'#34c759':'#ff453a'}">${pos?'+':''}${f(r.net)} DH</span></div></div>`;
 }
 function addStock(){
   if(!selBVC){document.getElementById('prev').innerHTML='<span style="color:#ef4444">Sélectionne une action.</span>';return;}
@@ -1169,9 +1120,8 @@ function showTab(t){
   ['port','div','add','sim','sync'].forEach(x=>{
     const el=document.getElementById('t-'+x);
     if(!el)return;
-    el.style.background=x===t?'var(--accent)':'transparent';
-    el.style.color=x===t?'#fff':'var(--muted)';
-    el.style.borderRadius='11px';
+    el.style.background=x===t?'#0a84ff':'transparent';
+    el.style.color=x===t?'#fff':'#636366';
   });
   curTab=t;
   if(t==='port')renderList();
@@ -1212,8 +1162,8 @@ function saveGsUrl() {
   document.getElementById('gs-url').value = '';
   const st = document.getElementById('gs-status');
   st.style.display = 'block';
-  st.style.color = 'var(--green)';
-  st.style.background = 'rgba(16,185,129,0.08)';
+  st.style.color = '#34c759';
+  st.style.background = 'rgba(52,199,89,0.08)';
   st.innerHTML = '✅ URL enregistrée ! Appuie sur Sync pour charger les prix.';
 }
 
@@ -1222,74 +1172,77 @@ function parseGsCSV(csv) {
   const allTickers = stocks.map(s => s.t);
   const lines = csv.trim().split(/[\r\n]+/);
 
-  // Smart CSV parser — handles Google Sheets with comma as decimal separator
-  // Google Sheets FR exports: "ATW","700,50","..." => virgule = décimal dans les nombres
-  function parseCSVLine(line) {
-    const cols = [];
-    let cur = '', inQ = false;
-    for (let i = 0; i < line.length; i++) {
-      const c = line[i];
-      if (c === '"') { inQ = !inQ; }
-      else if (c === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
-      else { cur += c; }
-    }
-    cols.push(cur.trim());
-    return cols;
-  }
-
-  function toPrice(raw) {
-    if (!raw) return 0;
-    let s = raw.replace(/"/g,'').trim();
-    // Handle "700,50" (FR decimal) vs "700.50" (EN decimal)
-    // If contains both dot and comma => dot=thousands, comma=decimal: "1.234,56"
-    if (s.includes('.') && s.includes(',')) {
-      s = s.replace(/\./g,'').replace(',','.');
-    } else if (s.includes(',')) {
-      // Could be thousands "1,234" or decimal "700,50"
-      const parts = s.split(',');
-      if (parts.length === 2 && parts[1].length <= 2) {
-        s = parts[0] + '.' + parts[1]; // decimal comma
-      } else {
-        s = s.replace(/,/g,''); // thousands comma
-      }
-    }
-    const p = parseFloat(s.replace(/\s/g,''));
-    return (p > 0 && p < 200000) ? p : 0;
-  }
-
-  // Detect header
-  const header = parseCSVLine(lines[0]).map(h => h.toLowerCase().replace(/"/g,''));
+  // Find header row to know which column is ticker and which is price
+  let tickerCol = 0, priceCol = 1;
+  const header = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g,''));
   const tickerIdx = header.findIndex(h => ['ticker','symbol','code','valeur','action'].includes(h));
-  const priceIdx  = header.findIndex(h => h.includes('prix') || h.includes('price') || h.includes('cours') || h.includes('close'));
-  const tickerCol = tickerIdx >= 0 ? tickerIdx : 0;
-  const priceCol  = priceIdx  >= 0 ? priceIdx  : 1;
+  const priceIdx = header.findIndex(h => h.includes('prix') || h.includes('price') || h.includes('cours') || h.includes('close') || h.includes('last') || h === 'dernier');
+  if (tickerIdx >= 0) tickerCol = tickerIdx;
+  if (priceIdx >= 0) priceCol = priceIdx;
 
-  const dataLines = (tickerIdx >= 0 || priceIdx >= 0) ? lines.slice(1) : lines;
+  const dataLines = tickerIdx >= 0 || priceIdx >= 0 ? lines.slice(1) : lines;
 
   dataLines.forEach(line => {
     if (!line.trim()) return;
-    const cols = parseCSVLine(line);
+    const cols = line.split(',').map(c => c.trim().replace(/"/g,''));
     if (cols.length < 2) return;
 
-    const t = (cols[tickerCol] || '').replace(/"/g,'').trim().toUpperCase();
-    if (!allTickers.includes(t)) return;
-
-    // Try price column first
-    let p = toPrice(cols[priceCol]);
-
-    // If 0, scan other columns
-    if (!p) {
-      for (let j = 0; j < cols.length; j++) {
-        if (j === tickerCol) continue;
-        p = toPrice(cols[j]);
-        if (p) break;
-      }
+    // Try configured columns first
+    const t1 = cols[tickerCol]?.toUpperCase();
+    const p1 = parseFloat(cols[priceCol]?.replace(/\s/g,'').replace(',','.'));
+    if (t1 && allTickers.includes(t1) && p1 > 0 && p1 < 200000) {
+      prices[t1] = p1;
+      return;
     }
 
-    if (p) prices[t] = p;
+    // Scan all columns for ticker + price
+    for (let i = 0; i < cols.length; i++) {
+      const t = cols[i]?.toUpperCase().trim();
+      if (!allTickers.includes(t)) continue;
+      // Found ticker, look for price in nearby columns
+      for (let j = 0; j < cols.length; j++) {
+        if (j === i) continue;
+        const p = parseFloat(cols[j]?.replace(/\s/g,'').replace(',','.'));
+        if (p > 0 && p < 200000) {
+          prices[t] = p;
+          break;
+        }
+      }
+      if (prices[t]) break;
+    }
   });
 
   return prices;
+}
+
+async function triggerSheetRefresh() {
+  const btn = document.getElementById('gs-refresh-btn');
+  const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbw0GnztplOdaFMNsv0ehb0vlUURt0xtmPsUVemgmd6_So4HXDqDYX7GIy6SINkufoul/exec';
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Mise à jour en cours...';
+
+  try {
+    await fetch(WEBAPP_URL, { mode: 'no-cors' });
+    btn.textContent = '✅ Prices updated — sync in 6s...';
+    btn.style.color = '#34c759';
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = '🔄 Actualiser les prix (script)';
+      btn.style.color = '#4cc2ff';
+      fetchFromGoogleSheets();
+    }, 6000);
+  } catch(e) {
+    // no-cors fetch always "fails" but request was sent
+    btn.textContent = '✅ Lancé — sync dans 6s...';
+    btn.style.color = '#34c759';
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = '🔄 Actualiser les prix (script)';
+      btn.style.color = '#4cc2ff';
+      fetchFromGoogleSheets();
+    }, 6000);
+  }
 }
 
 async function fetchFromGoogleSheets() {
@@ -1306,54 +1259,21 @@ async function fetchFromGoogleSheets() {
   btn.disabled = true;
   btn.textContent = '⏳ Chargement...';
   st.style.display = 'block';
-  st.style.color = '#60a5fa';
+  st.style.color = '#4cc2ff';
   st.style.background = 'rgba(59,130,246,0.08)';
   st.innerHTML = '📡 Connexion à Google Sheets...';
 
-  async function tryFetchCSV(url, timeoutMs=12000) {
-    const ctrl = new AbortController();
-    const tid = setTimeout(() => ctrl.abort(), timeoutMs);
-    try {
-      const res = await fetch(url, { signal: ctrl.signal, cache: 'no-store' });
-      clearTimeout(tid);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const text = await res.text();
-      return text;
-    } finally { clearTimeout(tid); }
-  }
-
   try {
-    let csv = null;
+    // Google Sheets CSV export allows CORS — no proxy needed!
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 15000);
     const bustUrl = savedUrl + (savedUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+    const res = await fetch(bustUrl, { signal: ctrl.signal, cache: 'no-store' });
+    clearTimeout(tid);
 
-    // Proxy 1: direct (works on desktop/Chrome)
-    try {
-      csv = await tryFetchCSV(bustUrl, 8000);
-      if (!csv || csv.length < 10) csv = null;
-    } catch(e) { csv = null; }
-
-    // Proxy 2: allorigins (works on Safari iOS)
-    if (!csv) {
-      try {
-        st.innerHTML = '📡 Proxy 1...';
-        const p1 = 'https://api.allorigins.win/get?url=' + encodeURIComponent(bustUrl);
-        const raw = await tryFetchCSV(p1, 12000);
-        const json = JSON.parse(raw);
-        csv = json.contents || null;
-      } catch(e) { csv = null; }
-    }
-
-    // Proxy 3: corsproxy.io
-    if (!csv) {
-      try {
-        st.innerHTML = '📡 Proxy 2...';
-        const p2 = 'https://corsproxy.io/?' + encodeURIComponent(bustUrl);
-        csv = await tryFetchCSV(p2, 12000);
-        if (!csv || csv.length < 10) csv = null;
-      } catch(e) { csv = null; }
-    }
-
-    if (!csv || csv.length < 10) throw new Error('Impossible de lire la Google Sheet depuis Safari. Vérifie que le lien est bien publié en CSV.');
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' — vérifie que la sheet est bien publique');
+    const csv = await res.text();
+    if (!csv || csv.length < 10) throw new Error('Sheet vide ou inaccessible');
 
     const prices = parseGsCSV(csv);
     const found = Object.keys(prices).length;
@@ -1383,16 +1303,16 @@ async function fetchFromGoogleSheets() {
 
     const missed = stocks.filter(s => !prices[s.t]).map(s => s.t);
 
-    st.style.color = 'var(--green)';
-    st.style.background = 'rgba(16,185,129,0.08)';
-    st.style.border = '1px solid rgba(16,185,129,0.2)';
+    st.style.color = '#34c759';
+    st.style.background = 'rgba(52,199,89,0.08)';
+    st.style.border = '1px solid rgba(52,199,89,0.2)';
     st.style.borderRadius = '10px';
     st.style.padding = '10px';
     st.innerHTML = '✅ <strong>' + updated + ' prix mis à jour</strong><br>'
       + '<div style="margin-top:6px;line-height:2;font-size:9px">' + details.join(' · ') + '</div>'
       + (missed.length ? '<br><span style="color:#f59e0b">Non trouvés: ' + missed.join(', ') + '</span>' : '');
 
-    document.getElementById('dot').style.background = 'var(--green)';
+    document.getElementById('dot').style.background = '#34c759';
     document.getElementById('dot').style.boxShadow = '0 0 8px rgba(16,185,129,0.6)';
     setTimeout(() => {
       document.getElementById('dot').style.background = '#f59e0b';
@@ -1405,8 +1325,8 @@ async function fetchFromGoogleSheets() {
     setTimeout(() => showTab('port'), 1200);
 
   } catch(e) {
-    st.style.color = 'var(--red)';
-    st.style.background = 'rgba(239,68,68,0.08)';
+    st.style.color = '#ff453a';
+    st.style.background = 'rgba(255,69,58,0.08)';
     st.style.border = '1px solid rgba(239,68,68,0.2)';
     st.style.borderRadius = '10px';
     st.style.padding = '10px';
@@ -1426,17 +1346,17 @@ function initGsSection() {
   }
   const st = document.getElementById('gs-status');
   st.style.display = 'block';
-  st.style.color = 'var(--green)';
-  st.style.background = 'rgba(16,185,129,0.08)';
-  st.style.border = '1px solid rgba(16,185,129,0.2)';
+  st.style.color = '#34c759';
+  st.style.background = 'rgba(52,199,89,0.08)';
+  st.style.border = '1px solid rgba(52,199,89,0.2)';
   st.style.borderRadius = '10px';
   st.style.padding = '10px';
   st.innerHTML = '✅ Google Sheet BVC connectée · Appuie sur <strong>📗 Sync</strong>';
 }
 
 async function fetchPricesWithAI() {
-  const btn = document.getElementById('ai-fetch-btn') || {disabled:false,textContent:''};
-  const statusEl = document.getElementById('ai-status') || {style:{display:'none',color:'',background:'',border:'',borderRadius:'',padding:''},innerHTML:''};
+  const btn = document.getElementById('ai-fetch-btn');
+  const statusEl = document.getElementById('ai-status');
   btn.disabled = true;
   btn.textContent = '⏳ Recherche en cours...';
   statusEl.style.display = 'block';
@@ -1594,7 +1514,7 @@ async function fetchPricesWithAI() {
   const found = Object.keys(prices).length;
   if(found === 0) {
     statusEl.innerHTML = '❌ Impossible de récupérer les prix.<br><span style="color:#6b7280;font-size:9px">Safari bloque tous les proxies. Utilise la saisie manuelle ci-dessous.</span>';
-    statusEl.style.color = 'var(--red)';
+    statusEl.style.color = '#ff453a';
     btn.disabled = false;
     btn.textContent = '✨ Récupérer tous les prix maintenant';
     return;
@@ -1619,7 +1539,7 @@ async function fetchPricesWithAI() {
 
   localStorage.setItem('price_date', now);
 
-  document.getElementById('dot').style.background = 'var(--green)';
+  document.getElementById('dot').style.background = '#34c759';
   document.getElementById('dot').style.boxShadow = '0 0 8px rgba(16,185,129,0.6)';
   setTimeout(() => {
     document.getElementById('dot').style.background = '#f59e0b';
@@ -1628,8 +1548,8 @@ async function fetchPricesWithAI() {
   document.getElementById('upd').textContent = '✨ ' + updated + ' prix · ' + new Date().toLocaleTimeString('fr-MA');
 
   const missed = stocks.filter(s => !prices[s.t]).map(s => s.t);
-  statusEl.style.color = 'var(--green)';
-  statusEl.style.background = 'rgba(16,185,129,0.08)';
+  statusEl.style.color = '#34c759';
+  statusEl.style.background = 'rgba(52,199,89,0.08)';
   statusEl.innerHTML = '✅ <strong>' + updated + ' prix mis à jour</strong> via ' + source +
     '<br><div style="margin-top:8px;line-height:2;color:#6b7280">' + details.join(' &nbsp;') + '</div>' +
     (missed.length ? '<br><span style="color:#f59e0b;font-size:9px">Non trouvés: ' + missed.join(', ') + '</span>' : '');
@@ -1642,6 +1562,9 @@ async function fetchPricesWithAI() {
   btn.textContent = '✨ Récupérer tous les prix maintenant';
 }
 
+function openCasablancaLink(){
+  window.open('https://www.casablancabourse.com/fr/live-market/marche-actions-groupement','_blank');
+}
 
 // Parse any raw text and extract prices for our stocks
 function smartParseText(text) {
@@ -1753,7 +1676,7 @@ function previewParsed() {
   listEl.innerHTML = keys.map(t => {
     const s = stocks.find(x=>x.t===t);
     const name = s ? s.n.split(' ')[0] : t;
-    return '<span style="color:#10b981;font-weight:600">'+t+'</span> '+name+' → <span style="color:#f0a500">'+prices[t].toFixed(2)+' MAD</span>';
+    return '<span style="color:#10b981;font-weight:600">'+t+'</span> '+name+' → <span style="color:#ffd60a">'+prices[t].toFixed(2)+' MAD</span>';
   }).join('<br>');
 }
 
@@ -1792,7 +1715,7 @@ function importPrices(){
   
   if(updated>0){
     console.log('✅ Imported '+updated+' prices');
-    document.getElementById('dot').style.background='var(--green)';
+    document.getElementById('dot').style.background='#34c759';
     document.getElementById('dot').style.boxShadow='0 0 8px rgba(16,185,129,0.6)';
     setTimeout(()=>{document.getElementById('dot').style.background='#f59e0b';document.getElementById('dot').style.boxShadow='0 0 6px rgba(245,158,11,0.5)';},3000);
     document.getElementById('upd').textContent='🟢 '+updated+' prix · '+new Date().toLocaleTimeString('fr-MA');
@@ -1828,15 +1751,90 @@ function renderSyncPrices(){
     const s=stocks.find(x=>x.t===p.ticker);
     const r=calc(s.b,p.price,s.q);
     const pos=r.net>=0;
-    return`<div style="background:#0f1520;border:1px solid ${pos?'rgba(16,185,129,0.2)':'rgba(239,68,68,0.2)'};border-radius:9px;padding:8px;text-align:center">
+    return`<div style="background:#111111;border:1px solid ${pos?'rgba(52,199,89,0.2)':'rgba(239,68,68,0.2)'};border-radius:9px;padding:8px;text-align:center">
       <div style="font-size:11px;font-weight:700;color:#f9fafb">${p.ticker}</div>
-      <div style="font-size:12px;color:#f0a500;font-weight:600;margin:3px 0">${p.price.toFixed(2)}</div>
-      <div style="font-size:9px;color:${pos?'var(--green)':'var(--red)'};font-weight:600">${pos?'▲':'▼'} ${Math.abs(r.pct).toFixed(1)}%</div>
+      <div style="font-size:12px;color:#ffd60a;font-weight:600;margin:3px 0">${p.price.toFixed(2)}</div>
+      <div style="font-size:9px;color:${pos?'#34c759':'#ff453a'};font-weight:600">${pos?'▲':'▼'} ${Math.abs(r.pct).toFixed(1)}%</div>
     </div>`;
   }).join('');
 }
 
+function renderDebugPanel(){
+  // Display all stocks
+  const stocksHtml = stocks.map((s,i) => `
+    <div style="background:#111111;border-radius:8px;padding:8px;border-left:3px solid ${s.live>s.b?'#34c759':'#ff453a'}">
+      <div style="font-size:10px;font-weight:700;color:#f9fafb">${s.t}</div>
+      <div style="font-size:9px;color:#6b7280;margin-top:2px">${s.n}</div>
+      <div style="font-size:9px;color:#4cc2ff;margin-top:2px">Cours: ${s.live.toFixed(2)} MAD</div>
+    </div>
+  `).join('');
+  document.getElementById('debug-stocks').innerHTML=stocksHtml;
+}
 
+async function fetchAndDebugPrices(){
+  const btn = document.querySelector('#v-debug .btn');
+  if(!btn) return alert('Button not found');
+  
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '🔄 Scanning...';
+  
+  try{
+    const proxyUrl = PUBLIC_PROXY_URL;
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    
+    const res = await fetch(proxyUrl,{
+      method:'GET',
+      headers:{'Accept':'application/json'},
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if(!res.ok) throw new Error('Proxy failed');
+    const data = await res.json();
+    if(!data.contents) throw new Error('No HTML');
+    
+    const html = data.contents;
+    const prices = extractPricesFromHtml(html);
+    const rawNames = Object.keys(prices);
+
+    // Show results
+    const found = stocks.filter(s => prices[s.t]);
+    const notFound = stocks.filter(s => !prices[s.t]);
+
+    document.getElementById('debug-found').innerHTML = found.map(s => `
+      <div style="background:#0a1f0e;border:1px solid rgba(16,185,129,0.3);border-radius:8px;padding:8px">
+        <div style="font-size:10px;font-weight:700;color:#10b981">${s.t}</div>
+        <div style="font-size:9px;color:#6b7280">${prices[s.t] ? prices[s.t].toFixed(2) : '—'} MAD</div>
+      </div>
+    `).join('');
+
+    document.getElementById('debug-notfound').innerHTML = notFound.map(s => `
+      <div style="background:#1f0a0a;border:1px solid rgba(255,69,58,0.3);border-radius:8px;padding:8px">
+        <div style="font-size:10px;font-weight:700;color:#ef4444">${s.t}</div>
+        <div style="font-size:8px;color:#374151">Non trouvé</div>
+      </div>
+    `).join('');
+
+    const uniqueNames = [...new Set(rawNames)].sort();
+    document.getElementById('debug-rawnames').innerHTML = uniqueNames.map(n => `
+      <div style="padding:4px;border-bottom:1px solid #1a3a50;word-break:break-all">${n}</div>
+    `).join('');
+
+    document.getElementById('debug-results').style.display='block';
+    console.log('✅ Debug scan complete. Found: '+found.length+'/'+stocks.length);
+    console.log('📋 Raw names:', uniqueNames);
+
+  }catch(e){
+    alert('Erreur: '+e.message);
+    console.error(e);
+  }finally{
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+}
 
 
 // ─── INIT ─────────────────────────────────────────
