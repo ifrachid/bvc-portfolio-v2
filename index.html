@@ -5,14 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="BVC Portfolio">
+<meta name="apple-mobile-web-app-title" content="Rach Invest">
 <meta name="theme-color" content="#111318">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <link rel="manifest" href="./manifest.json?v=rt4">
 <meta name="msapplication-config" content="./browserconfig.xml?v=rt4">
-<title>BVC Portfolio</title>
+<title>Rach Invest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0a0a0f;--bg2:#1c1c1e;--bg3:#2c2c2e;
@@ -70,7 +73,7 @@ input::placeholder{color:var(--text3)}
 </head>
 <body>
 <!-- LOCK SCREEN -->
-<div id="lock-screen" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#0a0a0f;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 32px">
+<div id="lock-screen" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 32px">
   <div style="font-size:48px;margin-bottom:12px">📊</div>
   <div style="font-size:18px;font-weight:700;color:#f5f5f7;margin-bottom:6px">BVC Portfolio</div>
   <div id="lock-msg" style="font-size:13px;color:#636366;margin-bottom:28px">Entrer le code PIN</div>
@@ -106,21 +109,44 @@ input::placeholder{color:var(--text3)}
 <div class="app">
 
   <!-- HEADER -->
-  <div style="background:var(--header);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);padding:12px 16px 10px;flex-shrink:0;border-bottom:1px solid var(--border)">
+  <div style="background:var(--header);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);padding:10px 14px 8px;flex-shrink:0;border-bottom:1px solid var(--border)">
 
-    <!-- Total portfolio -->
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
-      <div onclick="togglePortfolioValue()" style="cursor:pointer;-webkit-tap-highlight-color:transparent">
-        <div style="font-size:11px;color:var(--text3);font-weight:600;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:3px">BVC Portfolio</div>
-        <div id="hv" style="font-size:30px;font-weight:700;color:var(--text);letter-spacing:-1.5px;line-height:1.1">—</div>
-        <div id="hn" style="font-size:13px;font-weight:600;color:var(--text3);margin-top:4px;letter-spacing:-0.2px">Chargement...</div>
+    <!-- Logo row -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:9px">
+        <!-- Bull logo SVG -->
+        <div style="width:40px;height:40px;border-radius:11px;background:#0d0d0d;overflow:hidden;flex-shrink:0;border:0.5px solid rgba(255,255,255,0.12)">
+          <svg viewBox="0 0 100 100" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100" height="100" fill="#0d0d0d"/>
+            <polygon points="15,74 25,50 35,62 45,40 55,55 65,30 75,44 78,74" fill="#1535dd" opacity="0.95"/>
+            <polygon points="25,50 35,62 29,52" fill="#2a4fff"/>
+            <polygon points="45,40 55,55 49,44" fill="#1535dd"/>
+            <polygon points="65,30 75,44 70,33" fill="#1028cc"/>
+            <polygon points="15,74 25,50 20,62" fill="#0f29bb" opacity="0.7"/>
+            <line x1="15" y1="74" x2="65" y2="30" stroke="#2288ff" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+            <line x1="65" y1="30" x2="82" y2="13" stroke="#33aaff" stroke-width="2.5" stroke-linecap="round"/>
+            <polygon points="82,13 74,18 80,24" fill="#33aaff"/>
+            <line x1="10" y1="77" x2="90" y2="77" stroke="#1a3aaa" stroke-width="1" opacity="0.4"/>
+          </svg>
+        </div>
+        <!-- Text -->
+        <div>
+          <div style="font-family:'Dancing Script',cursive;font-size:21px;font-weight:700;color:var(--text);line-height:1;letter-spacing:0.2px">Rach Invest</div>
+          <div style="font-size:8px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-top:1px;text-align:center">Invest in stocks</div>
+        </div>
       </div>
-      <!-- Toggle dark/light -->
-      <button onclick="toggleTheme()" id="theme-btn" style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:6px 10px;font-size:16px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;margin-top:2px">🌙</button>
+      <!-- Theme toggle -->
+      <button onclick="toggleTheme()" id="theme-btn" style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:5px 9px;font-size:15px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent">🌙</button>
+    </div>
+
+    <!-- Portfolio value -->
+    <div onclick="togglePortfolioValue()" style="cursor:pointer;-webkit-tap-highlight-color:transparent;margin-bottom:10px">
+      <div id="hv" style="font-size:20px;font-weight:700;color:var(--text);letter-spacing:-0.8px;line-height:1.1">—</div>
+      <div id="hn" style="font-size:13px;font-weight:600;color:var(--text3);margin-top:3px;letter-spacing:-0.2px">Chargement...</div>
     </div>
 
     <!-- KPIs -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:8px">
       <div class="kpi" onclick="toggleInvesti()" id="k-inv">
         <div class="lbl">💰 Investi</div>
         <div id="hi" style="font-size:12px;font-weight:700;color:var(--text);margin-top:2px">—</div>
@@ -135,8 +161,8 @@ input::placeholder{color:var(--text3)}
       </div>
     </div>
 
-    <!-- dot + last sync -->
-    <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-bottom:10px">
+    <!-- dot + sync -->
+    <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-bottom:8px">
       <div id="dot" style="width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 6px rgba(255,214,10,0.5)"></div>
       <div id="upd" style="font-size:10px;color:var(--text3);font-weight:500">—</div>
     </div>
@@ -146,7 +172,7 @@ input::placeholder{color:var(--text3)}
     <div style="padding:12px 14px 80px">
       <button onclick="closeEdit()" style="display:flex;align-items:center;gap:6px;margin-bottom:14px;cursor:pointer;background:none;border:none;padding:0;font-family:inherit;touch-action:manipulation">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-        <span style="font-size:12px;color:#9ca3af">Retour</span>
+        <span style="font-size:12px;color:var(--text2)">Retour</span>
       </button>
       <div id="edit-title" style="font-size:17px;font-weight:700;color:#f9fafb;margin-bottom:18px"></div>
 
@@ -240,7 +266,7 @@ input::placeholder{color:var(--text3)}
   <!-- DIVIDENDES -->
   <div id="v-div" style="display:none">
     <div style="padding:8px 11px 80px">
-      <div style="background:#1c1c1e;border-radius:10px;padding:8px 11px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
+      <div style="background:var(--bg2);border-radius:10px;padding:8px 11px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
         <span style="font-size:10px;color:#6b7280">Retenue source :</span>
         <div style="display:flex;gap:5px">
           <div id="r25" onclick="setRet(0.125,'2025')" style="padding:3px 9px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;background:#1c1c1e;color:#6b7280;border:1px solid #2a3040;touch-action:manipulation">12.5%</div>
@@ -257,7 +283,7 @@ input::placeholder{color:var(--text3)}
     <div style="padding:12px 14px 0;flex-shrink:0">
       <button onclick="showTab('port')" style="display:flex;align-items:center;gap:6px;margin-bottom:10px;cursor:pointer;background:none;border:none;padding:0;font-family:inherit;touch-action:manipulation">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-        <span style="font-size:12px;color:#9ca3af">Retour</span>
+        <span style="font-size:12px;color:var(--text2)">Retour</span>
       </button>
     </div>
     <div style="display:flex;gap:5px;padding:0 14px;margin-bottom:10px">
@@ -928,10 +954,10 @@ function togglePortfolioValue() {
     hnEl.style.color = '#3a3a3c';
   } else {
     hvEl.textContent = hvEl.getAttribute('data-real') || '—';
-    hvEl.style.color = '#f5f5f7';
-    hvEl.style.letterSpacing = '-1.5px';
+    hvEl.style.color = '';
+    hvEl.style.letterSpacing = '-0.8px';
     hnEl.textContent = hnEl.getAttribute('data-real') || '';
-    hnEl.style.color = hnEl.getAttribute('data-color') || '#636366';
+    hnEl.style.color = hnEl.getAttribute('data-color') || '';
   }
 }
 
@@ -945,7 +971,7 @@ function toggleInvesti() {
     el.style.letterSpacing = '3px';
   } else {
     el.textContent = el.getAttribute('data-real') || '—';
-    el.style.color = '#f5f5f7';
+    el.style.color = '';
     el.style.letterSpacing = 'normal';
   }
 }
@@ -960,7 +986,7 @@ function updateHeader(){
   const pctTotal = ti>0 ? ((tv-ti)/ti*100) : 0;
   if(portfolioVisible){
     document.getElementById('hv').textContent=f(tv)+' MAD';
-    document.getElementById('hv').style.color='#f5f5f7';
+    document.getElementById('hv').style.color='';
     document.getElementById('hv').style.letterSpacing='-1.5px';
     const el=document.getElementById('hn');
     const hnColor = tn>=0 ? getComputedStyle(document.documentElement).getPropertyValue('--green').trim() : getComputedStyle(document.documentElement).getPropertyValue('--red').trim();
@@ -971,7 +997,7 @@ function updateHeader(){
   }
   if(investiVisible){
     document.getElementById('hi').textContent=f(ti);
-    document.getElementById('hi').style.color='#f5f5f7';
+    document.getElementById('hi').style.color='';
   }
   document.getElementById('hp').textContent=(totalProfit>0?'+':'')+f(totalProfit);
   document.getElementById('hng').textContent=f(totalPerte);
@@ -1053,8 +1079,8 @@ function renderList(){
         <div style="display:flex;align-items:center;gap:10px">
           <div style="width:40px;height:40px;border-radius:12px;background:${pos?'rgba(52,199,89,0.15)':'rgba(255,69,58,0.15)'};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:${c}">${s.t.substring(0,2)}</div>
           <div>
-            <div style="font-size:13px;font-weight:700;color:#f9fafb">${s.t} <span style="font-size:11px;color:#6b7280;font-weight:400">·${s.q}x</span>${hasDpa?'<span style="color:#ffd60a;font-size:9px;margin-left:3px">🌿</span>':''}</div>
-            <div style="font-size:11px;color:#6b7280">${s.n}${s.chg!==0?'<span style="color:'+c+';margin-left:5px">'+(s.chg>0?'▲':'▼')+' '+Math.abs(s.chg).toFixed(2)+'%</span>':''}</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text)">${s.t} <span style="font-size:11px;color:#6b7280;font-weight:400">·${s.q}x</span>${hasDpa?'<span style="color:#ffd60a;font-size:9px;margin-left:3px">🌿</span>':''}</div>
+            <div style="font-size:11px;color:var(--text2)">${s.n}${s.chg!==0?'<span style="color:'+c+';margin-left:5px">'+(s.chg>0?'▲':'▼')+' '+Math.abs(s.chg).toFixed(2)+'%</span>':''}</div>
           </div>
         </div>
         <div style="text-align:right">
@@ -1064,7 +1090,7 @@ function renderList(){
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.05)">
         <div style="text-align:center"><div class="lbl">Achat</div><div style="font-size:11px;color:#ffd60a;font-weight:600">${s.b.toFixed(2)}</div></div>
-        <div style="text-align:center"><div class="lbl">Cours</div><div style="font-size:11px;color:#f9fafb;font-weight:600">${s.live.toFixed(2)}</div></div>
+        <div style="text-align:center"><div class="lbl">Cours</div><div style="font-size:11px;color:var(--text);font-weight:600">${s.live.toFixed(2)}</div></div>
         <div style="text-align:center"><div class="lbl">${hasDpa?'Div.net':'Net'}</div><div style="font-size:11px;color:${hasDpa?'#ffd60a':c};font-weight:600">${hasDpa?'+'+f(s.dpa*s.q*(1-RET)):(pos?'+':'')+f(r.net)}</div></div>
       </div>
     </div>`;
@@ -1123,7 +1149,7 @@ function openDetail(i){
       <div class="row" style="margin-bottom:10px">
         <div>
           <div style="font-size:15px;font-weight:700;color:#f9fafb">${s.t}</div>
-          <div style="font-size:11px;color:#6b7280">${s.n} · ${s.q} actions</div>
+          <div style="font-size:11px;color:var(--text2)">${s.n} · ${s.q} actions</div>
           ${s.chg!==0?`<div style="font-size:10px;color:${s.chg>0?'#34c759':'#ff453a'};margin-top:2px">${s.chg>0?'▲':'▼'} ${Math.abs(s.chg).toFixed(2)}%</div>`:''}
         </div>
         <div style="text-align:right">
@@ -1278,7 +1304,7 @@ function onSearch(){
   const m=allBVC.filter(s=>s.t.toLowerCase().includes(q)||s.n.toLowerCase().includes(q)).slice(0,7);
   if(!m.length){box.style.display='none';return;}
   box.style.display='block';
-  box.innerHTML=m.map(s=>`<div class="si" onclick="selectBVC('${s.t}','${s.n.replace(/'/g,"\\'")}',${s.live||0})"><span style="color:#ffd60a;font-weight:600">${s.t}</span> · <span style="font-size:12px;color:#9ca3af">${s.n}</span><span style="float:right;color:#10b981">${s.live?s.live.toFixed(2)+' MAD':''}</span></div>`).join('');
+  box.innerHTML=m.map(s=>`<div class="si" onclick="selectBVC('${s.t}','${s.n.replace(/'/g,"\\'")}',${s.live||0})"><span style="color:#ffd60a;font-weight:600">${s.t}</span> · <span style="font-size:12px;color:var(--text2)">${s.n}</span><span style="float:right;color:#10b981">${s.live?s.live.toFixed(2)+' MAD':''}</span></div>`).join('');
 }
 function selectBVC(t,n,p){
   selBVC={t,n,price:p};
@@ -1884,7 +1910,7 @@ function previewParsed() {
   listEl.innerHTML = keys.map(t => {
     const s = stocks.find(x=>x.t===t);
     const name = s ? s.n.split(' ')[0] : t;
-    return '<span style="color:#10b981;font-weight:600">'+t+'</span> '+name+' → <span style="color:#ffd60a">'+prices[t].toFixed(2)+' MAD</span>';
+    return '<span style="color:#10b981;font-weight:600">'+t+'</span> '+name+' → <span style="color:var(--gold)">'+prices[t].toFixed(2)+' MAD</span>';
   }).join('<br>');
 }
 
