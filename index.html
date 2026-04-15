@@ -69,6 +69,40 @@ input::placeholder{color:var(--text3)}
 </style>
 </head>
 <body>
+<!-- LOCK SCREEN -->
+<div id="lock-screen" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#0a0a0f;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 32px">
+  <div style="font-size:48px;margin-bottom:12px">📊</div>
+  <div style="font-size:18px;font-weight:700;color:#f5f5f7;margin-bottom:6px">BVC Portfolio</div>
+  <div id="lock-msg" style="font-size:13px;color:#636366;margin-bottom:28px">Entrer le code PIN</div>
+  <!-- PIN dots -->
+  <div style="display:flex;gap:16px;margin-bottom:32px" id="pin-dots">
+    <div id="d0" style="width:16px;height:16px;border-radius:50%;background:#3a3a3c;transition:background 0.15s"></div>
+    <div id="d1" style="width:16px;height:16px;border-radius:50%;background:#3a3a3c;transition:background 0.15s"></div>
+    <div id="d2" style="width:16px;height:16px;border-radius:50%;background:#3a3a3c;transition:background 0.15s"></div>
+    <div id="d3" style="width:16px;height:16px;border-radius:50%;background:#3a3a3c;transition:background 0.15s"></div>
+  </div>
+  <!-- Numpad -->
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;width:240px;margin-bottom:16px">
+    <button onclick="pinInput(1)" class="pin-btn">1</button>
+    <button onclick="pinInput(2)" class="pin-btn">2</button>
+    <button onclick="pinInput(3)" class="pin-btn">3</button>
+    <button onclick="pinInput(4)" class="pin-btn">4</button>
+    <button onclick="pinInput(5)" class="pin-btn">5</button>
+    <button onclick="pinInput(6)" class="pin-btn">6</button>
+    <button onclick="pinInput(7)" class="pin-btn">7</button>
+    <button onclick="pinInput(8)" class="pin-btn">8</button>
+    <button onclick="pinInput(9)" class="pin-btn">9</button>
+    <button onclick="tryFaceId()" style="background:none;border:none;padding:14px 0;font-size:20px;cursor:pointer;-webkit-tap-highlight-color:transparent">🔐</button>
+    <button onclick="pinInput(0)" class="pin-btn">0</button>
+    <button onclick="pinDelete()" style="background:none;border:none;padding:14px 0;font-size:20px;color:#8e8e93;cursor:pointer;-webkit-tap-highlight-color:transparent">⌫</button>
+  </div>
+  <div style="font-size:11px;color:#636366">Face ID ou code PIN</div>
+</div>
+<style>
+.pin-btn{background:#1c1c1e;border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:14px 0;font-size:20px;font-weight:500;color:#f5f5f7;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;transition:opacity 0.1s}
+.pin-btn:active{opacity:0.5}
+</style>
+
 <div class="app">
 
   <!-- HEADER -->
@@ -79,7 +113,7 @@ input::placeholder{color:var(--text3)}
       <div onclick="togglePortfolioValue()" style="cursor:pointer;-webkit-tap-highlight-color:transparent">
         <div style="font-size:11px;color:var(--text3);font-weight:600;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:3px">BVC Portfolio</div>
         <div id="hv" style="font-size:30px;font-weight:700;color:var(--text);letter-spacing:-1.5px;line-height:1.1">—</div>
-        <div id="hn" style="font-size:12px;font-weight:600;color:var(--text3);margin-top:4px;letter-spacing:-0.2px">Chargement...</div>
+        <div id="hn" style="font-size:13px;font-weight:600;color:var(--text3);margin-top:4px;letter-spacing:-0.2px">Chargement...</div>
       </div>
       <!-- Toggle dark/light -->
       <button onclick="toggleTheme()" id="theme-btn" style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:6px 10px;font-size:16px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;margin-top:2px">🌙</button>
@@ -336,6 +370,134 @@ input::placeholder{color:var(--text3)}
 </div>
 
 <script>
+// ─── LOCK / PIN / FACE ID ─────────────────────────
+const CORRECT_PIN = localStorage.getItem('bvc_pin') || '0000';
+let pinEntered = '';
+
+function updateDots() {
+  for(let i=0;i<4;i++){
+    const d = document.getElementById('d'+i);
+    d.style.background = i < pinEntered.length ? '#0a84ff' : '#3a3a3c';
+  }
+}
+
+function pinInput(n) {
+  if(pinEntered.length >= 4) return;
+  pinEntered += String(n);
+  updateDots();
+  if(pinEntered.length === 4) {
+    setTimeout(() => checkPin(), 200);
+  }
+}
+
+function pinDelete() {
+  pinEntered = pinEntered.slice(0, -1);
+  updateDots();
+}
+
+function checkPin() {
+  const current = localStorage.getItem('bvc_pin') || '0000';
+  if(pinEntered === current) {
+    unlock();
+  } else {
+    pinEntered = '';
+    updateDots();
+    const msg = document.getElementById('lock-msg');
+    msg.textContent = 'Code incorrect — réessaie';
+    msg.style.color = '#ff453a';
+    // shake effect
+    const dots = document.getElementById('pin-dots');
+    dots.style.transform = 'translateX(8px)';
+    setTimeout(()=>{dots.style.transform='translateX(-8px)';},80);
+    setTimeout(()=>{dots.style.transform='translateX(4px)';},160);
+    setTimeout(()=>{dots.style.transform='translateX(0)';msg.textContent='Entrer le code PIN';msg.style.color='#636366';},240);
+  }
+}
+
+function unlock() {
+  document.getElementById('lock-screen').style.opacity='0';
+  document.getElementById('lock-screen').style.transition='opacity 0.3s';
+  setTimeout(()=>{
+    document.getElementById('lock-screen').style.display='none';
+    loadPortfolioFromStorage();
+  }, 300);
+}
+
+async function tryFaceId() {
+  if(!window.PublicKeyCredential) { return; }
+  try {
+    const result = await navigator.credentials.get({
+      publicKey: {
+        challenge: new Uint8Array(32),
+        timeout: 60000,
+        userVerification: 'required'
+      }
+    });
+    if(result) unlock();
+  } catch(e) {
+    // Face ID not available or failed — user uses PIN
+  }
+}
+
+// Auto-try Face ID on load
+window.addEventListener('load', () => {
+  setTimeout(() => tryFaceId(), 600);
+});
+
+// ─── STORAGE — sauvegarde / restauration portfolio ──
+function savePortfolioToStorage() {
+  try {
+    localStorage.setItem('bvc_stocks', JSON.stringify(stocks));
+  } catch(e) {}
+}
+
+function loadPortfolioFromStorage() {
+  try {
+    const saved = localStorage.getItem('bvc_stocks');
+    if(saved) {
+      const parsed = JSON.parse(saved);
+      if(Array.isArray(parsed) && parsed.length > 0) {
+        // Merge saved data into stocks (preserve live prices from default)
+        parsed.forEach(saved => {
+          const idx = stocks.findIndex(s => s.t === saved.t);
+          if(idx >= 0) {
+            // Update editable fields only
+            stocks[idx].q   = saved.q;
+            stocks[idx].b   = saved.b;
+            stocks[idx].dpa = saved.dpa;
+            stocks[idx].det = saved.det;
+            stocks[idx].pay = saved.pay;
+            stocks[idx].an  = saved.an;
+          } else {
+            // New stock added by user
+            stocks.push(saved);
+          }
+        });
+        // Remove stocks user deleted
+        const savedTickers = parsed.map(s => s.t);
+        for(let i = stocks.length - 1; i >= 0; i--) {
+          if(!savedTickers.includes(stocks[i].t)) {
+            stocks.splice(i, 1);
+          }
+        }
+      }
+    }
+    // Load saved live prices
+    stocks.forEach(s => {
+      const p = localStorage.getItem('price_' + s.t);
+      if(p) { const n = parseFloat(p); if(n>0) s.live = n; }
+    });
+    renderAll();
+    showTab('port');
+    // Set theme
+    const themeBtn = document.getElementById('theme-btn');
+    if(themeBtn) themeBtn.textContent = isDark ? '🌙' : '☀️';
+  } catch(e) {
+    renderAll();
+    showTab('port');
+  }
+}
+
 // ─── CONFIG ───────────────────────────────────────
 let RET = 0.1125;
 let retYear = '2026';
@@ -1061,17 +1223,19 @@ function saveEdit() {
   s.pay = document.getElementById('edit-pay').value || null;
   const savedIdx = editIdx;
   editIdx = -1;
+  savePortfolioToStorage();
   renderAll();
   openDetail(savedIdx);
 }
 
-function removeStock(i){stocks.splice(i,1);renderAll();showTab('port');}
+function removeStock(i){stocks.splice(i,1);savePortfolioToStorage();renderAll();showTab('port');}
 
 function deleteFromEdit(){
   if(editIdx < 0) return;
   if(!confirm('Supprimer cette action ?')) return;
   stocks.splice(editIdx,1);
   editIdx=-1;
+  savePortfolioToStorage();
   renderAll();
   showTab('port');
 }
@@ -1153,8 +1317,8 @@ function addStock(){
   
   document.getElementById('ns').value='';document.getElementById('nq').value='';document.getElementById('nb').value='';
   document.getElementById('sel-info').style.display='none';
-  document.getElementById('prev').innerHTML='<span style="color:#10b981">✓ Ajouté ! Prix auto-update activé.</span>';
-  selBVC=null;showTab('port');fetchPrices();
+  document.getElementById('prev').innerHTML='<span style="color:#10b981">✓ Ajouté !</span>';
+  selBVC=null;savePortfolioToStorage();showTab('port');fetchPrices();
 }
 
 function showTab(t){
@@ -1882,26 +2046,8 @@ async function fetchAndDebugPrices(){
 
 
 // ─── INIT ─────────────────────────────────────────
-try{
-  // Load saved prices from localStorage
-  stocks.forEach(s=>{
-    const saved=localStorage.getItem('price_'+s.t);
-    if(saved){
-      const price=parseFloat(saved);
-      if(price>0) s.live=price;
-    }
-  });
-
-  renderAll();
-  showTab('port');
-  // Set theme button emoji after DOM ready
-  const themeBtn = document.getElementById('theme-btn');
-  if(themeBtn) themeBtn.textContent = isDark ? '🌙' : '☀️';
-  console.log('✅ App initialized with '+stocks.length+' stocks');
-}catch(e){
-  console.error('❌ Init error:', e);
-  alert('Erreur: '+e.message);
-}
+// Portfolio is loaded after PIN unlock via loadPortfolioFromStorage()
+console.log('✅ App ready — waiting for unlock');
 // Manual sync only — no auto-refresh
 window.addEventListener('online', () => {
   document.getElementById('dot').style.background = '#f59e0b';
