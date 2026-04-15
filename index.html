@@ -14,38 +14,54 @@
 <meta name="msapplication-config" content="./browserconfig.xml?v=rt4">
 <title>BVC Portfolio</title>
 <style>
+:root{
+  --bg:#0a0a0f;--bg2:#1c1c1e;--bg3:#2c2c2e;
+  --text:#f5f5f7;--text2:#8e8e93;--text3:#636366;
+  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.13);
+  --card:#1c1c1e;--header:rgba(10,10,15,0.96);
+  --tab-bg:#1c1c1e;--filter-bg:#e5e5ea;
+  --green:#34c759;--red:#ff453a;--gold:#ffd60a;--blue:#0a84ff;
+}
+body.light{
+  --bg:#f2f2f7;--bg2:#fff;--bg3:#e5e5ea;
+  --text:#1c1c1e;--text2:#8e8e93;--text3:#aeaeb2;
+  --border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.12);
+  --card:#fff;--header:rgba(242,242,247,0.96);
+  --tab-bg:#e5e5ea;
+  --green:#30d158;--red:#ff3b30;--gold:#ff9500;--blue:#007aff;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-html{height:100%;height:-webkit-fill-available;background:#0a0a0f}
-html,body{width:100%;background:#0a0a0f;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',sans-serif;-webkit-user-select:none;user-select:none;-webkit-font-smoothing:antialiased}
+html{height:100%;height:-webkit-fill-available;background:var(--bg)}
+html,body{width:100%;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',sans-serif;-webkit-user-select:none;user-select:none;-webkit-font-smoothing:antialiased}
 body{overflow:hidden;-webkit-tap-highlight-color:transparent;min-height:100vh;min-height:-webkit-fill-available}
-.app{width:100%;height:100vh;height:100dvh;background:#0a0a0f;color:#f5f5f7;
+.app{width:100%;height:100vh;height:100dvh;background:var(--bg);color:var(--text);
   padding-top:max(54px,env(safe-area-inset-top));
   padding-bottom:max(20px,env(safe-area-inset-bottom));
   padding-left:max(0px,env(safe-area-inset-left));
   padding-right:max(0px,env(safe-area-inset-right));
   display:flex;flex-direction:column;overflow:hidden}
-input,select{background:#1c1c1e;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:13px 14px;color:#f5f5f7;font-size:16px;font-family:inherit;outline:none;width:100%;-webkit-appearance:none;letter-spacing:-0.2px}
-input:focus,select:focus{border-color:#0a84ff;box-shadow:0 0 0 3px rgba(10,132,255,0.2)}
-input::placeholder{color:#48484a}
-.btn{background:#0a84ff;border:none;border-radius:14px;padding:15px;color:#fff;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;width:100%;touch-action:manipulation;letter-spacing:-0.2px;-webkit-tap-highlight-color:transparent}
+input,select{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:13px 14px;color:var(--text);font-size:16px;font-family:inherit;outline:none;width:100%;-webkit-appearance:none;letter-spacing:-0.2px}
+input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(10,132,255,0.15)}
+input::placeholder{color:var(--text3)}
+.btn{background:var(--blue);border:none;border-radius:14px;padding:15px;color:#fff;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;width:100%;touch-action:manipulation;letter-spacing:-0.2px;-webkit-tap-highlight-color:transparent}
 .btn:active{opacity:0.8;transform:scale(0.97)}
-.card{background:#1c1c1e;border-radius:16px;padding:14px 16px;margin-bottom:10px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:opacity 0.12s}
+.card{background:var(--card);border-radius:16px;padding:14px 16px;margin-bottom:10px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:opacity 0.12s;border:1px solid var(--border)}
 .card:active{opacity:0.6}
 .row{display:flex;justify-content:space-between;align-items:center}
-.lbl{font-size:11px;color:#8e8e93;margin-bottom:3px;font-weight:500;letter-spacing:0.1px}
-.kpi{background:#1c1c1e;border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:11px 13px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:opacity 0.12s}
+.lbl{font-size:11px;color:var(--text2);margin-bottom:3px;font-weight:500;letter-spacing:0.1px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:11px 13px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:opacity 0.12s}
 .kpi:active{opacity:0.6}
-.dr{display:flex;justify-content:space-between;padding:11px 14px;background:#1c1c1e;border-radius:12px;margin-bottom:6px;align-items:center}
-.dl{font-size:12px;color:#8e8e93;letter-spacing:-0.1px}
-.dv{font-size:13px;font-weight:600;letter-spacing:-0.3px}
-.tab{flex:1;padding:11px 0;border-radius:12px;font-size:11px;font-weight:600;text-align:center;cursor:pointer;touch-action:manipulation;min-height:46px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;-webkit-tap-highlight-color:transparent}
-.fb{flex:1;padding:10px 0;border-radius:12px;font-size:12px;font-weight:600;text-align:center;cursor:pointer;touch-action:manipulation;border:1px solid rgba(255,255,255,0.1);min-height:40px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
-.sug{position:absolute;z-index:99;background:rgba(28,28,30,0.98);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);border:1px solid rgba(255,255,255,0.1);border-radius:16px;width:100%;top:calc(100% + 6px);left:0;max-height:280px;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.7)}
-.si{padding:14px 16px;cursor:pointer;font-size:15px;color:#f5f5f7;border-bottom:1px solid rgba(255,255,255,0.06);touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.si:active{background:rgba(255,255,255,0.08)}
+.dr{display:flex;justify-content:space-between;padding:11px 14px;background:var(--bg2);border-radius:12px;margin-bottom:6px;align-items:center;border:1px solid var(--border)}
+.dl{font-size:12px;color:var(--text2);letter-spacing:-0.1px}
+.dv{font-size:13px;font-weight:600;letter-spacing:-0.3px;color:var(--text)}
+.tab{flex:1;padding:11px 0;border-radius:12px;font-size:11px;font-weight:600;text-align:center;cursor:pointer;touch-action:manipulation;min-height:46px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;-webkit-tap-highlight-color:transparent;color:var(--text2)}
+.fb{flex:1;padding:10px 0;border-radius:12px;font-size:12px;font-weight:600;text-align:center;cursor:pointer;touch-action:manipulation;border:1px solid var(--border);min-height:40px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+.sug{position:absolute;z-index:99;background:var(--card);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);border:1px solid var(--border2);border-radius:16px;width:100%;top:calc(100% + 6px);left:0;max-height:280px;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+.si{padding:14px 16px;cursor:pointer;font-size:15px;color:var(--text);border-bottom:1px solid var(--border);touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.si:active{background:var(--border)}
 .pw{position:relative}
 .dtab{flex:1;padding:10px 0;border-radius:11px;font-size:12px;font-weight:600;text-align:center;cursor:pointer;touch-action:manipulation;min-height:42px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
-.spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(10,132,255,0.3);border-top-color:#0a84ff;border-radius:50%;animation:spin 0.8s linear infinite}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(10,132,255,0.3);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #v-port,#v-div,#v-detail,#v-add,#v-sim,#v-sync,#v-edit{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 #list,#div-list{padding:0 14px 100px}
@@ -56,35 +72,39 @@ input::placeholder{color:#48484a}
 <div class="app">
 
   <!-- HEADER -->
-  <div style="background:rgba(10,10,15,0.96);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);padding:12px 16px 10px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.07)">
+  <div style="background:var(--header);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);padding:12px 16px 10px;flex-shrink:0;border-bottom:1px solid var(--border)">
 
     <!-- Total portfolio -->
-    <div onclick="togglePortfolioValue()" style="margin-bottom:14px;cursor:pointer;-webkit-tap-highlight-color:transparent">
-      <div style="font-size:11px;color:#636366;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:3px">BVC Portfolio</div>
-      <div id="hv" style="font-size:30px;font-weight:700;color:#f5f5f7;letter-spacing:-1.5px;line-height:1.1">—</div>
-      <div id="hn" style="font-size:12px;color:#636366;margin-top:4px;font-weight:500">Chargement...</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+      <div onclick="togglePortfolioValue()" style="cursor:pointer;-webkit-tap-highlight-color:transparent">
+        <div style="font-size:11px;color:var(--text3);font-weight:600;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:3px">BVC Portfolio</div>
+        <div id="hv" style="font-size:30px;font-weight:700;color:var(--text);letter-spacing:-1.5px;line-height:1.1">—</div>
+        <div id="hn" style="font-size:12px;font-weight:600;color:var(--text3);margin-top:4px;letter-spacing:-0.2px">Chargement...</div>
+      </div>
+      <!-- Toggle dark/light -->
+      <button onclick="toggleTheme()" id="theme-btn" style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:6px 10px;font-size:16px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;margin-top:2px">🌙</button>
     </div>
 
     <!-- KPIs -->
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
       <div class="kpi" onclick="toggleInvesti()" id="k-inv">
         <div class="lbl">💰 Investi</div>
-        <div id="hi" style="font-size:12px;font-weight:700;color:#f5f5f7;margin-top:2px">—</div>
+        <div id="hi" style="font-size:12px;font-weight:700;color:var(--text);margin-top:2px">—</div>
       </div>
       <div class="kpi" onclick="setFilter('profit')" id="kp" style="background:rgba(52,199,89,0.08);border-color:rgba(52,199,89,0.2)">
-        <div class="lbl">📈 <span id="hp-count" style="color:#636366;font-weight:400"></span></div>
-        <div id="hp" style="font-size:12px;font-weight:700;color:#34c759;margin-top:2px">—</div>
+        <div class="lbl">📈 <span id="hp-count" style="color:var(--text3);font-weight:400"></span></div>
+        <div id="hp" style="font-size:12px;font-weight:700;color:var(--green);margin-top:2px">—</div>
       </div>
       <div class="kpi" onclick="setFilter('perte')" id="kn" style="background:rgba(255,69,58,0.08);border-color:rgba(255,69,58,0.2)">
-        <div class="lbl">📉 <span id="hng-count" style="color:#636366;font-weight:400"></span></div>
-        <div id="hng" style="font-size:12px;font-weight:700;color:#ff453a;margin-top:2px">—</div>
+        <div class="lbl">📉 <span id="hng-count" style="color:var(--text3);font-weight:400"></span></div>
+        <div id="hng" style="font-size:12px;font-weight:700;color:var(--red);margin-top:2px">—</div>
       </div>
     </div>
 
     <!-- dot + last sync -->
     <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-bottom:10px">
-      <div id="dot" style="width:6px;height:6px;border-radius:50%;background:#ff9f0a;box-shadow:0 0 6px rgba(255,159,10,0.6)"></div>
-      <div id="upd" style="font-size:10px;color:#48484a;font-weight:500">—</div>
+      <div id="dot" style="width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 6px rgba(255,214,10,0.5)"></div>
+      <div id="upd" style="font-size:10px;color:var(--text3);font-weight:500">—</div>
     </div>
 
   <!-- EDIT PAGE -->
@@ -153,12 +173,12 @@ input::placeholder{color:#48484a}
       </div>
     </div>
 
-    <div style="display:flex;gap:4px;background:#1c1c1e;border-radius:13px;padding:3px">
-      <div id="t-port" class="tab" onclick="showTab('port')" style="background:#0a84ff;color:#fff;border-radius:10px;font-size:11px">Portfolio</div>
-      <div id="t-div"  class="tab" onclick="showTab('div')"  style="background:transparent;color:#636366;border-radius:10px;font-size:13px">🌿</div>
-      <div id="t-add"  class="tab" onclick="showTab('add')"  style="background:transparent;color:#636366;border-radius:10px;font-size:13px">➕</div>
-      <div id="t-sim"  class="tab" onclick="showTab('sim')"  style="background:transparent;color:#636366;border-radius:10px;font-size:13px">🎯</div>
-      <div id="t-sync" class="tab" onclick="showTab('sync')" style="background:transparent;color:#636366;border-radius:10px;font-size:13px">💫</div>
+    <div style="display:flex;gap:4px;background:var(--tab-bg);border-radius:13px;padding:3px">
+      <div id="t-port" class="tab" onclick="showTab('port')" style="background:var(--blue);color:#fff;border-radius:10px;font-size:11px">Portfolio</div>
+      <div id="t-div"  class="tab" onclick="showTab('div')"  style="background:transparent;border-radius:10px;font-size:13px">🌿</div>
+      <div id="t-add"  class="tab" onclick="showTab('add')"  style="background:transparent;border-radius:10px;font-size:13px">➕</div>
+      <div id="t-sim"  class="tab" onclick="showTab('sim')"  style="background:transparent;border-radius:10px;font-size:13px">🎯</div>
+      <div id="t-sync" class="tab" onclick="showTab('sync')" style="background:transparent;border-radius:10px;font-size:13px">💫</div>
     </div>
   </div>
 
@@ -711,6 +731,25 @@ function renderAll(){updateHeader();updateDivHeader();if(curTab==='port')renderL
 
 let portfolioVisible = true;
 let investiVisible = true;
+let isDark = true;
+
+function toggleTheme() {
+  isDark = !isDark;
+  document.body.classList.toggle('light', !isDark);
+  const btn = document.getElementById('theme-btn');
+  if(btn) btn.textContent = isDark ? '🌙' : '☀️';
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+}
+
+// Init theme from storage
+(function(){
+  const saved = localStorage.getItem('theme');
+  if(saved === 'light'){
+    isDark = false;
+    document.body.classList.add('light');
+    // btn not ready yet, will be set on load
+  }
+})();
 
 function togglePortfolioValue() {
   portfolioVisible = !portfolioVisible;
@@ -762,9 +801,10 @@ function updateHeader(){
     document.getElementById('hv').style.color='#f5f5f7';
     document.getElementById('hv').style.letterSpacing='-1.5px';
     const el=document.getElementById('hn');
-    el.style.color=tn>=0?'#34c759':'#ff453a';
+    const hnColor = tn>=0 ? getComputedStyle(document.documentElement).getPropertyValue('--green').trim() : getComputedStyle(document.documentElement).getPropertyValue('--red').trim();
+    el.style.color = hnColor;
     el.textContent=(tn>=0?'▲ +':'▼ ')+f(Math.abs(tn))+' MAD · '+(pctTotal>=0?'+':'')+pctTotal.toFixed(2)+'%';
-    el.setAttribute('data-color', el.style.color);
+    el.setAttribute('data-color', hnColor);
     el.setAttribute('data-real', el.textContent);
   }
   if(investiVisible){
@@ -805,8 +845,11 @@ function setFilter(flt){
   const els={all:document.getElementById('f-all'),profit:document.getElementById('f-profit'),perte:document.getElementById('f-perte')};
   Object.entries(els).forEach(([k,el])=>{
     const active=k===curFilter;
-    if(k==='all'){el.style.background=active?'#0a84ff':'transparent';el.style.color=active?'#fff':'#636366';el.style.borderColor=active?'#0a84ff':'rgba(255,255,255,0.1)';}
-    else if(k==='profit'){el.style.background=active?'rgba(52,199,89,0.2)':'transparent';el.style.color=active?'#34c759':'#636366';el.style.borderColor=active?'rgba(52,199,89,0.4)':'rgba(255,255,255,0.1)';}
+    const blueVar = getComputedStyle(document.documentElement).getPropertyValue('--blue').trim();
+    const greenVar = getComputedStyle(document.documentElement).getPropertyValue('--green').trim();
+    const borderVar = getComputedStyle(document.documentElement).getPropertyValue('--border').trim();
+    if(k==='all'){el.style.background=active?blueVar:'transparent';el.style.color=active?'#fff':'';el.style.borderColor=active?blueVar:borderVar;}
+    else if(k==='profit'){el.style.background=active?'rgba(52,199,89,0.2)':'transparent';el.style.color=active?greenVar:'';el.style.borderColor=active?'rgba(52,199,89,0.4)':borderVar;}
     else{el.style.background=active?'rgba(239,68,68,0.2)':'rgba(255,255,255,0.05)';el.style.color=active?'#ff453a':'#9ca3af';el.style.borderColor=active?'rgba(239,68,68,0.5)':'rgba(255,255,255,0.1)';}
   });
   if(curTab!=='port')showTab('port');else renderList();
@@ -1117,11 +1160,12 @@ function addStock(){
 function showTab(t){
   ['port','div','detail','add','sim','sync','edit'].forEach(x=>document.getElementById('v-'+x).style.display=x===t?'flex':'none');
   document.getElementById('v-'+t).style.flexDirection='column';
+  const blue = getComputedStyle(document.documentElement).getPropertyValue('--blue').trim();
   ['port','div','add','sim','sync'].forEach(x=>{
     const el=document.getElementById('t-'+x);
     if(!el)return;
-    el.style.background=x===t?'#0a84ff':'transparent';
-    el.style.color=x===t?'#fff':'#636366';
+    el.style.background=x===t?blue:'transparent';
+    el.style.color=x===t?'#fff':'';
   });
   curTab=t;
   if(t==='port')renderList();
@@ -1849,7 +1893,10 @@ try{
   });
 
   renderAll();
-  showTab('port'); // Ensure portfolio tab is active and rendered
+  showTab('port');
+  // Set theme button emoji after DOM ready
+  const themeBtn = document.getElementById('theme-btn');
+  if(themeBtn) themeBtn.textContent = isDark ? '🌙' : '☀️';
   console.log('✅ App initialized with '+stocks.length+' stocks');
 }catch(e){
   console.error('❌ Init error:', e);
