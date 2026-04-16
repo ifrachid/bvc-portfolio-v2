@@ -10,11 +10,15 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<link rel="manifest" href="./manifest.json?v=rt5">
-<link rel="apple-touch-icon" href="./icon-512.png">
-<link rel="apple-touch-icon" sizes="152x152" href="./icon-512.png">
-<link rel="apple-touch-icon" sizes="180x180" href="./icon-512.png">
-<link rel="apple-touch-icon" sizes="167x167" href="./icon-512.png">
+<link rel="manifest" href="./manifest.json?v=rt6">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="120x120" href="./apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="152x152" href="./apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="167x167" href="./apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rach Invest">
 <meta name="msapplication-config" content="./browserconfig.xml?v=rt4">
 <title>Rach Invest</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -469,7 +473,7 @@ input::placeholder{color:var(--text3)}
   </div>
 
   <!-- BOTTOM BAR -->
-  <div id="bottom-bar" style="background:var(--header);border-top:1px solid var(--border);padding:8px 4px;padding-bottom:max(20px,env(safe-area-inset-bottom));display:flex;flex-shrink:0;z-index:10">
+  <div id="bottom-bar" style="background:var(--header);border-top:1px solid var(--border);padding:8px 4px 10px;display:flex;flex-shrink:0;z-index:10">
     <div onclick="showTab('port')" id="t-port" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
       <div style="font-size:20px;line-height:1">📊</div>
       <div id="tl-port" style="font-size:9px;font-weight:600;color:var(--blue)">Portfolio</div>
@@ -503,6 +507,8 @@ input::placeholder{color:var(--text3)}
   </div>
 
 </div>
+  <!-- Home indicator spacer for iPhone Pro Max -->
+  <div style="background:var(--header);height:env(safe-area-inset-bottom,20px);flex-shrink:0"></div>
 
 <script>
 // ─── LOCK / PIN / FACE ID ─────────────────────────
