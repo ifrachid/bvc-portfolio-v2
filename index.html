@@ -36,12 +36,14 @@ body.light{
 *{box-sizing:border-box;margin:0;padding:0}
 html{height:100%;height:-webkit-fill-available;background:var(--bg)}
 html,body{width:100%;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',sans-serif;-webkit-user-select:none;user-select:none;-webkit-font-smoothing:antialiased}
-body{overflow:hidden;-webkit-tap-highlight-color:transparent;min-height:100vh;min-height:-webkit-fill-available}
+body{overflow:hidden;-webkit-tap-highlight-color:transparent;min-height:100vh;min-height:-webkit-fill-available;position:fixed;width:100%;height:100%}
 .app{width:100%;height:100vh;height:100dvh;background:var(--bg);color:var(--text);
   padding-top:env(safe-area-inset-top,47px);
   padding-bottom:0;
   padding-left:0;
   padding-right:0;
+  position:fixed;
+  top:0;left:0;right:0;bottom:0;
   display:flex;flex-direction:column;overflow:hidden}
 input,select{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:13px 14px;color:var(--text);font-size:16px;font-family:inherit;outline:none;width:100%;-webkit-appearance:none;letter-spacing:-0.2px}
 input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(10,132,255,0.15)}
@@ -69,8 +71,8 @@ input::placeholder{color:var(--text3)}
 #v-port,#v-div,#v-detail,#v-add,#v-sim,#v-sync,#v-edit{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 #list,#div-list{padding:0 14px 8px}
 ::-webkit-scrollbar{display:none}
-@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-.t-item{display:inline-flex;align-items:center;gap:4px;padding:0 12px;border-right:1px solid rgba(255,255,255,0.06);font-size:9px}
+@keyframes tickerScroll{0%{-webkit-transform:translateX(0);transform:translateX(0)}100%{-webkit-transform:translateX(-50%);transform:translateX(-50%)}}
+.t-item{display:inline-flex;align-items:center;gap:4px;padding:0 11px;border-right:1px solid rgba(255,255,255,0.06);font-size:9px;white-space:nowrap}
 .t-sym{font-weight:700;color:var(--text)}
 .t-px{color:var(--text2)}
 .t-up{color:#34c759;background:rgba(52,199,89,0.15);padding:1px 4px;border-radius:4px;font-size:8px;font-weight:600}
@@ -159,8 +161,10 @@ input::placeholder{color:var(--text3)}
     </div>
 
     <!-- TICKER -->
-    <div style="overflow:hidden;padding:4px 0;margin-bottom:6px;background:rgba(255,255,255,0.025);border-radius:8px">
-      <div id="ticker-track" style="display:flex;width:max-content;animation:tickerScroll 20s linear infinite">
+    <div style="overflow:hidden;padding:4px 0;margin-bottom:6px;position:relative">
+      <div style="position:absolute;left:0;top:0;bottom:0;width:14px;background:linear-gradient(90deg,var(--header),transparent);z-index:2;pointer-events:none"></div>
+      <div style="position:absolute;right:0;top:0;bottom:0;width:14px;background:linear-gradient(270deg,var(--header),transparent);z-index:2;pointer-events:none"></div>
+      <div id="ticker-track" style="display:flex;width:max-content;-webkit-animation:tickerScroll 22s linear infinite;animation:tickerScroll 22s linear infinite;will-change:transform">
       </div>
     </div>
 
@@ -410,39 +414,52 @@ input::placeholder{color:var(--text3)}
       <!-- Années selector -->
       <div id="tp-years" style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px"></div>
 
-      <!-- Form ajouter vente (caché par défaut) -->
+      <!-- Form ajouter vente — auto-fill depuis portfolio -->
       <div id="tp-form" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:14px">
-        <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:12px">Nouvelle vente</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:12px">Nouvelle vente</div>
+
+        <!-- Action selector -->
+        <div style="margin-bottom:10px">
+          <div class="lbl" style="margin-bottom:5px">ACTION DU PORTFOLIO</div>
+          <select id="tp-ticker" onchange="onTpTickerChange()" style="font-size:14px;padding:10px 12px;width:100%"></select>
+        </div>
+
+        <!-- Prix achat auto + quantité -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
           <div>
-            <div class="lbl" style="margin-bottom:4px">ACTION</div>
-            <select id="tp-ticker" style="font-size:14px;padding:10px 12px">
-            </select>
+            <div class="lbl" style="margin-bottom:5px">PRIX ACHAT <span style="color:var(--blue);font-size:9px">(auto)</span></div>
+            <input id="tp-buy" type="number" step="0.01" placeholder="6926" readonly style="font-size:14px;padding:10px 12px;border-color:rgba(10,132,255,0.3);color:var(--gold);background:var(--bg2)">
           </div>
           <div>
-            <div class="lbl" style="margin-bottom:4px">QUANTITÉ</div>
-            <input id="tp-qty" type="number" min="1" placeholder="15" style="font-size:14px;padding:10px 12px">
-          </div>
-          <div>
-            <div class="lbl" style="margin-bottom:4px">PRIX ACHAT</div>
-            <input id="tp-buy" type="number" step="0.01" placeholder="6926" style="font-size:14px;padding:10px 12px">
-          </div>
-          <div>
-            <div class="lbl" style="margin-bottom:4px">PRIX VENTE</div>
-            <input id="tp-sell" type="number" step="0.01" placeholder="8900" style="font-size:14px;padding:10px 12px">
-          </div>
-          <div>
-            <div class="lbl" style="margin-bottom:4px">DATE</div>
-            <input id="tp-date" type="date" style="font-size:13px;padding:10px 12px">
-          </div>
-          <div>
-            <div class="lbl" style="margin-bottom:4px">ANNÉE</div>
-            <input id="tp-year" type="number" placeholder="2026" maxlength="4" style="font-size:14px;padding:10px 12px">
+            <div class="lbl" style="margin-bottom:5px">QUANTITÉ <span style="color:var(--blue);font-size:9px">(auto)</span></div>
+            <input id="tp-qty" type="number" min="1" placeholder="15" style="font-size:14px;padding:10px 12px;border-color:rgba(10,132,255,0.3);color:var(--text)">
           </div>
         </div>
+
+        <!-- Prix vente + date -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div>
+            <div class="lbl" style="margin-bottom:5px">PRIX VENTE (MAD)</div>
+            <input id="tp-sell" type="number" step="0.01" placeholder="8900" oninput="updateTpPreview()" style="font-size:14px;padding:10px 12px">
+          </div>
+          <div>
+            <div class="lbl" style="margin-bottom:5px">DATE</div>
+            <input id="tp-date" type="date" style="font-size:12px;padding:10px 12px">
+          </div>
+        </div>
+
+        <!-- Aperçu profit auto -->
+        <div id="tp-preview" style="display:none;background:rgba(52,199,89,0.08);border:1px solid rgba(52,199,89,0.2);border-radius:12px;padding:10px;margin-bottom:10px">
+          <div class="lbl" style="margin-bottom:6px">APERÇU DU PROFIT</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <div><div style="font-size:8px;color:var(--text3)">Net après frais+TVA</div><div id="tp-net-preview" style="font-size:14px;font-weight:700;color:#34c759">—</div></div>
+            <div><div style="font-size:8px;color:var(--text3)">Marge</div><div id="tp-pct-preview" style="font-size:14px;font-weight:700;color:#34c759">—</div></div>
+          </div>
+        </div>
+
         <div style="display:flex;gap:8px">
           <button onclick="saveTrade()" class="btn" style="background:linear-gradient(135deg,#059669,#047857);flex:1;font-size:13px;padding:11px">✓ Enregistrer</button>
-          <button onclick="document.getElementById('tp-form').style.display='none'" style="padding:11px 14px;border-radius:13px;border:1px solid var(--border);background:none;color:var(--text3);font-family:inherit;font-size:13px;cursor:pointer">✕</button>
+          <button onclick="document.getElementById('tp-form').style.display='none'" style="padding:11px 14px;border-radius:13px;border:1px solid var(--border);background:none;color:var(--text3);font-family:inherit;font-size:13px;cursor:pointer;touch-action:manipulation">✕</button>
         </div>
       </div>
 
@@ -455,7 +472,7 @@ input::placeholder{color:var(--text3)}
   </div>
 
   <!-- BOTTOM BAR -->
-  <div id="bottom-bar" style="background:var(--header);border-top:1px solid var(--border);padding:8px 4px 20px;display:flex;flex-shrink:0;position:relative;z-index:10">
+  <div id="bottom-bar" style="background:var(--header);border-top:1px solid var(--border);padding:7px 4px 0;padding-bottom:env(safe-area-inset-bottom,16px);display:flex;flex-shrink:0;position:relative;z-index:10">
     <div onclick="showTab('port')" id="t-port" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
       <div style="font-size:20px;line-height:1">📊</div>
       <div id="tl-port" style="font-size:9px;font-weight:600;color:var(--blue)">Portfolio</div>
@@ -1000,12 +1017,55 @@ function saveTrades() {
 
 function showAddTradeForm() {
   const form = document.getElementById('tp-form');
-  form.style.display = form.style.display === 'none' ? 'block' : 'none';
-  // Populate ticker select
+  const isHidden = form.style.display === 'none' || form.style.display === '';
+  form.style.display = isHidden ? 'block' : 'none';
+  if (!isHidden) return;
+  // Populate ticker from portfolio stocks
   const sel = document.getElementById('tp-ticker');
-  sel.innerHTML = stocks.map(s => `<option value="${s.t}">${s.t} — ${s.n}</option>`).join('');
+  sel.innerHTML = stocks.map(s => `<option value="${s.t}" data-buy="${s.b}" data-qty="${s.q}">${s.t} — ${s.n}</option>`).join('');
   document.getElementById('tp-date').value = new Date().toISOString().split('T')[0];
-  document.getElementById('tp-year').value = new Date().getFullYear();
+  document.getElementById('tp-preview').style.display = 'none';
+  onTpTickerChange();
+}
+
+function onTpTickerChange() {
+  const sel = document.getElementById('tp-ticker');
+  const opt = sel.options[sel.selectedIndex];
+  if (!opt) return;
+  const buy = parseFloat(opt.getAttribute('data-buy')) || 0;
+  const qty = parseFloat(opt.getAttribute('data-qty')) || 0;
+  const buyEl = document.getElementById('tp-buy');
+  const qtyEl = document.getElementById('tp-qty');
+  if (buyEl) buyEl.value = buy.toFixed(2);
+  if (qtyEl) qtyEl.value = qty;
+  updateTpPreview();
+}
+
+function updateTpPreview() {
+  const sell = parseFloat(document.getElementById('tp-sell').value);
+  const buy = parseFloat(document.getElementById('tp-buy').value);
+  const qty = parseFloat(document.getElementById('tp-qty').value);
+  const prev = document.getElementById('tp-preview');
+  if (!sell || !buy || !qty || isNaN(sell)) { if(prev) prev.style.display='none'; return; }
+  const valSell = sell * qty;
+  const valBuy = buy * qty;
+  const fees = (valSell * 0.007) * 1.1;
+  const gross = valSell - valBuy;
+  const benHT = gross - fees;
+  const tva = benHT > 0 ? benHT * 0.15 : 0;
+  const net = benHT - tva;
+  const pct = (gross / valBuy) * 100;
+  const isProfit = net >= 0;
+  if (prev) {
+    prev.style.display = 'block';
+    prev.style.background = isProfit ? 'rgba(52,199,89,0.08)' : 'rgba(255,69,58,0.08)';
+    prev.style.borderColor = isProfit ? 'rgba(52,199,89,0.2)' : 'rgba(255,69,58,0.2)';
+  }
+  const netEl = document.getElementById('tp-net-preview');
+  const pctEl = document.getElementById('tp-pct-preview');
+  const col = isProfit ? '#34c759' : '#ff453a';
+  if (netEl) { netEl.textContent = (net>=0?'+':'')+f(net)+' DH'; netEl.style.color=col; }
+  if (pctEl) { pctEl.textContent = (pct>=0?'▲ ':'▼ ')+Math.abs(pct).toFixed(2)+'%'; pctEl.style.color=col; }
 }
 
 function saveTrade() {
@@ -1014,7 +1074,7 @@ function saveTrade() {
   const buy = parseFloat(document.getElementById('tp-buy').value);
   const sell = parseFloat(document.getElementById('tp-sell').value);
   const date = document.getElementById('tp-date').value;
-  const year = parseInt(document.getElementById('tp-year').value) || new Date().getFullYear();
+  const year = date ? parseInt(date.split('-')[0]) : new Date().getFullYear();
   if(!ticker || isNaN(qty) || isNaN(buy) || isNaN(sell)) { alert('Remplis tous les champs'); return; }
   const valSell = sell * qty;
   const valBuy = buy * qty;
