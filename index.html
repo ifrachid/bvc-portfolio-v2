@@ -340,63 +340,119 @@ input::placeholder{color:var(--text3)}
 
   <!-- SYNC (Mise à jour rapide) -->
   <div id="v-sync" style="display:none">
-    <div style="padding:14px 14px 20px">
+    <div style="padding:12px 14px 20px">
 
       <!-- GOOGLE SHEETS SYNC -->
-      <div style="background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(16,185,129,0.04));border:1px solid rgba(16,185,129,0.3);border-radius:16px;padding:16px;margin-bottom:14px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-          <div style="width:32px;height:32px;border-radius:9px;background:rgba(52,199,89,0.2);display:flex;align-items:center;justify-content:center;font-size:18px">📗</div>
-          <div>
-            <div style="font-size:12px;color:#10b981;font-weight:700">GOOGLE SHEETS SYNC</div>
-            <div style="font-size:10px;color:#6b7280">Prix automatiques via ta Google Sheet</div>
+      <div style="background:rgba(52,199,89,0.07);border:1px solid rgba(52,199,89,0.2);border-radius:16px;padding:14px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:34px;height:34px;border-radius:10px;background:rgba(52,199,89,0.15);display:flex;align-items:center;justify-content:center;font-size:18px">📗</div>
+            <div>
+              <div style="font-size:12px;color:#34c759;font-weight:700">Google Sheets</div>
+              <div style="font-size:10px;color:var(--text3)">Sync automatique des prix</div>
+            </div>
           </div>
+          <button onclick="showGsUrlSettings()" style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:5px 9px;font-size:11px;color:var(--text2);font-family:inherit;cursor:pointer;touch-action:manipulation">⚙️ URL</button>
         </div>
 
-        <div id="gs-setup" style="display:none">
-          <div style="font-size:10px;color:#9ca3af;margin-bottom:6px;font-weight:600">URL DE TA GOOGLE SHEET (CSV public)</div>
-          <input id="gs-url" type="url" placeholder="https://docs.google.com/spreadsheets/d/.../export?format=csv" style="font-size:11px;margin-bottom:8px;border-radius:10px;padding:10px 12px">
-          <button onclick="saveGsUrl()" class="btn" style="background:#059669;font-size:12px;padding:11px;margin-bottom:6px">💾 Enregistrer l'URL</button>
-          <button onclick="document.getElementById('gs-setup').style.display='none'" style="width:100%;padding:8px;border:none;background:none;color:#6b7280;font-size:11px;font-family:inherit;cursor:pointer">Annuler</button>
+        <div id="gs-setup" style="display:none;margin-bottom:10px">
+          <div style="font-size:10px;color:var(--text2);margin-bottom:6px;font-weight:600">URL CSV Google Sheet</div>
+          <input id="gs-url" type="url" placeholder="https://docs.google.com/spreadsheets/..." style="font-size:11px;margin-bottom:8px;border-radius:10px;padding:10px 12px">
+          <button onclick="saveGsUrl()" class="btn" style="background:#34c759;color:#000;font-size:12px;padding:11px;margin-bottom:6px">💾 Enregistrer</button>
+          <button onclick="document.getElementById('gs-setup').style.display='none'" style="width:100%;padding:8px;border:none;background:none;color:var(--text3);font-size:11px;font-family:inherit;cursor:pointer">Annuler</button>
         </div>
 
         <div id="gs-main">
-          <button id="gs-refresh-btn" onclick="triggerSheetRefresh()" class="btn" style="background:#1c2535;border:1px solid rgba(10,132,255,0.3);color:#4cc2ff;margin-bottom:8px;font-size:13px">
+          <button id="gs-refresh-btn" onclick="triggerSheetRefresh()" class="btn" style="background:rgba(10,132,255,0.12);border:1px solid rgba(10,132,255,0.3);color:#4cc2ff;margin-bottom:8px;font-size:13px">
             🔄 Actualiser les prix (script)
           </button>
-          <button id="gs-fetch-btn" onclick="fetchFromGoogleSheets()" class="btn" style="background:linear-gradient(135deg,#059669,#047857);font-size:13px">
+          <button id="gs-fetch-btn" onclick="fetchFromGoogleSheets()" class="btn" style="background:linear-gradient(135deg,#059669,#047857);font-size:13px;margin-bottom:0">
             📗 Sync depuis Google Sheets
           </button>
         </div>
-        <div id="gs-status" style="display:none;font-size:10px;text-align:center;padding:10px;border-radius:8px;margin-top:8px;line-height:1.6"></div>
-      </div>
 
-      <!-- MANUAL FALLBACK -->
-      <div style="background:#1c1c1e;border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.06)">
-        <div style="font-size:10px;color:#9ca3af;font-weight:700;letter-spacing:0.5px;margin-bottom:10px">OU SAISIE MANUELLE</div>
+        <div id="gs-status" style="display:none;font-size:10px;text-align:center;padding:8px;border-radius:8px;margin-top:8px;line-height:1.6"></div>
 
-        <button onclick="pasteFromClipboard()" class="btn" style="background:rgba(5,150,105,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3);margin-bottom:6px;font-size:12px">
-          📋 Coller depuis presse-papier
-        </button>
-        <div style="font-size:10px;color:#4b5563;background:#0a0a0f;border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.6">💡 <span style="color:#6b7280">Excel → sélectionne colonnes A-D → Ctrl+C → colle ici. L'app détecte le format automatiquement.</span></div>
-        <textarea id="price-input" placeholder="📊 Colle directement depuis Excel (Ctrl+C sur les colonnes)&#10;ou format manuel:&#10;ATW=700&#10;TGC=775&#10;SMI=8601" style="background:#0a0a0f;border:1px solid #2a3040;border-radius:11px;padding:12px;color:#f9fafb;font-size:13px;font-family:monospace;width:100%;height:100px;resize:vertical;outline:none;line-height:1.5" oninput="previewParsed()"></textarea>
-        <div id="parse-preview" style="display:none;margin-top:8px;background:#0a1f0e;border-radius:9px;padding:10px;border:1px solid rgba(52,199,89,0.2)">
-          <div style="font-size:10px;color:#10b981;font-weight:600;margin-bottom:5px">✅ <span id="parse-count">0</span> prix détectés</div>
-          <div id="parse-list" style="font-size:10px;color:#6b7280;font-family:monospace;line-height:1.8"></div>
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:10px;color:var(--text3)">Dernière sync</span>
+            <span style="font-size:10px;font-weight:600;color:var(--text)"><span id="sync-date">—</span></span>
+          </div>
+          <div style="display:flex;justify-content:space-between">
+            <span style="font-size:10px;color:var(--text3)">Prix en mémoire</span>
+            <span style="font-size:10px;font-weight:600;color:#34c759"><span id="sync-count">0</span> actions</span>
+          </div>
         </div>
-        <button onclick="importPrices()" class="btn" style="margin-top:10px;background:linear-gradient(135deg,#f59e0b,#d97706)">
-          ✓ Mettre à jour le portfolio
-        </button>
       </div>
 
       <!-- Prix sauvegardés -->
-      <div style="font-size:10px;color:#4b5563;font-weight:600;letter-spacing:0.5px;margin-bottom:8px">PRIX EN MÉMOIRE</div>
-      <div style="font-size:9px;color:#374151;margin-bottom:8px">Dernière sync: <span id="sync-date">—</span> · <span id="sync-count">0</span> prix</div>
+      <div style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-bottom:8px">PRIX EN MÉMOIRE</div>
       <div id="sync-prices" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
     </div>
   </div>
 
 
   <!-- TICKER BAR — juste sous variation, dans header -->
+
+  <!-- TAKE PROFIT PAGE -->
+  <div id="v-tp" style="display:none;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain">
+    <div style="padding:12px 14px 20px">
+
+      <!-- Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div>
+          <div style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.5px">Take Profit</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">Historique des ventes réalisées</div>
+        </div>
+        <button onclick="showAddTradeForm()" style="background:rgba(10,132,255,0.1);border:1px solid rgba(10,132,255,0.3);border-radius:11px;padding:7px 12px;color:#4cc2ff;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation">➕ Vente</button>
+      </div>
+
+      <!-- Années selector -->
+      <div id="tp-years" style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px"></div>
+
+      <!-- Form ajouter vente (caché par défaut) -->
+      <div id="tp-form" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:14px">
+        <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:12px">Nouvelle vente</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div>
+            <div class="lbl" style="margin-bottom:4px">ACTION</div>
+            <select id="tp-ticker" style="font-size:14px;padding:10px 12px">
+            </select>
+          </div>
+          <div>
+            <div class="lbl" style="margin-bottom:4px">QUANTITÉ</div>
+            <input id="tp-qty" type="number" min="1" placeholder="15" style="font-size:14px;padding:10px 12px">
+          </div>
+          <div>
+            <div class="lbl" style="margin-bottom:4px">PRIX ACHAT</div>
+            <input id="tp-buy" type="number" step="0.01" placeholder="6926" style="font-size:14px;padding:10px 12px">
+          </div>
+          <div>
+            <div class="lbl" style="margin-bottom:4px">PRIX VENTE</div>
+            <input id="tp-sell" type="number" step="0.01" placeholder="8900" style="font-size:14px;padding:10px 12px">
+          </div>
+          <div>
+            <div class="lbl" style="margin-bottom:4px">DATE</div>
+            <input id="tp-date" type="date" style="font-size:13px;padding:10px 12px">
+          </div>
+          <div>
+            <div class="lbl" style="margin-bottom:4px">ANNÉE</div>
+            <input id="tp-year" type="number" placeholder="2026" maxlength="4" style="font-size:14px;padding:10px 12px">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button onclick="saveTrade()" class="btn" style="background:linear-gradient(135deg,#059669,#047857);flex:1;font-size:13px;padding:11px">✓ Enregistrer</button>
+          <button onclick="document.getElementById('tp-form').style.display='none'" style="padding:11px 14px;border-radius:13px;border:1px solid var(--border);background:none;color:var(--text3);font-family:inherit;font-size:13px;cursor:pointer">✕</button>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div id="tp-summary"></div>
+
+      <!-- Trades list -->
+      <div id="tp-list"></div>
+    </div>
+  </div>
 
   <!-- BOTTOM BAR -->
   <div id="bottom-bar" style="background:var(--header);border-top:1px solid var(--border);padding:8px 4px 20px;display:flex;flex-shrink:0;position:relative;z-index:10">
@@ -419,6 +475,11 @@ input::placeholder{color:var(--text3)}
       <div style="font-size:20px;line-height:1">🎯</div>
       <div id="tl-sim" style="font-size:9px;font-weight:500;color:var(--text3)">Simuler</div>
       <div id="td-sim" style="width:4px;height:4px;border-radius:50%;background:transparent"></div>
+    </div>
+    <div onclick="showTab('tp')" id="t-tp" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
+      <div style="font-size:20px;line-height:1">💹</div>
+      <div id="tl-tp" style="font-size:9px;font-weight:500;color:var(--text3)">Take Profit</div>
+      <div id="td-tp" style="width:4px;height:4px;border-radius:50%;background:transparent"></div>
     </div>
     <div onclick="showTab('sync')" id="t-sync" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
       <div style="font-size:20px;line-height:1">💫</div>
@@ -930,6 +991,168 @@ async function fetchPrices(force = false){
 }
 
 // ─── RENDER ───────────────────────────────────────
+// ─── TAKE PROFIT ──────────────────────────────────────
+let trades = JSON.parse(localStorage.getItem('rach_trades') || '[]');
+
+function saveTrades() {
+  localStorage.setItem('rach_trades', JSON.stringify(trades));
+}
+
+function showAddTradeForm() {
+  const form = document.getElementById('tp-form');
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  // Populate ticker select
+  const sel = document.getElementById('tp-ticker');
+  sel.innerHTML = stocks.map(s => `<option value="${s.t}">${s.t} — ${s.n}</option>`).join('');
+  document.getElementById('tp-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('tp-year').value = new Date().getFullYear();
+}
+
+function saveTrade() {
+  const ticker = document.getElementById('tp-ticker').value;
+  const qty = parseFloat(document.getElementById('tp-qty').value);
+  const buy = parseFloat(document.getElementById('tp-buy').value);
+  const sell = parseFloat(document.getElementById('tp-sell').value);
+  const date = document.getElementById('tp-date').value;
+  const year = parseInt(document.getElementById('tp-year').value) || new Date().getFullYear();
+  if(!ticker || isNaN(qty) || isNaN(buy) || isNaN(sell)) { alert('Remplis tous les champs'); return; }
+  const valSell = sell * qty;
+  const valBuy = buy * qty;
+  const fees = (valSell * 0.007) * 1.1;
+  const gross = valSell - valBuy;
+  const benHT = gross - fees;
+  const tva = benHT > 0 ? benHT * 0.15 : 0;
+  const net = benHT - tva;
+  const pct = (gross / valBuy) * 100;
+  trades.push({ ticker, qty, buy, sell, date, year, fees: parseFloat(fees.toFixed(2)), tva: parseFloat(tva.toFixed(2)), net: parseFloat(net.toFixed(2)), pct: parseFloat(pct.toFixed(2)) });
+  saveTrades();
+  document.getElementById('tp-form').style.display = 'none';
+  renderTakeProfit();
+}
+
+function deleteTrade(idx) {
+  if(!confirm('Supprimer cette vente ?')) return;
+  trades.splice(idx, 1);
+  saveTrades();
+  renderTakeProfit();
+}
+
+let curTpYear = new Date().getFullYear();
+
+function renderTakeProfit() {
+  // Build years list
+  const years = [...new Set(trades.map(t => t.year))].sort((a,b) => b-a);
+  if(!years.includes(curTpYear) && years.length > 0) curTpYear = years[0];
+  const nextYear = curTpYear + 1;
+
+  const yearsEl = document.getElementById('tp-years');
+  yearsEl.innerHTML = years.map(y =>
+    `<div onclick="curTpYear=${y};renderTakeProfit()" style="padding:7px 18px;border-radius:20px;white-space:nowrap;font-size:12px;font-weight:700;cursor:pointer;${y===curTpYear?'background:var(--blue);color:#fff':'background:var(--bg2);color:var(--text3);border:1px solid var(--border)'}">${y}</div>`
+  ).join('') +
+  `<div onclick="addYear(${nextYear})" style="padding:7px 14px;border-radius:20px;font-size:12px;cursor:pointer;background:var(--bg2);color:var(--text3);border:1px solid var(--border);white-space:nowrap">+ ${nextYear}</div>`;
+
+  // Filter trades for current year
+  const yearTrades = trades.filter(t => t.year === curTpYear);
+  const totalNet = yearTrades.reduce((s,t) => s+t.net, 0);
+  const perDay = totalNet / 365;
+  const perMonth = totalNet / 12;
+  const avgPct = yearTrades.length > 0 ? yearTrades.reduce((s,t)=>s+t.pct,0)/yearTrades.length : 0;
+  const bestTrade = yearTrades.length > 0 ? yearTrades.reduce((a,b) => b.net > a.net ? b : a) : null;
+  const bestIdx = bestTrade ? trades.indexOf(bestTrade) : -1;
+
+  // Summary
+  const sumEl = document.getElementById('tp-summary');
+  sumEl.innerHTML = `
+    <div style="background:rgba(52,199,89,0.09);border:1px solid rgba(52,199,89,0.22);border-radius:16px;padding:14px;margin-bottom:10px">
+      <div style="font-size:9px;color:var(--text3);letter-spacing:0.5px;margin-bottom:4px">TOTAL NET ${curTpYear}</div>
+      <div style="font-size:26px;font-weight:700;color:#34c759;letter-spacing:-1.2px;margin-bottom:2px">${totalNet>=0?'+':''}${f(totalNet)} DH</div>
+      <div style="font-size:10px;color:#34c759;opacity:0.7">${yearTrades.length} trade${yearTrades.length>1?'s':''} · marge moy. ${avgPct.toFixed(2)}%</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:13px;padding:10px 11px">
+        <div style="font-size:8px;color:var(--text3);margin-bottom:4px;letter-spacing:0.3px">PAR JOUR</div>
+        <div style="font-size:16px;font-weight:700;color:#ffd60a;letter-spacing:-0.5px">${f(perDay)} DH</div>
+        <div style="font-size:8px;color:var(--text3);margin-top:2px">÷ 365 jours</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:13px;padding:10px 11px">
+        <div style="font-size:8px;color:var(--text3);margin-bottom:4px;letter-spacing:0.3px">PAR MOIS</div>
+        <div style="font-size:16px;font-weight:700;color:#ffd60a;letter-spacing:-0.5px">${f(perMonth)} DH</div>
+        <div style="font-size:8px;color:var(--text3);margin-top:2px">projeté / 12 mois</div>
+      </div>
+      <div style="background:rgba(255,149,0,0.08);border:1px solid rgba(255,149,0,0.2);border-radius:13px;padding:10px 11px">
+        <div style="font-size:8px;color:var(--text3);margin-bottom:4px;letter-spacing:0.3px">PAR AN</div>
+        <div style="font-size:16px;font-weight:700;color:#ff9500;letter-spacing:-0.5px">${f(totalNet)} DH</div>
+        <div style="font-size:8px;color:var(--text3);margin-top:2px">total ${curTpYear}</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:13px;padding:10px 11px">
+        <div style="font-size:8px;color:var(--text3);margin-bottom:4px;letter-spacing:0.3px">TRADES</div>
+        <div style="font-size:16px;font-weight:700;color:var(--text);letter-spacing:-0.5px">${yearTrades.length}</div>
+        <div style="font-size:8px;color:var(--text3);margin-top:2px">marge moy. ${avgPct.toFixed(2)}%</div>
+      </div>
+    </div>
+    ${bestTrade ? `
+    <div style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-bottom:8px">🏆 MEILLEUR TRADE</div>
+    <div style="background:rgba(255,214,10,0.07);border:1px solid rgba(255,214,10,0.2);border-radius:16px;padding:12px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:34px;height:34px;border-radius:10px;background:rgba(255,214,10,0.15);display:flex;align-items:center;justify-content:center;font-size:16px">🏆</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text)">${bestTrade.ticker} <span style="font-size:9px;color:var(--text3);font-weight:400">· ${bestTrade.qty}x</span></div>
+            <div style="font-size:10px;color:var(--text3)">${bestTrade.date||''}</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:16px;font-weight:700;color:#34c759">+${f(bestTrade.net)} DH</div>
+          <div style="font-size:10px;color:#34c759">▲ ${bestTrade.pct.toFixed(2)}%</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06)">
+        <div><div style="font-size:7px;color:var(--text3);margin-bottom:2px">Achat</div><div style="font-size:9px;font-weight:600;color:#ffd60a">${bestTrade.buy.toFixed(2)}</div></div>
+        <div><div style="font-size:7px;color:var(--text3);margin-bottom:2px">Vente</div><div style="font-size:9px;font-weight:600;color:var(--text)">${bestTrade.sell.toFixed(2)}</div></div>
+        <div><div style="font-size:7px;color:var(--text3);margin-bottom:2px">Frais</div><div style="font-size:9px;font-weight:600;color:var(--text)">${f(bestTrade.fees)}</div></div>
+        <div><div style="font-size:7px;color:var(--text3);margin-bottom:2px">TVA 15%</div><div style="font-size:9px;font-weight:600;color:var(--red)">${f(bestTrade.tva)}</div></div>
+      </div>
+    </div>` : ''}
+    <div style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-bottom:8px">VENTES RÉALISÉES</div>
+  `;
+
+  // Trades list
+  const listEl = document.getElementById('tp-list');
+  if(yearTrades.length === 0) {
+    listEl.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text3);font-size:13px">Aucune vente pour ' + curTpYear + '<br><span style="font-size:11px">Clique sur ➕ Vente pour commencer</span></div>';
+    return;
+  }
+  listEl.innerHTML = yearTrades.map((t,i) => {
+    const realIdx = trades.indexOf(t);
+    return `<div style="background:var(--bg2);border:1px solid ${t.net>=0?'rgba(52,199,89,0.2)':'rgba(255,69,58,0.2)'};border-radius:16px;padding:12px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text)">${t.ticker} <span style="font-size:9px;color:var(--text3);font-weight:400">· ${t.qty}x</span></div>
+          <div style="font-size:10px;color:var(--text3);margin-top:1px">${t.date||''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="text-align:right">
+            <div style="font-size:15px;font-weight:700;color:${t.net>=0?'#34c759':'#ff453a'}">${t.net>=0?'+':''}${f(t.net)} DH</div>
+            <div style="font-size:9px;color:${t.net>=0?'#34c759':'#ff453a'}">${t.net>=0?'▲':'▼'} ${Math.abs(t.pct).toFixed(2)}%</div>
+          </div>
+          <button onclick="deleteTrade(${realIdx})" style="background:rgba(255,69,58,0.1);border:1px solid rgba(255,69,58,0.2);border-radius:8px;padding:5px 7px;color:#ff453a;font-size:11px;cursor:pointer;touch-action:manipulation">✕</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding-top:7px;border-top:1px solid rgba(255,255,255,0.05)">
+        <div><div style="font-size:7px;color:var(--text3);margin-bottom:1px">Achat</div><div style="font-size:9px;font-weight:600;color:#ffd60a">${t.buy.toFixed(2)}</div></div>
+        <div><div style="font-size:7px;color:var(--text3);margin-bottom:1px">Vente</div><div style="font-size:9px;font-weight:600;color:var(--text)">${t.sell.toFixed(2)}</div></div>
+        <div><div style="font-size:7px;color:var(--text3);margin-bottom:1px">Frais</div><div style="font-size:9px;font-weight:600;color:var(--text)">${f(t.fees)}</div></div>
+        <div><div style="font-size:7px;color:var(--text3);margin-bottom:1px">TVA 15%</div><div style="font-size:9px;font-weight:600;color:var(--red)">${f(t.tva)}</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function addYear(y) {
+  curTpYear = y;
+  renderTakeProfit();
+}
+
 function renderTicker(){
   const track = document.getElementById('ticker-track');
   if(!track) return;
@@ -1403,14 +1626,15 @@ function addStock(){
 }
 
 function showTab(t){
-  ['port','div','detail','add','sim','sync','edit'].forEach(x=>document.getElementById('v-'+x).style.display=x===t?'flex':'none');
+  ['port','div','detail','add','sim','sync','edit','tp'].forEach(x=>{const el=document.getElementById('v-'+x);if(el)el.style.display=x===t?'flex':'none';});
   document.getElementById('v-'+t).style.flexDirection='column';
-  ['port','div','add','sim','sync'].forEach(x=>{
+  ['port','div','add','sim','sync','tp'].forEach(x=>{
     const lbl=document.getElementById('tl-'+x);
     const dot=document.getElementById('td-'+x);
     if(lbl){lbl.style.color=x===t?'var(--blue)':'var(--text3)';lbl.style.fontWeight=x===t?'600':'500';}
     if(dot){dot.style.background=x===t?'var(--blue)':'transparent';}
   });
+  if(t==='tp')renderTakeProfit();
   curTab=t;
   if(t==='port')renderList();
   if(t==='div')renderDivGlobal();
@@ -1501,6 +1725,13 @@ function parseGsCSV(csv) {
   });
 
   return prices;
+}
+
+function showGsUrlSettings() {
+  const setup = document.getElementById('gs-setup');
+  setup.style.display = setup.style.display === 'none' ? 'block' : 'none';
+  const current = localStorage.getItem('gs_csv_url') || '';
+  document.getElementById('gs-url').value = current;
 }
 
 async function triggerSheetRefresh() {
