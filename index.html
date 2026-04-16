@@ -67,8 +67,14 @@ input::placeholder{color:var(--text3)}
 .spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(10,132,255,0.3);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #v-port,#v-div,#v-detail,#v-add,#v-sim,#v-sync,#v-edit{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-#list,#div-list{padding:0 14px 100px}
+#list,#div-list{padding:0 14px 20px}
 ::-webkit-scrollbar{display:none}
+@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.t-item{display:inline-flex;align-items:center;gap:4px;padding:0 12px;border-right:1px solid rgba(255,255,255,0.06);font-size:9px}
+.t-sym{font-weight:700;color:var(--text)}
+.t-px{color:var(--text2)}
+.t-up{color:#34c759;background:rgba(52,199,89,0.15);padding:1px 4px;border-radius:4px;font-size:8px;font-weight:600}
+.t-dn{color:#ff453a;background:rgba(255,69,58,0.15);padding:1px 4px;border-radius:4px;font-size:8px;font-weight:600}
 </style>
 </head>
 <body>
@@ -95,7 +101,7 @@ input::placeholder{color:var(--text3)}
     <button onclick="pinInput(7)" class="pin-btn">7</button>
     <button onclick="pinInput(8)" class="pin-btn">8</button>
     <button onclick="pinInput(9)" class="pin-btn">9</button>
-    <button onclick="tryFaceId()" style="background:none;border:none;padding:14px 0;font-size:20px;cursor:pointer;-webkit-tap-highlight-color:transparent">🔐</button>
+    <div></div>
     <button onclick="pinInput(0)" class="pin-btn">0</button>
     <button onclick="pinDelete()" style="background:none;border:none;padding:14px 0;font-size:20px;color:#8e8e93;cursor:pointer;-webkit-tap-highlight-color:transparent">⌫</button>
   </div>
@@ -145,6 +151,12 @@ input::placeholder{color:var(--text3)}
       <div id="hn" style="font-size:13px;font-weight:600;color:var(--text3);margin-top:3px;letter-spacing:-0.2px">Chargement...</div>
     </div>
 
+    <!-- TICKER — défile les prix live -->
+    <div style="overflow:hidden;padding:5px 0;margin-bottom:8px;background:rgba(255,255,255,0.025);border-radius:8px">
+      <div id="ticker-track" style="display:flex;width:max-content;animation:tickerScroll 20s linear infinite">
+      </div>
+    </div>
+
     <!-- KPIs -->
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:8px">
       <div class="kpi" onclick="toggleInvesti()" id="k-inv">
@@ -169,7 +181,7 @@ input::placeholder{color:var(--text3)}
 
   <!-- EDIT PAGE -->
   <div id="v-edit" style="display:none">
-    <div style="padding:12px 14px 80px">
+    <div style="padding:12px 14px 20px">
       <button onclick="closeEdit()" style="display:flex;align-items:center;gap:6px;margin-bottom:14px;cursor:pointer;background:none;border:none;padding:0;font-family:inherit;touch-action:manipulation">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
         <span style="font-size:12px;color:var(--text2)">Retour</span>
@@ -223,23 +235,8 @@ input::placeholder{color:var(--text3)}
     </div>
   </div>
 
-    <!-- Dividendes banner -->
-    <div style="background:rgba(255,214,10,0.07);border:1px solid rgba(255,214,10,0.2);border-radius:12px;padding:9px 12px;margin-bottom:9px">
-      <div style="font-size:10px;color:#ffd60a;font-weight:700;letter-spacing:0.5px;margin-bottom:5px">🌿 DIVIDENDES — retenue <span id="ret-label">11.25%</span> (2026)</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
-        <div><div class="lbl">Brut annuel</div><div id="div-brut" style="font-size:11px;font-weight:700;color:#ffd60a">—</div></div>
-        <div><div class="lbl">Net encaissé</div><div id="div-net" style="font-size:11px;font-weight:700;color:#10b981">—</div></div>
-        <div><div class="lbl">Yield global</div><div id="div-yield" style="font-size:11px;font-weight:700;color:#ffd60a">—</div></div>
-      </div>
-    </div>
 
-    <div style="display:flex;gap:4px;background:var(--tab-bg);border-radius:13px;padding:3px">
-      <div id="t-port" class="tab" onclick="showTab('port')" style="background:var(--blue);color:#fff;border-radius:10px;font-size:11px">Portfolio</div>
-      <div id="t-div"  class="tab" onclick="showTab('div')"  style="background:transparent;border-radius:10px;font-size:13px">🌿</div>
-      <div id="t-add"  class="tab" onclick="showTab('add')"  style="background:transparent;border-radius:10px;font-size:13px">➕</div>
-      <div id="t-sim"  class="tab" onclick="showTab('sim')"  style="background:transparent;border-radius:10px;font-size:13px">🎯</div>
-      <div id="t-sync" class="tab" onclick="showTab('sync')" style="background:transparent;border-radius:10px;font-size:13px">💫</div>
-    </div>
+
   </div>
 
   <!-- PORTFOLIO -->
@@ -296,7 +293,7 @@ input::placeholder{color:var(--text3)}
 
   <!-- ADD -->
   <div id="v-add" style="display:none">
-    <div style="padding:14px 14px 80px">
+    <div style="padding:14px 14px 20px">
       <div style="display:flex;flex-direction:column;gap:9px">
         <div class="pw">
           <div class="lbl" style="margin-bottom:4px">TICKER / NOM</div>
@@ -322,7 +319,7 @@ input::placeholder{color:var(--text3)}
 
   <!-- SIM -->
   <div id="v-sim" style="display:none">
-    <div style="padding:14px 14px 80px">
+    <div style="padding:14px 14px 20px">
       <div style="display:flex;flex-direction:column;gap:9px">
         <div><div class="lbl" style="margin-bottom:4px">ACTION</div><select id="ss" onchange="runSim()"></select></div>
         <div><div class="lbl" style="margin-bottom:4px">PRIX CIBLE (MAD)</div><input id="sp" type="number" step="0.01" placeholder="ex: 200.00" oninput="runSim()"></div>
@@ -337,7 +334,7 @@ input::placeholder{color:var(--text3)}
 
   <!-- SYNC (Mise à jour rapide) -->
   <div id="v-sync" style="display:none">
-    <div style="padding:14px 14px 80px">
+    <div style="padding:14px 14px 20px">
 
       <!-- GOOGLE SHEETS SYNC -->
       <div style="background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(16,185,129,0.04));border:1px solid rgba(16,185,129,0.3);border-radius:16px;padding:16px;margin-bottom:14px">
@@ -392,6 +389,37 @@ input::placeholder{color:var(--text3)}
     </div>
   </div>
 
+
+  <!-- TICKER BAR — juste sous variation, dans header -->
+
+  <!-- BOTTOM BAR -->
+  <div id="bottom-bar" style="background:var(--header);border-top:1px solid var(--border);padding:8px 4px 20px;display:flex;flex-shrink:0;position:relative;z-index:10">
+    <div onclick="showTab('port')" id="t-port" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
+      <div style="font-size:20px;line-height:1">📊</div>
+      <div id="tl-port" style="font-size:9px;font-weight:600;color:var(--blue)">Portfolio</div>
+      <div id="td-port" style="width:4px;height:4px;border-radius:50%;background:var(--blue)"></div>
+    </div>
+    <div onclick="showTab('div')" id="t-div" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
+      <div style="font-size:20px;line-height:1">🌿</div>
+      <div id="tl-div" style="font-size:9px;font-weight:500;color:var(--text3)">Dividendes</div>
+      <div id="td-div" style="width:4px;height:4px;border-radius:50%;background:transparent"></div>
+    </div>
+    <div onclick="showTab('add')" id="t-add" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
+      <div style="font-size:20px;line-height:1">➕</div>
+      <div id="tl-add" style="font-size:9px;font-weight:500;color:var(--text3)">Ajouter</div>
+      <div id="td-add" style="width:4px;height:4px;border-radius:50%;background:transparent"></div>
+    </div>
+    <div onclick="showTab('sim')" id="t-sim" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
+      <div style="font-size:20px;line-height:1">🎯</div>
+      <div id="tl-sim" style="font-size:9px;font-weight:500;color:var(--text3)">Simuler</div>
+      <div id="td-sim" style="width:4px;height:4px;border-radius:50%;background:transparent"></div>
+    </div>
+    <div onclick="showTab('sync')" id="t-sync" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
+      <div style="font-size:20px;line-height:1">💫</div>
+      <div id="tl-sync" style="font-size:9px;font-weight:500;color:var(--text3)">Sync</div>
+      <div id="td-sync" style="width:4px;height:4px;border-radius:50%;background:transparent"></div>
+    </div>
+  </div>
 
 </div>
 
@@ -449,26 +477,7 @@ function unlock() {
   }, 300);
 }
 
-async function tryFaceId() {
-  if(!window.PublicKeyCredential) { return; }
-  try {
-    const result = await navigator.credentials.get({
-      publicKey: {
-        challenge: new Uint8Array(32),
-        timeout: 60000,
-        userVerification: 'required'
-      }
-    });
-    if(result) unlock();
-  } catch(e) {
-    // Face ID not available or failed — user uses PIN
-  }
-}
-
-// Auto-try Face ID on load
-window.addEventListener('load', () => {
-  setTimeout(() => tryFaceId(), 600);
-});
+// PIN only — no Face ID (not supported in PWA)
 
 // ─── STORAGE — sauvegarde / restauration portfolio ──
 function savePortfolioToStorage() {
@@ -915,7 +924,19 @@ async function fetchPrices(force = false){
 }
 
 // ─── RENDER ───────────────────────────────────────
-function renderAll(){updateHeader();updateDivHeader();if(curTab==='port')renderList();if(curTab==='div')renderDivGlobal();updateSel();}
+function renderTicker(){
+  const track = document.getElementById('ticker-track');
+  if(!track) return;
+  const items = stocks.map(s => {
+    const chg = s.chg || 0;
+    const cls = chg >= 0 ? 't-up' : 't-dn';
+    const arr = chg >= 0 ? '▲' : '▼';
+    return `<div class="t-item"><span class="t-sym">${s.t}</span><span class="t-px">${s.live.toFixed(2)}</span><span class="${cls}">${arr} ${Math.abs(chg).toFixed(2)}%</span></div>`;
+  }).join('');
+  track.innerHTML = items + items; // duplicate for seamless loop
+}
+
+function renderAll(){updateHeader();updateDivHeader();if(curTab==='port')renderList();if(curTab==='div')renderDivGlobal();updateSel();renderTicker();}
 
 let portfolioVisible = true;
 let investiVisible = true;
@@ -1350,12 +1371,11 @@ function addStock(){
 function showTab(t){
   ['port','div','detail','add','sim','sync','edit'].forEach(x=>document.getElementById('v-'+x).style.display=x===t?'flex':'none');
   document.getElementById('v-'+t).style.flexDirection='column';
-  const blue = getComputedStyle(document.documentElement).getPropertyValue('--blue').trim();
   ['port','div','add','sim','sync'].forEach(x=>{
-    const el=document.getElementById('t-'+x);
-    if(!el)return;
-    el.style.background=x===t?blue:'transparent';
-    el.style.color=x===t?'#fff':'';
+    const lbl=document.getElementById('tl-'+x);
+    const dot=document.getElementById('td-'+x);
+    if(lbl){lbl.style.color=x===t?'var(--blue)':'var(--text3)';lbl.style.fontWeight=x===t?'600':'500';}
+    if(dot){dot.style.background=x===t?'var(--blue)':'transparent';}
   });
   curTab=t;
   if(t==='port')renderList();
