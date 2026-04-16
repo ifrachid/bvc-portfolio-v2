@@ -10,7 +10,11 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<link rel="manifest" href="./manifest.json?v=rt4">
+<link rel="manifest" href="./manifest.json?v=rt5">
+<link rel="apple-touch-icon" href="./icon-512.png">
+<link rel="apple-touch-icon" sizes="152x152" href="./icon-512.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./icon-512.png">
+<link rel="apple-touch-icon" sizes="167x167" href="./icon-512.png">
 <meta name="msapplication-config" content="./browserconfig.xml?v=rt4">
 <title>Rach Invest</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,14 +40,13 @@ body.light{
 *{box-sizing:border-box;margin:0;padding:0}
 html{height:100%;height:-webkit-fill-available;background:var(--bg)}
 html,body{width:100%;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',sans-serif;-webkit-user-select:none;user-select:none;-webkit-font-smoothing:antialiased}
-body{overflow:hidden;-webkit-tap-highlight-color:transparent;min-height:100vh;min-height:-webkit-fill-available;position:fixed;width:100%;height:100%}
+body{overflow:hidden;-webkit-tap-highlight-color:transparent;min-height:100vh;min-height:-webkit-fill-available}
 .app{width:100%;height:100vh;height:100dvh;background:var(--bg);color:var(--text);
   padding-top:env(safe-area-inset-top,47px);
   padding-bottom:0;
   padding-left:0;
   padding-right:0;
-  position:fixed;
-  top:0;left:0;right:0;bottom:0;
+
   display:flex;flex-direction:column;overflow:hidden}
 input,select{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:13px 14px;color:var(--text);font-size:16px;font-family:inherit;outline:none;width:100%;-webkit-appearance:none;letter-spacing:-0.2px}
 input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(10,132,255,0.15)}
@@ -160,13 +163,7 @@ input::placeholder{color:var(--text3)}
       </div>
     </div>
 
-    <!-- TICKER -->
-    <div style="overflow:hidden;padding:4px 0;margin-bottom:6px;position:relative">
-      <div style="position:absolute;left:0;top:0;bottom:0;width:14px;background:linear-gradient(90deg,var(--header),transparent);z-index:2;pointer-events:none"></div>
-      <div style="position:absolute;right:0;top:0;bottom:0;width:14px;background:linear-gradient(270deg,var(--header),transparent);z-index:2;pointer-events:none"></div>
-      <div id="ticker-track" style="display:flex;width:max-content;-webkit-animation:tickerScroll 22s linear infinite;animation:tickerScroll 22s linear infinite;will-change:transform">
-      </div>
-    </div>
+<div id="ticker-track" style="display:none"></div>
 
     <!-- KPIs — unified card -->
     <div style="display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr;background:var(--bg2);border-radius:12px;border:0.5px solid var(--border);overflow:hidden">
@@ -472,7 +469,7 @@ input::placeholder{color:var(--text3)}
   </div>
 
   <!-- BOTTOM BAR -->
-  <div id="bottom-bar" style="background:var(--header);border-top:1px solid var(--border);padding:7px 4px 0;padding-bottom:env(safe-area-inset-bottom,16px);display:flex;flex-shrink:0;position:relative;z-index:10">
+  <div id="bottom-bar" style="background:var(--header);border-top:1px solid var(--border);padding:8px 4px;padding-bottom:max(20px,env(safe-area-inset-bottom));display:flex;flex-shrink:0;z-index:10">
     <div onclick="showTab('port')" id="t-port" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
       <div style="font-size:20px;line-height:1">📊</div>
       <div id="tl-port" style="font-size:9px;font-weight:600;color:var(--blue)">Portfolio</div>
@@ -1032,12 +1029,16 @@ function onTpTickerChange() {
   const sel = document.getElementById('tp-ticker');
   const opt = sel.options[sel.selectedIndex];
   if (!opt) return;
-  const buy = parseFloat(opt.getAttribute('data-buy')) || 0;
-  const qty = parseFloat(opt.getAttribute('data-qty')) || 0;
+  const ticker = opt.value;
+  const stock = stocks.find(s => s.t === ticker);
+  if (!stock) return;
   const buyEl = document.getElementById('tp-buy');
   const qtyEl = document.getElementById('tp-qty');
-  if (buyEl) buyEl.value = buy.toFixed(2);
-  if (qtyEl) qtyEl.value = qty;
+  const sellEl = document.getElementById('tp-sell');
+  if (buyEl) buyEl.value = stock.b.toFixed(2);
+  if (qtyEl) qtyEl.value = stock.q;
+  // Auto-fill sell with current live price (modifiable)
+  if (sellEl) sellEl.value = stock.live > 0 ? stock.live.toFixed(2) : '';
   updateTpPreview();
 }
 
