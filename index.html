@@ -38,10 +38,10 @@ html{height:100%;height:-webkit-fill-available;background:var(--bg)}
 html,body{width:100%;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',sans-serif;-webkit-user-select:none;user-select:none;-webkit-font-smoothing:antialiased}
 body{overflow:hidden;-webkit-tap-highlight-color:transparent;min-height:100vh;min-height:-webkit-fill-available}
 .app{width:100%;height:100vh;height:100dvh;background:var(--bg);color:var(--text);
-  padding-top:max(54px,env(safe-area-inset-top));
-  padding-bottom:max(20px,env(safe-area-inset-bottom));
-  padding-left:max(0px,env(safe-area-inset-left));
-  padding-right:max(0px,env(safe-area-inset-right));
+  padding-top:max(47px,env(safe-area-inset-top));
+  padding-bottom:0;
+  padding-left:0;
+  padding-right:0;
   display:flex;flex-direction:column;overflow:hidden}
 input,select{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:13px 14px;color:var(--text);font-size:16px;font-family:inherit;outline:none;width:100%;-webkit-appearance:none;letter-spacing:-0.2px}
 input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(10,132,255,0.15)}
@@ -67,7 +67,7 @@ input::placeholder{color:var(--text3)}
 .spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(10,132,255,0.3);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #v-port,#v-div,#v-detail,#v-add,#v-sim,#v-sync,#v-edit{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-#list,#div-list{padding:0 14px 20px}
+#list,#div-list{padding:0 14px 8px}
 ::-webkit-scrollbar{display:none}
 @keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 .t-item{display:inline-flex;align-items:center;gap:4px;padding:0 12px;border-right:1px solid rgba(255,255,255,0.06);font-size:9px}
@@ -115,7 +115,7 @@ input::placeholder{color:var(--text3)}
 <div class="app">
 
   <!-- HEADER -->
-  <div style="background:var(--header);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);padding:4px 14px 8px;flex-shrink:0;border-bottom:1px solid var(--border)">
+  <div style="background:var(--header);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);padding:3px 16px 8px;flex-shrink:0;border-bottom:1px solid var(--border)">
 
     <!-- Logo row -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
@@ -248,7 +248,7 @@ input::placeholder{color:var(--text3)}
   <!-- PORTFOLIO -->
   <div id="v-port">
     <!-- Barre de recherche -->
-    <div style="padding:8px 14px 4px;flex-shrink:0">
+    <div style="padding:5px 16px 2px;flex-shrink:0">
       <div style="position:relative">
         <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:0.4" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f5f5f7" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input id="search-input" type="text" placeholder="Rechercher une action..." oninput="onSearchPortfolio()" autocomplete="off"
@@ -257,7 +257,7 @@ input::placeholder{color:var(--text3)}
       </div>
     </div>
     <!-- Filtres -->
-    <div style="display:flex;gap:6px;padding:6px 14px 6px;flex-shrink:0;align-items:center">
+    <div style="display:flex;gap:6px;padding:4px 16px 4px;flex-shrink:0;align-items:center">
       <div id="f-all"    class="fb" onclick="setFilter('all')"    style="background:#0a84ff;color:#fff;border-color:#0a84ff">Tout</div>
       <div id="f-profit" class="fb" onclick="setFilter('profit')" style="color:#34c759;border-color:rgba(52,199,89,0.3)">📈</div>
       <div id="f-perte"  class="fb" onclick="setFilter('perte')"  style="color:#ff453a;border-color:rgba(255,69,58,0.3)">📉</div>
@@ -1765,6 +1765,10 @@ async function triggerSheetRefresh() {
 }
 
 async function fetchFromGoogleSheets() {
+  // Use hardcoded default URL if nothing saved
+  if (!localStorage.getItem(GS_URL_KEY)) {
+    localStorage.setItem(GS_URL_KEY, 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQiTZzyjt1O8ks2MQGzY65MMLftLY-mCgDjIsHCW5Ea7TVswH_LTVTM_VzaCra5lhcWyl-HjBzYu3aZ/pub?gid=0&single=true&output=csv');
+  }
   const savedUrl = localStorage.getItem(GS_URL_KEY);
   const st = document.getElementById('gs-status');
   const btn = document.getElementById('gs-fetch-btn');
@@ -1783,15 +1787,42 @@ async function fetchFromGoogleSheets() {
   st.innerHTML = '📡 Connexion à Google Sheets...';
 
   try {
-    // Google Sheets CSV export allows CORS — no proxy needed!
-    const ctrl = new AbortController();
-    const tid = setTimeout(() => ctrl.abort(), 15000);
+    // Try direct fetch first, then CORS proxy fallback for Safari PWA
+    let csv = null;
     const bustUrl = savedUrl + (savedUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
-    const res = await fetch(bustUrl, { signal: ctrl.signal, cache: 'no-store' });
-    clearTimeout(tid);
-
-    if (!res.ok) throw new Error('HTTP ' + res.status + ' — vérifie que la sheet est bien publique');
-    const csv = await res.text();
+    
+    // Strategy 1: Direct fetch
+    try {
+      const ctrl = new AbortController();
+      const tid = setTimeout(() => ctrl.abort(), 10000);
+      const res = await fetch(bustUrl, { signal: ctrl.signal, cache: 'no-store' });
+      clearTimeout(tid);
+      if (res.ok) {
+        const text = await res.text();
+        if (text && text.length > 10) csv = text;
+      }
+    } catch(e1) {
+      console.warn('Direct fetch failed:', e1.message);
+    }
+    
+    // Strategy 2: CORS proxy
+    if (!csv) {
+      try {
+        const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(savedUrl);
+        const ctrl2 = new AbortController();
+        const tid2 = setTimeout(() => ctrl2.abort(), 12000);
+        const res2 = await fetch(proxyUrl, { signal: ctrl2.signal });
+        clearTimeout(tid2);
+        if (res2.ok) {
+          const data = await res2.json();
+          if (data && data.contents && data.contents.length > 10) csv = data.contents;
+        }
+      } catch(e2) {
+        console.warn('Proxy fetch failed:', e2.message);
+      }
+    }
+    
+    if (!csv) throw new Error('Impossible de contacter Google Sheets. Vérifie ta connexion et que la sheet est publique.');
     if (!csv || csv.length < 10) throw new Error('Sheet vide ou inaccessible');
 
     const prices = parseGsCSV(csv);
