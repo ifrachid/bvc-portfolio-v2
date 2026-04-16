@@ -38,7 +38,7 @@ html{height:100%;height:-webkit-fill-available;background:var(--bg)}
 html,body{width:100%;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',sans-serif;-webkit-user-select:none;user-select:none;-webkit-font-smoothing:antialiased}
 body{overflow:hidden;-webkit-tap-highlight-color:transparent;min-height:100vh;min-height:-webkit-fill-available}
 .app{width:100%;height:100vh;height:100dvh;background:var(--bg);color:var(--text);
-  padding-top:max(47px,env(safe-area-inset-top));
+  padding-top:env(safe-area-inset-top,47px);
   padding-bottom:0;
   padding-left:0;
   padding-right:0;
@@ -800,7 +800,7 @@ function applyFetchedPrices(prices, label) {
   saveLivePrices();
   document.getElementById('dot').style.background = '#34c759';
   setTimeout(() => document.getElementById('dot').style.background = '#f59e0b', 2000);
-  document.getElementById('upd').textContent = '🟢 Live · ' + updated + '/' + stocks.length + ' · ' + new Date().toLocaleTimeString('fr-MA') + ' · ' + label;
+  const updEl=document.getElementById('upd'); if(updEl) updEl.textContent = '🟢 Live · ' + updated + '/' + stocks.length + ' · ' + new Date().toLocaleTimeString('fr-MA') + ' · ' + label;
   renderAll();
 }
 
@@ -909,7 +909,7 @@ async function fetchPrices(force = false){
   if (activePriceFetch && !force) return activePriceFetch;
 
   document.getElementById('dot').style.background='#f59e0b';
-  document.getElementById('upd').textContent='⏳ Chargement...';
+  const updEl2=document.getElementById('upd'); if(updEl2) updEl2.textContent='⏳ Chargement...';
 
   activePriceFetch = (async () => {
     try {
@@ -978,7 +978,7 @@ async function fetchPrices(force = false){
     }
 
     document.getElementById('dot').style.background = '#f59e0b';
-    document.getElementById('upd').textContent = '🟡 Cache local · dernière sync ' + getLastSyncLabel();
+    const updEl3=document.getElementById('upd'); if(updEl3) updEl3.textContent = '🟡 Cache local · dernière sync ' + getLastSyncLabel();
     renderAll();
     return false;
   })();
@@ -1287,9 +1287,9 @@ function updateDivHeader(){
   let brut=0,inv=0;
   stocks.forEach(s=>{if(s.dpa>0)brut+=s.dpa*s.q;inv+=s.b*s.q;});
   const net=brut*(1-RET), yld=inv>0?(brut/inv)*100:0;
-  document.getElementById('div-brut').textContent=f(brut)+' DH';
-  document.getElementById('div-net').textContent='+'+f(net)+' DH';
-  document.getElementById('div-yield').textContent=yld.toFixed(2)+'%';
+  const dbEl=document.getElementById('div-brut'); if(dbEl) dbEl.textContent=f(brut)+' DH';
+  const dnEl=document.getElementById('div-net'); if(dnEl) dnEl.textContent='+'+f(net)+' DH';
+  const dyEl=document.getElementById('div-yield'); if(dyEl) dyEl.textContent=yld.toFixed(2)+'%';
 }
 
 function setRet(val,yr){
@@ -1298,7 +1298,7 @@ function setRet(val,yr){
   const m={'2025':'r25','2026':'r26','2027':'r27'};
   const el=document.getElementById(m[yr]);
   el.style.background='#ffd60a';el.style.color='#111318';el.style.borderColor='#ffd60a';
-  document.getElementById('ret-label').textContent=Math.round(val*1000)/10+'%';
+  const rlEl=document.getElementById('ret-label'); if(rlEl) rlEl.textContent=Math.round(val*1000)/10+'%';
   updateDivHeader();if(curTab==='div')renderDivGlobal();
 }
 
@@ -1673,10 +1673,12 @@ function saveGsUrl() {
   document.getElementById('gs-main').style.display = 'block';
   document.getElementById('gs-url').value = '';
   const st = document.getElementById('gs-status');
-  st.style.display = 'block';
-  st.style.color = '#34c759';
-  st.style.background = 'rgba(52,199,89,0.08)';
-  st.innerHTML = '✅ URL enregistrée ! Appuie sur Sync pour charger les prix.';
+  if(st){
+    st.style.display = 'block';
+    st.style.color = '#34c759';
+    st.style.background = 'rgba(52,199,89,0.08)';
+    st.innerHTML = '✅ URL enregistrée ! Appuie sur Sync pour charger les prix.';
+  }
 }
 
 function parseGsCSV(csv) {
@@ -1779,12 +1781,8 @@ async function fetchFromGoogleSheets() {
     return;
   }
 
-  btn.disabled = true;
-  btn.textContent = '⏳ Chargement...';
-  st.style.display = 'block';
-  st.style.color = '#4cc2ff';
-  st.style.background = 'rgba(59,130,246,0.08)';
-  st.innerHTML = '📡 Connexion à Google Sheets...';
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Chargement...'; }
+  if(st){ st.style.display = 'block'; st.style.color = '#4cc2ff'; st.style.background = 'rgba(59,130,246,0.08)'; st.innerHTML = '📡 Connexion à Google Sheets...'; }
 
   try {
     // Try direct fetch first, then CORS proxy fallback for Safari PWA
@@ -1853,14 +1851,17 @@ async function fetchFromGoogleSheets() {
 
     const missed = stocks.filter(s => !prices[s.t]).map(s => s.t);
 
-    st.style.color = '#34c759';
-    st.style.background = 'rgba(52,199,89,0.08)';
-    st.style.border = '1px solid rgba(52,199,89,0.2)';
-    st.style.borderRadius = '10px';
-    st.style.padding = '10px';
-    st.innerHTML = '✅ <strong>' + updated + ' prix mis à jour</strong><br>'
-      + '<div style="margin-top:6px;line-height:2;font-size:9px">' + details.join(' · ') + '</div>'
-      + (missed.length ? '<br><span style="color:#f59e0b">Non trouvés: ' + missed.join(', ') + '</span>' : '');
+    if(st){
+      st.style.color = '#34c759';
+      st.style.background = 'rgba(52,199,89,0.08)';
+      st.style.border = '1px solid rgba(52,199,89,0.2)';
+      st.style.borderRadius = '10px';
+      st.style.padding = '10px';
+      st.style.display = 'block';
+      st.innerHTML = '✅ <strong>' + updated + ' prix mis à jour</strong><br>'
+        + '<div style="margin-top:6px;line-height:2;font-size:9px">' + details.join(' · ') + '</div>'
+        + (missed.length ? '<br><span style="color:#f59e0b">Non trouvés: ' + missed.join(', ') + '</span>' : '');
+    }
 
     document.getElementById('dot').style.background = '#34c759';
     document.getElementById('dot').style.boxShadow = '0 0 8px rgba(16,185,129,0.6)';
@@ -1875,16 +1876,18 @@ async function fetchFromGoogleSheets() {
     setTimeout(() => showTab('port'), 1200);
 
   } catch(e) {
-    st.style.color = '#ff453a';
-    st.style.background = 'rgba(255,69,58,0.08)';
-    st.style.border = '1px solid rgba(239,68,68,0.2)';
-    st.style.borderRadius = '10px';
-    st.style.padding = '10px';
-    st.innerHTML = '❌ ' + (e.message || 'Erreur de connexion')
-      + '<br><span style="color:#6b7280;font-size:9px">Vérifie que la sheet est bien publiée publiquement</span>';
+    if(st){
+      st.style.display = 'block';
+      st.style.color = '#ff453a';
+      st.style.background = 'rgba(255,69,58,0.08)';
+      st.style.border = '1px solid rgba(239,68,68,0.2)';
+      st.style.borderRadius = '10px';
+      st.style.padding = '10px';
+      st.innerHTML = '❌ ' + (e.message || 'Erreur de connexion')
+        + '<br><span style="color:#6b7280;font-size:9px">Vérifie que la sheet est bien publiée publiquement</span>';
+    }
   } finally {
-    btn.disabled = false;
-    btn.textContent = '📗 Sync depuis Google Sheets';
+    if(btn){ btn.disabled = false; btn.textContent = '📗 Sync depuis Google Sheets'; }
   }
 }
 
@@ -1895,13 +1898,15 @@ function initGsSection() {
     localStorage.setItem(GS_URL_KEY, DEFAULT_GS_URL);
   }
   const st = document.getElementById('gs-status');
-  st.style.display = 'block';
-  st.style.color = '#34c759';
-  st.style.background = 'rgba(52,199,89,0.08)';
-  st.style.border = '1px solid rgba(52,199,89,0.2)';
-  st.style.borderRadius = '10px';
-  st.style.padding = '10px';
-  st.innerHTML = '✅ Google Sheet BVC connectée · Appuie sur <strong>📗 Sync</strong>';
+  if(st){
+    st.style.display = 'block';
+    st.style.color = '#34c759';
+    st.style.background = 'rgba(52,199,89,0.08)';
+    st.style.border = '1px solid rgba(52,199,89,0.2)';
+    st.style.borderRadius = '10px';
+    st.style.padding = '10px';
+    st.innerHTML = '✅ Google Sheet BVC connectée · Appuie sur <strong>📗 Sync</strong>';
+  }
 }
 
 async function fetchPricesWithAI() {
