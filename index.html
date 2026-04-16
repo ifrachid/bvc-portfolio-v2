@@ -115,68 +115,74 @@ input::placeholder{color:var(--text3)}
 <div class="app">
 
   <!-- HEADER -->
-  <div style="background:var(--header);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);padding:10px 14px 8px;flex-shrink:0;border-bottom:1px solid var(--border)">
+  <div style="background:var(--header);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);padding:4px 14px 8px;flex-shrink:0;border-bottom:1px solid var(--border)">
 
     <!-- Logo row -->
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <div style="display:flex;align-items:center;gap:9px">
-        <!-- Bull logo SVG -->
-        <div style="width:40px;height:40px;border-radius:11px;background:#0d0d0d;overflow:hidden;flex-shrink:0;border:0.5px solid rgba(255,255,255,0.12)">
-          <svg viewBox="0 0 100 100" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:34px;height:34px;border-radius:10px;background:#0d0d0d;overflow:hidden;flex-shrink:0;border:0.5px solid rgba(255,255,255,0.12)">
+          <svg viewBox="0 0 100 100" width="34" height="34" xmlns="http://www.w3.org/2000/svg">
             <rect width="100" height="100" fill="#0d0d0d"/>
             <polygon points="15,74 25,50 35,62 45,40 55,55 65,30 75,44 78,74" fill="#1535dd" opacity="0.95"/>
             <polygon points="25,50 35,62 29,52" fill="#2a4fff"/>
             <polygon points="45,40 55,55 49,44" fill="#1535dd"/>
-            <polygon points="65,30 75,44 70,33" fill="#1028cc"/>
-            <polygon points="15,74 25,50 20,62" fill="#0f29bb" opacity="0.7"/>
-            <line x1="15" y1="74" x2="65" y2="30" stroke="#2288ff" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
             <line x1="65" y1="30" x2="82" y2="13" stroke="#33aaff" stroke-width="2.5" stroke-linecap="round"/>
             <polygon points="82,13 74,18 80,24" fill="#33aaff"/>
-            <line x1="10" y1="77" x2="90" y2="77" stroke="#1a3aaa" stroke-width="1" opacity="0.4"/>
+            <line x1="10" y1="77" x2="90" y2="77" stroke="#1a3aaa" stroke-width="1" opacity="0.35"/>
           </svg>
         </div>
-        <!-- Text -->
         <div>
-          <div style="font-family:'Dancing Script',cursive;font-size:21px;font-weight:700;color:var(--text);line-height:1;letter-spacing:0.2px">Rach Invest</div>
-          <div style="font-size:8px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-top:1px;text-align:center">Invest in stocks</div>
+          <div style="font-family:'Dancing Script',cursive;font-size:19px;font-weight:700;color:var(--text);line-height:1">Rach Invest</div>
+          <div style="font-size:7px;color:var(--text3);letter-spacing:1.3px;text-transform:uppercase;margin-top:1px;text-align:center">Invest in stocks</div>
         </div>
       </div>
-      <!-- Theme toggle -->
-      <button onclick="toggleTheme()" id="theme-btn" style="background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:5px 9px;font-size:15px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent">🌙</button>
+      <div style="display:flex;gap:5px">
+        <button onclick="toggleTheme()" id="theme-btn" style="width:28px;height:28px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent">🌙</button>
+        <button onclick="showSettingsUrl()" style="width:28px;height:28px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent">⚙️</button>
+      </div>
     </div>
 
-    <!-- Portfolio value -->
-    <div onclick="togglePortfolioValue()" style="cursor:pointer;-webkit-tap-highlight-color:transparent;margin-bottom:10px">
-      <div id="hv" style="font-size:20px;font-weight:700;color:var(--text);letter-spacing:-0.8px;line-height:1.1">—</div>
-      <div id="hn" style="font-size:13px;font-weight:600;color:var(--text3);margin-top:3px;letter-spacing:-0.2px">Chargement...</div>
+    <!-- Portfolio value + date/heure -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+      <div onclick="togglePortfolioValue()" style="cursor:pointer;-webkit-tap-highlight-color:transparent">
+        <div style="font-size:8px;color:var(--text3);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:1px">Portefeuille</div>
+        <div id="hv" style="font-size:16px;font-weight:700;color:var(--text);letter-spacing:-0.5px;line-height:1.1">—</div>
+        <div id="hn" style="font-size:12px;font-weight:600;color:var(--text3);margin-top:2px;letter-spacing:-0.2px">Chargement...</div>
+      </div>
+      <div style="text-align:right;margin-top:2px">
+        <div id="hdr-date" style="font-size:9px;font-weight:600;color:var(--text)">—</div>
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:3px;margin-top:2px">
+          <div id="dot" style="width:5px;height:5px;border-radius:50%;background:var(--red)"></div>
+          <div id="upd" style="font-size:9px;color:var(--text3);font-weight:500">—</div>
+        </div>
+      </div>
     </div>
 
-    <!-- TICKER — défile les prix live -->
-    <div style="overflow:hidden;padding:5px 0;margin-bottom:8px;background:rgba(255,255,255,0.025);border-radius:8px">
+    <!-- TICKER -->
+    <div style="overflow:hidden;padding:4px 0;margin-bottom:6px;background:rgba(255,255,255,0.025);border-radius:8px">
       <div id="ticker-track" style="display:flex;width:max-content;animation:tickerScroll 20s linear infinite">
       </div>
     </div>
 
-    <!-- KPIs -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:8px">
-      <div class="kpi" onclick="toggleInvesti()" id="k-inv">
-        <div class="lbl">💰 Investi</div>
-        <div id="hi" style="font-size:12px;font-weight:700;color:var(--text);margin-top:2px">—</div>
+    <!-- KPIs — unified card -->
+    <div style="display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr;background:var(--bg2);border-radius:12px;border:0.5px solid var(--border);overflow:hidden">
+      <div onclick="toggleInvesti()" id="k-inv" style="padding:7px 5px;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent">
+        <div class="lbl" style="margin-bottom:2px">💰 Investi</div>
+        <div id="hi" style="font-size:11px;font-weight:700;color:var(--text);letter-spacing:-0.3px">—</div>
+        <div id="hi-sub" style="font-size:7px;color:var(--text3);margin-top:1px">DH</div>
       </div>
-      <div class="kpi" onclick="setFilter('profit')" id="kp" style="background:rgba(52,199,89,0.08);border-color:rgba(52,199,89,0.2)">
-        <div class="lbl">📈 <span id="hp-count" style="color:var(--text3);font-weight:400"></span></div>
-        <div id="hp" style="font-size:12px;font-weight:700;color:var(--green);margin-top:2px">—</div>
+      <div style="background:var(--border)"></div>
+      <div onclick="setFilter('profit')" id="kp" style="padding:7px 5px;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent">
+        <div class="lbl" style="margin-bottom:2px">📈 Profit</div>
+        <div id="hp" style="font-size:11px;font-weight:700;color:var(--green);letter-spacing:-0.3px">—</div>
+        <div id="hp-count" style="font-size:7px;color:var(--green);opacity:0.7;margin-top:1px"> </div>
       </div>
-      <div class="kpi" onclick="setFilter('perte')" id="kn" style="background:rgba(255,69,58,0.08);border-color:rgba(255,69,58,0.2)">
-        <div class="lbl">📉 <span id="hng-count" style="color:var(--text3);font-weight:400"></span></div>
-        <div id="hng" style="font-size:12px;font-weight:700;color:var(--red);margin-top:2px">—</div>
+      <div style="background:var(--border)"></div>
+      <div onclick="setFilter('perte')" id="kn" style="padding:7px 5px;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent">
+        <div class="lbl" style="margin-bottom:2px">📉 Perte</div>
+        <div id="hng" style="font-size:11px;font-weight:700;color:var(--red);letter-spacing:-0.3px">—</div>
+        <div id="hng-count" style="font-size:7px;color:var(--red);opacity:0.7;margin-top:1px"> </div>
       </div>
-    </div>
-
-    <!-- dot + sync -->
-    <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-bottom:8px">
-      <div id="dot" style="width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 6px rgba(255,214,10,0.5)"></div>
-      <div id="upd" style="font-size:10px;color:var(--text3);font-weight:500">—</div>
     </div>
 
   <!-- EDIT PAGE -->
@@ -938,6 +944,33 @@ function renderTicker(){
 
 function renderAll(){updateHeader();updateDivHeader();if(curTab==='port')renderList();if(curTab==='div')renderDivGlobal();updateSel();renderTicker();}
 
+function showSettingsUrl() {
+  const current = localStorage.getItem('gs_csv_url') || '';
+  const url = prompt("URL Google Sheet CSV - laisser vide pour garder l'actuelle", current);
+  if(url !== null && url.trim()) {
+    localStorage.setItem('gs_csv_url', url.trim());
+    alert('✅ URL sauvegardée !');
+  }
+}
+
+// Update date/time in header
+function updateHeaderDateTime() {
+  const el = document.getElementById('hdr-date');
+  if(!el) return;
+  const now = new Date();
+  const d = now.getDate().toString().padStart(2,'0');
+  const m = (now.getMonth()+1).toString().padStart(2,'0');
+  const y = now.getFullYear();
+  el.textContent = d+'/'+m+'/'+y;
+  const upd = document.getElementById('upd');
+  if(upd && !upd.getAttribute('data-synced')) {
+    const h = now.getHours().toString().padStart(2,'0');
+    const min = now.getMinutes().toString().padStart(2,'0');
+    upd.textContent = h+':'+min;
+  }
+}
+setInterval(updateHeaderDateTime, 60000);
+
 let portfolioVisible = true;
 let investiVisible = true;
 let isDark = true;
@@ -976,7 +1009,7 @@ function togglePortfolioValue() {
   } else {
     hvEl.textContent = hvEl.getAttribute('data-real') || '—';
     hvEl.style.color = '';
-    hvEl.style.letterSpacing = '-0.8px';
+    hvEl.style.letterSpacing = '-0.5px';
     hnEl.textContent = hnEl.getAttribute('data-real') || '';
     hnEl.style.color = hnEl.getAttribute('data-color') || '';
   }
@@ -1017,13 +1050,14 @@ function updateHeader(){
     el.setAttribute('data-real', el.textContent);
   }
   if(investiVisible){
-    document.getElementById('hi').textContent=f(ti);
+    document.getElementById('hi').textContent=f(ti)+' DH';
+  if(document.getElementById('hi-sub')) document.getElementById('hi-sub').textContent=pos+' pos.';
     document.getElementById('hi').style.color='';
   }
-  document.getElementById('hp').textContent=(totalProfit>0?'+':'')+f(totalProfit);
-  document.getElementById('hng').textContent=f(totalPerte);
-  document.getElementById('hp-count').textContent=pos?'('+pos+')':'';
-  document.getElementById('hng-count').textContent=neg?'('+neg+')':'';
+  document.getElementById('hp').textContent=(totalProfit>0?'+':'')+f(totalProfit)+' DH';
+  document.getElementById('hng').textContent=f(totalPerte)+' DH';
+  document.getElementById('hp-count').textContent=pos?pos+' pos.':'';
+  document.getElementById('hng-count').textContent=neg?neg+' pos.':'';
 }
 
 function updateDivHeader(){
