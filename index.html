@@ -42,14 +42,19 @@ body.light{
   --green:#30d158;--red:#ff3b30;--gold:#ff9500;--blue:#007aff;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-*{-webkit-box-sizing:border-box;box-sizing:border-box}
-html{height:-webkit-fill-available;background:var(--bg)}
-html,body{width:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',sans-serif;-webkit-user-select:none;user-select:none;-webkit-font-smoothing:antialiased;margin:0;padding:0}
-body{min-height:100vh;min-height:-webkit-fill-available;-webkit-tap-highlight-color:transparent;background:var(--bg)}
-.app{display:flex;flex-direction:column;width:100%;height:100vh;height:-webkit-fill-available;background:var(--bg);color:var(--text);
-  padding-top:env(safe-area-inset-top,47px);
-  padding-bottom:calc(65px + env(safe-area-inset-bottom,0px));
-  overflow:hidden}
+*{-webkit-box-sizing:border-box;box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg);height:100%}
+body{background:var(--bg);width:100%;height:100%;overflow:hidden;-webkit-tap-highlight-color:transparent;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',sans-serif;-webkit-user-select:none;user-select:none;-webkit-font-smoothing:antialiased}
+.app{
+  position:fixed;
+  top:0;left:0;right:0;bottom:0;
+  background:var(--bg);
+  color:var(--text);
+  padding-top:env(safe-area-inset-top,59px);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
 input,select{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:13px 14px;color:var(--text);font-size:16px;font-family:inherit;outline:none;width:100%;-webkit-appearance:none;letter-spacing:-0.2px}
 input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(10,132,255,0.15)}
 input::placeholder{color:var(--text3)}
@@ -74,7 +79,7 @@ input::placeholder{color:var(--text3)}
 .spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(10,132,255,0.3);border-top-color:var(--blue);border-radius:50%;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #v-port,#v-div,#v-detail,#v-add,#v-sim,#v-sync,#v-edit{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-#list,#div-list{padding:0 14px calc(80px + env(safe-area-inset-bottom,0px))}
+#list,#div-list{padding:0 14px calc(70px + env(safe-area-inset-bottom,0px))}
 ::-webkit-scrollbar{display:none}
 @keyframes tickerScroll{0%{-webkit-transform:translateX(0);transform:translateX(0)}100%{-webkit-transform:translateX(-50%);transform:translateX(-50%)}}
 .t-item{display:inline-flex;align-items:center;gap:4px;padding:0 11px;border-right:1px solid rgba(255,255,255,0.06);font-size:9px;white-space:nowrap}
@@ -478,8 +483,8 @@ input::placeholder{color:var(--text3)}
   </div>
 
   <!-- BOTTOM BAR -->
-  <div id="bottom-bar" style="position:fixed;bottom:0;left:0;right:0;background:var(--header);border-top:1px solid var(--border);z-index:100;padding-bottom:env(safe-area-inset-bottom,0px)">
-    <div style="display:flex;padding:7px 0 0;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)">
+  <div id="bottom-bar" style="position:fixed;bottom:0;left:0;right:0;background:var(--header);border-top:1px solid var(--border);z-index:100">
+    <div style="display:flex;padding:8px 0 0">
     <div onclick="showTab('port')" id="t-port" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
       <div style="font-size:20px;line-height:1">📊</div>
       <div id="tl-port" style="font-size:9px;font-weight:600;color:var(--blue)">Portfolio</div>
@@ -1657,6 +1662,7 @@ function runSim(){
       <span style="font-size:11px;font-weight:600;color:${pos?'#34c759':'#ff453a'}">Profit Net</span>
       <span style="font-size:13px;font-weight:700;color:${c}">${pos?'+':''}${f(r.net)} DH</span>
     </div>
+    <div style="height:env(safe-area-inset-bottom,0px)"></div>
   </div>`;
 }
 
