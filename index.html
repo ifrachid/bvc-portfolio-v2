@@ -87,6 +87,17 @@ input::placeholder{color:var(--text3)}
 </style>
 </head>
 <body>
+<!-- SPLASH SCREEN -->
+<div id="splash-screen" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:1;transition:opacity 0.6s ease">
+  <div id="splash-bull" style="opacity:0;transform:scale(0.6) translateY(20px);transition:opacity 0.8s ease,transform 0.8s ease">
+    <img src="./apple-touch-icon.png" style="width:120px;height:120px;border-radius:28px">
+  </div>
+  <div id="splash-text" style="opacity:0;transform:translateY(10px);transition:opacity 0.6s ease 0.5s,transform 0.6s ease 0.5s;text-align:center;margin-top:20px">
+    <div style="font-family:'Dancing Script',cursive;font-size:32px;font-weight:700;color:#fff;letter-spacing:0.5px">Rach Invest</div>
+    <div style="font-size:11px;color:#444;letter-spacing:2px;text-transform:uppercase;margin-top:4px">Invest in stocks</div>
+  </div>
+</div>
+
 <!-- LOCK SCREEN -->
 <div id="lock-screen" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 32px">
   <div style="font-size:48px;margin-bottom:12px">📊</div>
@@ -473,7 +484,8 @@ input::placeholder{color:var(--text3)}
   </div>
 
   <!-- BOTTOM BAR -->
-  <div id="bottom-bar" style="background:var(--header);border-top:1px solid var(--border);padding:8px 4px 10px;display:flex;flex-shrink:0;z-index:10">
+  <div id="bottom-bar" style="background:var(--header);border-top:1px solid var(--border);flex-shrink:0;z-index:10">
+    <div style="display:flex;padding:7px 0 0">
     <div onclick="showTab('port')" id="t-port" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
       <div style="font-size:20px;line-height:1">📊</div>
       <div id="tl-port" style="font-size:9px;font-weight:600;color:var(--blue)">Portfolio</div>
@@ -504,13 +516,37 @@ input::placeholder{color:var(--text3)}
       <div id="tl-sync" style="font-size:9px;font-weight:500;color:var(--text3)">Sync</div>
       <div id="td-sync" style="width:4px;height:4px;border-radius:50%;background:transparent"></div>
     </div>
+    </div>
+    <!-- Home indicator INSIDE bottom bar -->
+    <div style="height:max(22px,env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:center">
+      <div style="width:120px;height:4px;background:rgba(255,255,255,0.25);border-radius:2px"></div>
+    </div>
   </div>
 
-</div>
-  <!-- Home indicator spacer for iPhone Pro Max -->
-  <div style="background:var(--header);height:env(safe-area-inset-bottom,20px);flex-shrink:0"></div>
-
 <script>
+// ─── SPLASH SCREEN ───────────────────────────────
+function initSplash() {
+  // Animate bull logo in
+  setTimeout(() => {
+    const bull = document.getElementById('splash-bull');
+    if(bull){ bull.style.opacity='1'; bull.style.transform='scale(1) translateY(0)'; }
+  }, 100);
+  // Animate text in
+  setTimeout(() => {
+    const txt = document.getElementById('splash-text');
+    if(txt){ txt.style.opacity='1'; txt.style.transform='translateY(0)'; }
+  }, 600);
+  // Fade out splash after 2s
+  setTimeout(() => {
+    const splash = document.getElementById('splash-screen');
+    if(splash){ splash.style.opacity='0'; }
+    setTimeout(() => {
+      if(splash){ splash.style.display='none'; }
+    }, 700);
+  }, 2000);
+}
+window.addEventListener('load', initSplash);
+
 // ─── LOCK / PIN / FACE ID ─────────────────────────
 const CORRECT_PIN = localStorage.getItem('bvc_pin') || '0000';
 let pinEntered = '';
