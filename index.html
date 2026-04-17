@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-visual">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Rach Invest">
@@ -42,12 +42,13 @@ body.light{
   --green:#30d158;--red:#ff3b30;--gold:#ff9500;--blue:#007aff;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{position:fixed;width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',sans-serif;-webkit-user-select:none;user-select:none;-webkit-font-smoothing:antialiased}
-body{-webkit-tap-highlight-color:transparent}
-.app{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);color:var(--text);
+*{-webkit-box-sizing:border-box;box-sizing:border-box}
+html{height:-webkit-fill-available;background:var(--bg)}
+html,body{width:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',sans-serif;-webkit-user-select:none;user-select:none;-webkit-font-smoothing:antialiased;margin:0;padding:0}
+body{min-height:100vh;min-height:-webkit-fill-available;-webkit-tap-highlight-color:transparent;background:var(--bg)}
+.app{display:flex;flex-direction:column;width:100%;min-height:100vh;min-height:-webkit-fill-available;background:var(--bg);color:var(--text);
   padding-top:env(safe-area-inset-top,47px);
-  padding-bottom:0;
-  display:flex;flex-direction:column;overflow:hidden}
+  overflow:hidden}
 input,select{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:13px 14px;color:var(--text);font-size:16px;font-family:inherit;outline:none;width:100%;-webkit-appearance:none;letter-spacing:-0.2px}
 input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(10,132,255,0.15)}
 input::placeholder{color:var(--text3)}
@@ -510,7 +511,7 @@ input::placeholder{color:var(--text3)}
     </div>
     </div>
     <!-- Home indicator -->
-    <div style="padding-bottom:env(safe-area-inset-bottom,0px);display:flex;align-items:center;justify-content:center;padding-top:4px">
+    <div style="height:env(safe-area-inset-bottom,34px);display:flex;align-items:center;justify-content:center">
       <div style="width:120px;height:4px;background:rgba(255,255,255,0.22);border-radius:2px"></div>
     </div>
   </div>
