@@ -1956,22 +1956,50 @@ async function importPortfolioFromSheet() {
     } catch(e) {}
   }
   if (!csv) {
-    if(st){ st.style.color='#ff453a'; st.style.background='rgba(255,69,58,0.08)'; st.innerHTML='❌ Impossible de lire la sheet.<br><small>Fichier → Partager → Publier sur le web → Portfolio → CSV</small>'; }
+    if(st){ st.style.color='#ff453a'; st.style.background='rgba(255,69,58,0.08)'; st.innerHTML='❌ Impossible de lire la sheet.'; }
     btn.disabled = false; btn.textContent = '📥 Importer Portfolio depuis Sheet'; return;
   }
-  // Parse CSV — ligne 1 = en-tête, skip; virgule française → point
+
+  // Smart CSV parser — handles French locale (comma as decimal separator)
+  function parseCSVLine(line) {
+    // If line has quotes, use standard parser
+    if (line.includes('"')) {
+      const result = [];
+      let current = '', inQuote = false;
+      for (let c of line) {
+        if (c === '"') inQuote = !inQuote;
+        else if (c === ',' && !inQuote) { result.push(current.trim()); current = ''; }
+        else current += c;
+      }
+      result.push(current.trim());
+      return result;
+    }
+    // No quotes — detect French format: "ATW,210,644,92" = ticker,qty,prix_int,prix_dec
+    const parts = line.split(',');
+    // Check if last part looks like decimal cents (1-2 digits, no letters)
+    if (parts.length >= 4) {
+      const last = parts[parts.length - 1].trim();
+      const secondLast = parts[parts.length - 2].trim();
+      // If last is 1-2 digits and second-to-last is a number → French decimal
+      if (/^\d{1,2}$/.test(last) && /^\d+$/.test(secondLast)) {
+        // Merge last two parts as decimal number
+        const merged = [...parts.slice(0, -2), secondLast + '.' + last];
+        return merged.map(p => p.trim());
+      }
+    }
+    return parts.map(p => p.trim());
+  }
+
   const allLines = csv.trim().split(/[\r\n]+/).filter(l => l.trim());
-  // Always skip first row (header)
+  // Skip header (line 1)
   let imported = 0, updated = 0;
   const details = [], skipped = [];
+
   for (let i = 1; i < allLines.length; i++) {
-    // Handle quoted CSV cells
-    const raw = allLines[i];
-    const cols = raw.split(',').map(c => c.trim().replace(/^"|"$/g, '').replace(',', '.'));
+    const cols = parseCSVLine(allLines[i]).map(c => c.replace(/^"|"$/g,''));
     const ticker = (cols[0]||'').toUpperCase().trim().replace(/\s/g,'');
     if (!ticker || ticker.length < 2 || ticker.length > 6) continue;
     const qty = parseFloat((cols[1]||'').replace(',','.')) || 0;
-    // Prix achat — virgule française
     const buyPrice = parseFloat((cols[2]||'').replace(',','.')) || 0;
     if (buyPrice <= 0) { skipped.push(ticker); continue; }
     const existing = stocks.find(s => s.t === ticker);
@@ -1981,14 +2009,14 @@ async function importPortfolioFromSheet() {
       if (qty > 0) localStorage.setItem('qty_' + ticker, String(qty));
       localStorage.setItem('buy_' + ticker, String(buyPrice));
       updated++;
-      details.push('<span style="color:#ffd60a">' + ticker + '</span>');
+      details.push('<span style="color:#ffd60a">' + ticker + ' ' + buyPrice.toFixed(2) + '</span>');
     } else {
       stocks.push({ t: ticker, n: ticker, q: qty, b: buyPrice,
         live: parseFloat(localStorage.getItem('price_' + ticker)) || buyPrice, dpa: 0, chg: 0 });
       if (qty > 0) localStorage.setItem('qty_' + ticker, String(qty));
       localStorage.setItem('buy_' + ticker, String(buyPrice));
       imported++;
-      details.push('<span style="color:#34c759">+' + ticker + '</span>');
+      details.push('<span style="color:#34c759">+' + ticker + ' ' + buyPrice.toFixed(2) + '</span>');
     }
   }
   savePortfolioToStorage(); renderAll();
@@ -1996,7 +2024,7 @@ async function importPortfolioFromSheet() {
   if(st){
     if(total === 0){
       st.style.color='#ff453a'; st.style.background='rgba(255,69,58,0.08)';
-      st.innerHTML='❌ 0 importées<br><small style="font-family:monospace;opacity:0.8">CSV ligne 1: ' + (allLines[1]||'vide') + '</small>';
+      st.innerHTML='❌ 0 importées<br><small style="font-family:monospace;opacity:0.8">Ligne 2: ' + (allLines[1]||'vide') + '</small>';
     } else {
       st.style.color='#34c759'; st.style.background='rgba(52,199,89,0.08)';
       st.innerHTML='✅ <strong>' + total + ' action' + (total>1?'s':'') + '</strong> (' + updated + ' mises à jour, ' + imported + ' ajoutées)<br>'
@@ -2047,15 +2075,42 @@ async function importDividendesFromSheet() {
     } catch(e) {}
   }
   if (!csv) {
-    if(st){ st.style.color='#ff453a'; st.style.background='rgba(255,69,58,0.08)'; st.innerHTML='❌ Impossible de lire la sheet.<br><small>Fichier → Partager → Publier sur le web → Dividendes → CSV</small>'; }
+    if(st){ st.style.color='#ff453a'; st.style.background='rgba(255,69,58,0.08)'; st.innerHTML='❌ Impossible de lire la sheet.'; }
     btn.disabled = false; btn.textContent = '🌿 Importer Dividendes depuis Sheet'; return;
   }
-  // Parse CSV — ligne 1 = en-tête (Ticker, DPA, Date Détachement, Date Paiement)
+
+  // Smart parser for French locale
+  function parseDivLine(line) {
+    // Format: Ticker,DPA,DateDet,DatePay
+    // French: ATW,"22,00",2026-04-28,2026-05-15 or ATW,22,00,2026-04-28,2026-05-15
+    if (line.includes('"')) {
+      const result = [];
+      let current = '', inQuote = false;
+      for (let c of line) {
+        if (c === '"') inQuote = !inQuote;
+        else if (c === ',' && !inQuote) { result.push(current.trim()); current = ''; }
+        else current += c;
+      }
+      result.push(current.trim());
+      return result;
+    }
+    const parts = line.split(',').map(p => p.trim());
+    // Detect French decimal in DPA: ATW,22,00,2026-04-28,2026-05-15 → 5 parts instead of 4
+    if (parts.length === 5) {
+      const p1 = parts[1], p2 = parts[2];
+      if (/^\d+$/.test(p1) && /^\d{1,2}$/.test(p2) && parts[3].includes('-')) {
+        return [parts[0], p1 + '.' + p2, parts[3], parts[4]];
+      }
+    }
+    return parts;
+  }
+
   const allLines = csv.trim().split(/[\r\n]+/).filter(l => l.trim());
   let updated = 0;
   const details = [], notFound = [];
+
   for (let i = 1; i < allLines.length; i++) {
-    const cols = allLines[i].split(',').map(c => c.trim().replace(/^"|"$/g,''));
+    const cols = parseDivLine(allLines[i]).map(c => c.replace(/^"|"$/g,''));
     const ticker = (cols[0]||'').toUpperCase().trim().replace(/\s/g,'');
     if (!ticker || ticker.length < 2) continue;
     const dpa = parseFloat((cols[1]||'').replace(',','.')) || 0;
@@ -2071,7 +2126,7 @@ async function importDividendesFromSheet() {
       if (det) localStorage.setItem('det_' + ticker, det);
       if (pay) localStorage.setItem('pay_' + ticker, pay);
       updated++;
-      details.push('<span style="color:#34c759">' + ticker + ' ' + dpa + ' DH</span>');
+      details.push('<span style="color:#34c759">' + ticker + ' ' + dpa.toFixed(2) + ' DH</span>');
     } else {
       notFound.push(ticker);
     }
@@ -2080,7 +2135,7 @@ async function importDividendesFromSheet() {
   if(st){
     if(updated === 0){
       st.style.color='#ff9500'; st.style.background='rgba(255,149,0,0.08)';
-      st.innerHTML='⚠️ 0 mis à jour<br><small>Les tickers de ta sheet Dividendes doivent correspondre à ceux de ton portfolio</small>'
+      st.innerHTML='⚠️ 0 mis à jour — Les tickers doivent être dans ton portfolio'
         + (notFound.length ? '<br><small style="color:#ff453a">Non trouvés: ' + notFound.join(', ') + '</small>' : '');
     } else {
       st.style.color='#34c759'; st.style.background='rgba(52,199,89,0.08)';
