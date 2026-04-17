@@ -44,7 +44,7 @@ body.light{
 *{box-sizing:border-box;margin:0;padding:0}
 html{height:100%;height:-webkit-fill-available;background:var(--bg)}
 html,body{width:100%;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',sans-serif;-webkit-user-select:none;user-select:none;-webkit-font-smoothing:antialiased}
-body{overflow:hidden;-webkit-tap-highlight-color:transparent;min-height:100vh;min-height:-webkit-fill-available}
+body{overflow:hidden;-webkit-tap-highlight-color:transparent;height:100vh;height:100dvh;width:100%}
 .app{width:100%;height:100vh;height:100dvh;background:var(--bg);color:var(--text);
   padding-top:env(safe-area-inset-top,47px);
   padding-bottom:0;
@@ -87,15 +87,11 @@ input::placeholder{color:var(--text3)}
 </style>
 </head>
 <body>
-<!-- SPLASH SCREEN -->
-<div id="splash-screen" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#000;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:1;transition:opacity 0.6s ease">
-  <div id="splash-bull" style="opacity:0;transform:scale(0.6) translateY(20px);transition:opacity 0.8s ease,transform 0.8s ease">
-    <img src="./apple-touch-icon.png" style="width:120px;height:120px;border-radius:28px">
-  </div>
-  <div id="splash-text" style="opacity:0;transform:translateY(10px);transition:opacity 0.6s ease 0.5s,transform 0.6s ease 0.5s;text-align:center;margin-top:20px">
-    <div style="font-family:'Dancing Script',cursive;font-size:32px;font-weight:700;color:#fff;letter-spacing:0.5px">Rach Invest</div>
-    <div style="font-size:11px;color:#444;letter-spacing:2px;text-transform:uppercase;margin-top:4px">Invest in stocks</div>
-  </div>
+<!-- SPLASH SCREEN — full image -->
+<div id="splash-screen" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:#000;opacity:1;transition:opacity 0.8s ease">
+  <img id="splash-img" src="./splash.png" 
+    style="width:100%;height:100%;object-fit:cover;object-position:center;opacity:0;transition:opacity 1s ease"
+    onerror="this.style.display='none'">
 </div>
 
 <!-- LOCK SCREEN -->
@@ -485,7 +481,7 @@ input::placeholder{color:var(--text3)}
 
   <!-- BOTTOM BAR -->
   <div id="bottom-bar" style="background:var(--header);border-top:1px solid var(--border);flex-shrink:0;z-index:10">
-    <div style="display:flex;padding:7px 0 0">
+    <div style="display:flex;padding:7px 0 0;padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)">
     <div onclick="showTab('port')" id="t-port" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
       <div style="font-size:20px;line-height:1">📊</div>
       <div id="tl-port" style="font-size:9px;font-weight:600;color:var(--blue)">Portfolio</div>
@@ -517,33 +513,24 @@ input::placeholder{color:var(--text3)}
       <div id="td-sync" style="width:4px;height:4px;border-radius:50%;background:transparent"></div>
     </div>
     </div>
-    <!-- Home indicator INSIDE bottom bar -->
-    <div style="height:max(22px,env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:center">
-      <div style="width:120px;height:4px;background:rgba(255,255,255,0.25);border-radius:2px"></div>
+    <!-- Home indicator — safe area bottom -->
+    <div style="height:env(safe-area-inset-bottom,16px);min-height:8px;display:flex;align-items:center;justify-content:center">
+      <div style="width:120px;height:4px;background:rgba(255,255,255,0.22);border-radius:2px"></div>
     </div>
   </div>
 
 <script>
 // ─── SPLASH SCREEN ───────────────────────────────
 function initSplash() {
-  // Animate bull logo in
+  const splash = document.getElementById('splash-screen');
+  const img = document.getElementById('splash-img');
+  // Fade image in
+  setTimeout(() => { if(img) img.style.opacity='1'; }, 100);
+  // Fade out after 2.5s
   setTimeout(() => {
-    const bull = document.getElementById('splash-bull');
-    if(bull){ bull.style.opacity='1'; bull.style.transform='scale(1) translateY(0)'; }
-  }, 100);
-  // Animate text in
-  setTimeout(() => {
-    const txt = document.getElementById('splash-text');
-    if(txt){ txt.style.opacity='1'; txt.style.transform='translateY(0)'; }
-  }, 600);
-  // Fade out splash after 2s
-  setTimeout(() => {
-    const splash = document.getElementById('splash-screen');
     if(splash){ splash.style.opacity='0'; }
-    setTimeout(() => {
-      if(splash){ splash.style.display='none'; }
-    }, 700);
-  }, 2000);
+    setTimeout(() => { if(splash){ splash.style.display='none'; } }, 800);
+  }, 2500);
 }
 window.addEventListener('load', initSplash);
 
