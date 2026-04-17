@@ -42,10 +42,10 @@ body.light{
   --green:#30d158;--red:#ff3b30;--gold:#ff9500;--blue:#007aff;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{height:100%;height:-webkit-fill-available;background:var(--bg)}
+html{height:100%;height:-webkit-fill-available;background:var(--bg);overflow:hidden}
 html,body{width:100%;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',sans-serif;-webkit-user-select:none;user-select:none;-webkit-font-smoothing:antialiased}
-body{overflow:hidden;-webkit-tap-highlight-color:transparent;height:100vh;height:100dvh;width:100%}
-.app{width:100%;height:100vh;height:100dvh;background:var(--bg);color:var(--text);
+body{overflow:hidden;-webkit-tap-highlight-color:transparent;width:100%;height:100%;height:-webkit-fill-available}
+.app{width:100%;height:100vh;height:-webkit-fill-available;height:100dvh;background:var(--bg);color:var(--text);
   padding-top:env(safe-area-inset-top,47px);
   padding-bottom:0;
   padding-left:0;
@@ -513,8 +513,8 @@ input::placeholder{color:var(--text3)}
       <div id="td-sync" style="width:4px;height:4px;border-radius:50%;background:transparent"></div>
     </div>
     </div>
-    <!-- Home indicator — safe area bottom -->
-    <div style="height:env(safe-area-inset-bottom,16px);min-height:8px;display:flex;align-items:center;justify-content:center">
+    <!-- Home indicator -->
+    <div style="height:env(safe-area-inset-bottom,0px);display:flex;align-items:center;justify-content:center">
       <div style="width:120px;height:4px;background:rgba(255,255,255,0.22);border-radius:2px"></div>
     </div>
   </div>
