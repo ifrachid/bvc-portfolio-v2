@@ -1946,98 +1946,73 @@ async function importPortfolioFromSheet() {
   const savedUrl = localStorage.getItem(PORT_URL_KEY);
   const st = document.getElementById('port-status');
   const btn = event.target;
-
-  if (!savedUrl) {
-    showPortfolioUrlSetup();
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = '⏳ Importation...';
-  if(st){ st.style.display='block'; st.style.color='#4cc2ff'; st.style.background='rgba(10,132,255,0.08)'; st.innerHTML='📡 Lecture de ta Google Sheet...'; }
-
+  if (!savedUrl) { showPortfolioUrlSetup(); return; }
+  btn.disabled = true; btn.textContent = '⏳ Importation...';
+  if(st){ st.style.display='block'; st.style.color='#4cc2ff'; st.style.background='rgba(10,132,255,0.08)'; st.innerHTML='📡 Lecture...'; }
   let csv = null;
-
-  // Try direct fetch first
   try {
     const bust = savedUrl + (savedUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
     const res = await fetch(bust, { cache: 'no-store' });
     if (res.ok) { const t = await res.text(); if(t && t.length > 5) csv = t; }
-  } catch(e) { console.warn('Direct fetch failed:', e.message); }
-
-  // Fallback proxy
+  } catch(e) {}
   if (!csv) {
     try {
       const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(savedUrl);
       const res = await fetch(proxyUrl);
       if (res.ok) { const d = await res.json(); if(d && d.contents) csv = d.contents; }
-    } catch(e) { console.warn('Proxy failed:', e.message); }
+    } catch(e) {}
   }
-
   if (!csv) {
-    if(st){ st.style.color='#ff453a'; st.style.background='rgba(255,69,58,0.08)'; st.innerHTML='❌ Impossible de lire la sheet. Vérifie que la feuille Portfolio est bien publiée en CSV.'; }
-    btn.disabled = false; btn.textContent = '📥 Importer Portfolio depuis Sheet';
-    return;
+    if(st){ st.style.color='#ff453a'; st.style.background='rgba(255,69,58,0.08)'; st.innerHTML='❌ Impossible de lire la sheet.<br><small>Vérifie : Fichier → Partager → Publier sur le web → Portfolio → CSV</small>'; }
+    btn.disabled = false; btn.textContent = '📥 Importer Portfolio depuis Sheet'; return;
   }
-
-  // Parse CSV
-  const lines = csv.trim().split(/[\r\n]+/).filter(l => l.trim());
-  if (lines.length < 2) {
-    if(st){ st.style.color='#ff453a'; st.style.background='rgba(255,69,58,0.08)'; st.innerHTML='❌ Sheet vide ou format incorrect'; }
-    btn.disabled = false; btn.textContent = '📥 Importer Portfolio depuis Sheet';
-    return;
+  // Parse CSV — skip header automatically
+  const allLines = csv.trim().split(/[\r\n]+/).filter(l => l.trim());
+  let startRow = 0;
+  if (allLines.length > 0) {
+    const fc = allLines[0].split(',').map(c => c.trim().replace(/^"|"$/g,''));
+    if (isNaN(parseFloat(fc[1]))) startRow = 1;
   }
-
-  let imported = 0;
-  let updated = 0;
-  const details = [];
-
-  for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
-    const ticker = (cols[0] || '').toUpperCase().trim();
+  let imported = 0, updated = 0;
+  const details = [], skipped = [];
+  for (let i = startRow; i < allLines.length; i++) {
+    const cols = allLines[i].split(',').map(c => c.trim().replace(/^"|"$/g,''));
+    const ticker = (cols[0]||'').toUpperCase().replace(/\s/g,'');
+    if (!ticker || ticker.length < 2 || ticker.length > 6) continue;
     const qty = parseFloat(cols[1]) || 0;
     const buyPrice = parseFloat(cols[2]) || 0;
-
-    if (!ticker || qty <= 0 || buyPrice <= 0) continue;
-
+    if (qty <= 0 || buyPrice <= 0) { skipped.push(ticker); continue; }
     const existing = stocks.find(s => s.t === ticker);
     if (existing) {
-      existing.q = qty;
-      existing.b = buyPrice;
+      existing.q = qty; existing.b = buyPrice;
       localStorage.setItem('qty_' + ticker, String(qty));
       localStorage.setItem('buy_' + ticker, String(buyPrice));
       updated++;
-      details.push('<span style="color:#ffd60a">' + ticker + '</span> mis à jour');
+      details.push('<span style="color:#ffd60a">' + ticker + '</span>');
     } else {
-      // New stock — find name from BVC list if available
-      const knownStock = ALL_BVC_STOCKS ? ALL_BVC_STOCKS.find(s => s.t === ticker) : null;
-      const nom = knownStock ? knownStock.n : ticker;
-      stocks.push({
-        t: ticker, n: nom, q: qty, b: buyPrice,
-        live: parseFloat(localStorage.getItem('price_' + ticker)) || buyPrice,
-        dpa: 0, chg: 0
-      });
+      stocks.push({ t: ticker, n: ticker, q: qty, b: buyPrice,
+        live: parseFloat(localStorage.getItem('price_' + ticker)) || buyPrice, dpa: 0, chg: 0 });
       localStorage.setItem('qty_' + ticker, String(qty));
       localStorage.setItem('buy_' + ticker, String(buyPrice));
       imported++;
-      details.push('<span style="color:#34c759">+ ' + ticker + '</span> ajouté');
+      details.push('<span style="color:#34c759">+' + ticker + '</span>');
     }
   }
-
-  savePortfolioToStorage();
-  renderAll();
-
+  savePortfolioToStorage(); renderAll();
+  const total = imported + updated;
   if(st){
-    st.style.color = '#34c759';
-    st.style.background = 'rgba(52,199,89,0.08)';
-    st.innerHTML = '✅ <strong>' + (imported + updated) + ' actions importées</strong><br>'
-      + '<div style="margin-top:5px;line-height:2;font-size:9px">' + details.join(' · ') + '</div>';
+    if(total === 0){
+      st.style.color='#ff453a'; st.style.background='rgba(255,69,58,0.08)';
+      st.innerHTML='❌ 0 importées — CSV reçu:<br><small style="font-family:monospace;opacity:0.7">' + (allLines[0]||'vide') + '</small><br><small>Format attendu: A=Ticker, B=Quantité, C=Prix achat</small>';
+    } else {
+      st.style.color='#34c759'; st.style.background='rgba(52,199,89,0.08)';
+      st.innerHTML='✅ <strong>' + total + ' action' + (total>1?'s':'') + '</strong> (' + updated + ' mises à jour, ' + imported + ' ajoutées)<br>'
+        + '<div style="margin-top:4px;font-size:9px;line-height:2">' + details.join(' · ') + '</div>'
+        + (skipped.length ? '<br><small style="color:#ff9500">⚠️ Ignorés: ' + skipped.join(', ') + '</small>' : '');
+    }
   }
-  btn.disabled = false;
-  btn.textContent = '📥 Importer Portfolio depuis Sheet';
-
-  // Go to portfolio tab
-  setTimeout(() => showTab('port'), 1500);
+  btn.disabled = false; btn.textContent = '📥 Importer Portfolio depuis Sheet';
+  if(total > 0) setTimeout(() => showTab('port'), 1500);
 }
 
 // ─── DIVIDENDES IMPORT ───────────────────────────────────
