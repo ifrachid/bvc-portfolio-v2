@@ -1370,19 +1370,12 @@ function restoreAppState() {
   }
 }
 
-// Re-render when app comes back to foreground
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') {
-    loadPortfolioFromStorage();
-    renderAll();
-    setTimeout(restoreAppState, 100);
-  }
-});
-
+// Re-render only on actual page reload (not visibility change)
 window.addEventListener('pageshow', (e) => {
-  loadPortfolioFromStorage();
-  renderAll();
-  setTimeout(restoreAppState, 100);
+  if (e.persisted) {
+    // Page restored from bfcache — just restore visual state
+    setTimeout(restoreAppState, 50);
+  }
 });
 
 let investiVisible = true;
@@ -1963,36 +1956,36 @@ async function importPortfolioFromSheet() {
     } catch(e) {}
   }
   if (!csv) {
-    if(st){ st.style.color='#ff453a'; st.style.background='rgba(255,69,58,0.08)'; st.innerHTML='❌ Impossible de lire la sheet.<br><small>Vérifie : Fichier → Partager → Publier sur le web → Portfolio → CSV</small>'; }
+    if(st){ st.style.color='#ff453a'; st.style.background='rgba(255,69,58,0.08)'; st.innerHTML='❌ Impossible de lire la sheet.<br><small>Fichier → Partager → Publier sur le web → Portfolio → CSV</small>'; }
     btn.disabled = false; btn.textContent = '📥 Importer Portfolio depuis Sheet'; return;
   }
-  // Parse CSV — skip header automatically
+  // Parse CSV — ligne 1 = en-tête, skip; virgule française → point
   const allLines = csv.trim().split(/[\r\n]+/).filter(l => l.trim());
-  let startRow = 0;
-  if (allLines.length > 0) {
-    const fc = allLines[0].split(',').map(c => c.trim().replace(/^"|"$/g,''));
-    if (isNaN(parseFloat(fc[1]))) startRow = 1;
-  }
+  // Always skip first row (header)
   let imported = 0, updated = 0;
   const details = [], skipped = [];
-  for (let i = startRow; i < allLines.length; i++) {
-    const cols = allLines[i].split(',').map(c => c.trim().replace(/^"|"$/g,''));
-    const ticker = (cols[0]||'').toUpperCase().replace(/\s/g,'');
+  for (let i = 1; i < allLines.length; i++) {
+    // Handle quoted CSV cells
+    const raw = allLines[i];
+    const cols = raw.split(',').map(c => c.trim().replace(/^"|"$/g, '').replace(',', '.'));
+    const ticker = (cols[0]||'').toUpperCase().trim().replace(/\s/g,'');
     if (!ticker || ticker.length < 2 || ticker.length > 6) continue;
-    const qty = parseFloat(cols[1]) || 0;
-    const buyPrice = parseFloat(cols[2]) || 0;
-    if (qty <= 0 || buyPrice <= 0) { skipped.push(ticker); continue; }
+    const qty = parseFloat((cols[1]||'').replace(',','.')) || 0;
+    // Prix achat — virgule française
+    const buyPrice = parseFloat((cols[2]||'').replace(',','.')) || 0;
+    if (buyPrice <= 0) { skipped.push(ticker); continue; }
     const existing = stocks.find(s => s.t === ticker);
     if (existing) {
-      existing.q = qty; existing.b = buyPrice;
-      localStorage.setItem('qty_' + ticker, String(qty));
+      if (qty > 0) existing.q = qty;
+      existing.b = buyPrice;
+      if (qty > 0) localStorage.setItem('qty_' + ticker, String(qty));
       localStorage.setItem('buy_' + ticker, String(buyPrice));
       updated++;
       details.push('<span style="color:#ffd60a">' + ticker + '</span>');
     } else {
       stocks.push({ t: ticker, n: ticker, q: qty, b: buyPrice,
         live: parseFloat(localStorage.getItem('price_' + ticker)) || buyPrice, dpa: 0, chg: 0 });
-      localStorage.setItem('qty_' + ticker, String(qty));
+      if (qty > 0) localStorage.setItem('qty_' + ticker, String(qty));
       localStorage.setItem('buy_' + ticker, String(buyPrice));
       imported++;
       details.push('<span style="color:#34c759">+' + ticker + '</span>');
@@ -2003,12 +1996,12 @@ async function importPortfolioFromSheet() {
   if(st){
     if(total === 0){
       st.style.color='#ff453a'; st.style.background='rgba(255,69,58,0.08)';
-      st.innerHTML='❌ 0 importées — CSV reçu:<br><small style="font-family:monospace;opacity:0.7">' + (allLines[0]||'vide') + '</small><br><small>Format attendu: A=Ticker, B=Quantité, C=Prix achat</small>';
+      st.innerHTML='❌ 0 importées<br><small style="font-family:monospace;opacity:0.8">CSV ligne 1: ' + (allLines[1]||'vide') + '</small>';
     } else {
       st.style.color='#34c759'; st.style.background='rgba(52,199,89,0.08)';
       st.innerHTML='✅ <strong>' + total + ' action' + (total>1?'s':'') + '</strong> (' + updated + ' mises à jour, ' + imported + ' ajoutées)<br>'
         + '<div style="margin-top:4px;font-size:9px;line-height:2">' + details.join(' · ') + '</div>'
-        + (skipped.length ? '<br><small style="color:#ff9500">⚠️ Ignorés: ' + skipped.join(', ') + '</small>' : '');
+        + (skipped.length ? '<br><small style="color:#ff9500">⚠️ Sans prix: ' + skipped.join(', ') + '</small>' : '');
     }
   }
   btn.disabled = false; btn.textContent = '📥 Importer Portfolio depuis Sheet';
@@ -2037,20 +2030,15 @@ async function importDividendesFromSheet() {
   const savedUrl = localStorage.getItem(DIV_URL_KEY);
   const st = document.getElementById('div-import-status');
   const btn = event.target;
-
   if (!savedUrl) { showDivUrlSetup(); return; }
-
-  btn.disabled = true;
-  btn.textContent = '⏳ Importation...';
-  if(st){ st.style.display='block'; st.style.color='#34c759'; st.style.background='rgba(52,199,89,0.08)'; st.innerHTML='📡 Lecture de la feuille Dividendes...'; }
-
+  btn.disabled = true; btn.textContent = '⏳ Importation...';
+  if(st){ st.style.display='block'; st.style.color='#34c759'; st.style.background='rgba(52,199,89,0.08)'; st.innerHTML='📡 Lecture...'; }
   let csv = null;
   try {
     const bust = savedUrl + (savedUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
     const res = await fetch(bust, { cache: 'no-store' });
     if (res.ok) { const t = await res.text(); if(t && t.length > 5) csv = t; }
   } catch(e) {}
-
   if (!csv) {
     try {
       const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(savedUrl);
@@ -2058,32 +2046,22 @@ async function importDividendesFromSheet() {
       if (res.ok) { const d = await res.json(); if(d && d.contents) csv = d.contents; }
     } catch(e) {}
   }
-
   if (!csv) {
-    if(st){ st.style.color='#ff453a'; st.style.background='rgba(255,69,58,0.08)'; st.innerHTML='❌ Impossible de lire la sheet. Vérifie que la feuille est publiée en CSV.'; }
-    btn.disabled = false; btn.textContent = '🌿 Importer Dividendes depuis Sheet';
-    return;
+    if(st){ st.style.color='#ff453a'; st.style.background='rgba(255,69,58,0.08)'; st.innerHTML='❌ Impossible de lire la sheet.<br><small>Fichier → Partager → Publier sur le web → Dividendes → CSV</small>'; }
+    btn.disabled = false; btn.textContent = '🌿 Importer Dividendes depuis Sheet'; return;
   }
-
-  const lines = csv.trim().split(/[\r\n]+/).filter(l => l.trim());
-  if (lines.length < 2) {
-    if(st){ st.style.color='#ff453a'; st.style.background='rgba(255,69,58,0.08)'; st.innerHTML='❌ Feuille vide ou format incorrect'; }
-    btn.disabled = false; btn.textContent = '🌿 Importer Dividendes depuis Sheet';
-    return;
-  }
-
+  // Parse CSV — ligne 1 = en-tête (Ticker, DPA, Date Détachement, Date Paiement)
+  const allLines = csv.trim().split(/[\r\n]+/).filter(l => l.trim());
   let updated = 0;
-  const details = [];
-
-  for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
-    const ticker = (cols[0] || '').toUpperCase().trim();
-    const dpa = parseFloat(cols[1]) || 0;
-    const det = cols[2] || '';  // date détachement
-    const pay = cols[3] || '';  // date paiement
-
-    if (!ticker || dpa <= 0) continue;
-
+  const details = [], notFound = [];
+  for (let i = 1; i < allLines.length; i++) {
+    const cols = allLines[i].split(',').map(c => c.trim().replace(/^"|"$/g,''));
+    const ticker = (cols[0]||'').toUpperCase().trim().replace(/\s/g,'');
+    if (!ticker || ticker.length < 2) continue;
+    const dpa = parseFloat((cols[1]||'').replace(',','.')) || 0;
+    const det = (cols[2]||'').trim();
+    const pay = (cols[3]||'').trim();
+    if (dpa <= 0) continue;
     const stock = stocks.find(s => s.t === ticker);
     if (stock) {
       stock.dpa = dpa;
@@ -2093,22 +2071,25 @@ async function importDividendesFromSheet() {
       if (det) localStorage.setItem('det_' + ticker, det);
       if (pay) localStorage.setItem('pay_' + ticker, pay);
       updated++;
-      details.push('<span style="color:#34c759">' + ticker + '</span> ' + dpa + ' DH · paiement ' + (pay||'—'));
+      details.push('<span style="color:#34c759">' + ticker + ' ' + dpa + ' DH</span>');
+    } else {
+      notFound.push(ticker);
     }
   }
-
-  savePortfolioToStorage();
-  renderAll();
-
+  savePortfolioToStorage(); renderAll();
   if(st){
-    st.style.color = '#34c759';
-    st.style.background = 'rgba(52,199,89,0.08)';
-    st.innerHTML = updated > 0
-      ? '✅ <strong>' + updated + ' dividendes mis à jour</strong><br><div style="margin-top:5px;line-height:2;font-size:9px">' + details.join(' · ') + '</div>'
-      : '⚠️ Aucun ticker trouvé dans ton portfolio — vérifie que les tickers correspondent';
+    if(updated === 0){
+      st.style.color='#ff9500'; st.style.background='rgba(255,149,0,0.08)';
+      st.innerHTML='⚠️ 0 mis à jour<br><small>Les tickers de ta sheet Dividendes doivent correspondre à ceux de ton portfolio</small>'
+        + (notFound.length ? '<br><small style="color:#ff453a">Non trouvés: ' + notFound.join(', ') + '</small>' : '');
+    } else {
+      st.style.color='#34c759'; st.style.background='rgba(52,199,89,0.08)';
+      st.innerHTML='✅ <strong>' + updated + ' dividende' + (updated>1?'s':'') + ' importés</strong><br>'
+        + '<div style="margin-top:4px;font-size:9px;line-height:2">' + details.join(' · ') + '</div>'
+        + (notFound.length ? '<br><small style="color:#ff9500">⚠️ Pas dans portfolio: ' + notFound.join(', ') + '</small>' : '');
+    }
   }
-  btn.disabled = false;
-  btn.textContent = '🌿 Importer Dividendes depuis Sheet';
+  btn.disabled = false; btn.textContent = '🌿 Importer Dividendes depuis Sheet';
 }
 
 function showGsUrlSettings() {
