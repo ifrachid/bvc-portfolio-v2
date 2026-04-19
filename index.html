@@ -2306,6 +2306,19 @@ async function importDividendesFromSheet() {
       notFound.push(ticker);
     }
   }
+  // Lire date depuis la feuille (ligne "Dernière mise à jour")
+  try {
+    for (const line of allLines) {
+      if (line.toLowerCase().includes('derni') && line.toLowerCase().includes('jour')) {
+        const cols = parseDivLine(line).map(c => c.replace(/^"|"$/g,'').trim());
+        const dateVal = cols[1] || cols[0].replace(/dernière mise à jour/i,'').replace(':','').trim();
+        if (dateVal && dateVal.length > 5 && !dateVal.toLowerCase().includes('jour')) {
+          localStorage.setItem('div_sync_date', dateVal);
+          break;
+        }
+      }
+    }
+  } catch(e) {}
   savePortfolioToStorage(); renderAll();
   if(st){
     if(updated === 0){
