@@ -2407,8 +2407,10 @@ async function triggerSheetRefresh() {
 
 async function fetchFromGoogleSheets() {
   // Use hardcoded default URL if nothing saved
-  if (!localStorage.getItem(GS_URL_KEY)) {
-    localStorage.setItem(GS_URL_KEY, 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQiTZzyjt1O8ks2MQGzY65MMLftLY-mCgDjIsHCW5Ea7TVswH_LTVTM_VzaCra5lhcWyl-HjBzYu3aZ/pub?gid=0&single=true&output=csv');
+  // Force update if old gid=0 URL is saved
+if (localStorage.getItem(GS_URL_KEY) && localStorage.getItem(GS_URL_KEY).includes('gid=0')) { localStorage.removeItem(GS_URL_KEY); }
+if (!localStorage.getItem(GS_URL_KEY)) {
+    localStorage.setItem(GS_URL_KEY, 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQiTZzyjt1O8ks2MQGzY65MMLftLY-mCgDjIsHCW5Ea7TVswH_LTVTM_VzaCra5lhcWyl-HjBzYu3aZ/pub?gid=1307110515&single=true&output=csv');
   }
   const savedUrl = localStorage.getItem(GS_URL_KEY);
   const st = document.getElementById('gs-status');
@@ -2532,7 +2534,7 @@ async function fetchFromGoogleSheets() {
 
 // Show setup if URL already saved on tab open
 function initGsSection() {
-  const DEFAULT_GS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQiTZzyjt1O8ks2MQGzY65MMLftLY-mCgDjIsHCW5Ea7TVswH_LTVTM_VzaCra5lhcWyl-HjBzYu3aZ/pub?gid=0&single=true&output=csv';
+  const DEFAULT_GS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQiTZzyjt1O8ks2MQGzY65MMLftLY-mCgDjIsHCW5Ea7TVswH_LTVTM_VzaCra5lhcWyl-HjBzYu3aZ/pub?gid=1307110515&single=true&output=csv';
   if (!localStorage.getItem(GS_URL_KEY)) {
     localStorage.setItem(GS_URL_KEY, DEFAULT_GS_URL);
   }
