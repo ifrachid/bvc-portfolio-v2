@@ -426,41 +426,46 @@ input::placeholder{color:var(--text3)}
         <div id="port-status" style="display:none;font-size:10px;text-align:center;padding:8px;border-radius:8px;margin-top:8px;line-height:1.6"></div>
       </div>
 
-      <!-- MISE À JOUR DIVIDENDES 2025 -->
-      <div style="background:rgba(52,199,89,0.07);border:1px solid rgba(52,199,89,0.25);border-radius:16px;padding:14px;margin-bottom:12px">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-          <div style="width:38px;height:38px;border-radius:11px;background:rgba(52,199,89,0.15);display:flex;align-items:center;justify-content:center;font-size:20px">🌿</div>
-          <div>
-            <div style="font-size:13px;color:#34c759;font-weight:700">Mise à jour Dividendes 2025</div>
-            <div style="font-size:10px;color:var(--text3)">Via Google Sheet → BVC automatique</div>
+      <!-- DIVIDENDES 2025 — bhal Google Sheets -->
+      <div style="background:rgba(52,199,89,0.07);border:1px solid rgba(52,199,89,0.2);border-radius:16px;padding:14px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:34px;height:34px;border-radius:10px;background:rgba(52,199,89,0.15);display:flex;align-items:center;justify-content:center;font-size:18px">🌿</div>
+            <div>
+              <div style="font-size:12px;color:#34c759;font-weight:700">Dividendes 2025</div>
+              <div style="font-size:10px;color:var(--text3)">Sync automatique des dividendes</div>
+            </div>
           </div>
+          <button onclick="showDivUrlSetup()" style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:5px 9px;font-size:11px;color:var(--text2);font-family:inherit;cursor:pointer;touch-action:manipulation">⚙️ URL</button>
         </div>
-        <div style="background:rgba(0,0,0,0.15);border-radius:11px;padding:10px 12px;margin-bottom:10px">
-          <div style="font-size:9px;color:#34c759;font-weight:700;letter-spacing:0.5px;margin-bottom:8px">COMMENT ÇA MARCHE</div>
-          <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px">
-            <div style="width:18px;height:18px;border-radius:50%;background:#34c759;color:#000;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">1</div>
-            <div style="font-size:10px;color:var(--text2)">Google Sheet → menu <span style="color:#34c759;font-weight:600">🐂 Rach Invest → 📅 Fetch Dividendes 2025</span></div>
-          </div>
-          <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px">
-            <div style="width:18px;height:18px;border-radius:50%;background:#34c759;color:#000;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">2</div>
-            <div style="font-size:10px;color:var(--text2)">Fichier → Partager → <span style="color:#34c759;font-weight:600">Publier sur le web</span> → "Dividendes BVC 2025" → CSV → Copier URL</div>
-          </div>
-          <div style="display:flex;align-items:flex-start;gap:8px">
-            <div style="width:18px;height:18px;border-radius:50%;background:#34c759;color:#000;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">3</div>
-            <div style="font-size:10px;color:var(--text2)">Colie l'URL ci-dessous → <span style="color:#34c759;font-weight:600">Importer</span></div>
-          </div>
-        </div>
-        <div style="margin-bottom:10px">
+
+        <div id="div-url-setup" style="display:none;margin-bottom:10px">
           <div class="lbl" style="margin-bottom:5px">URL CSV — Feuille "Dividendes BVC 2025"</div>
           <input id="div-url-input" type="url" placeholder="https://docs.google.com/spreadsheets/..." style="font-size:11px;margin-bottom:8px;border-radius:10px;padding:10px 12px">
-          <button onclick="saveDivUrl()" class="btn" style="background:rgba(52,199,89,0.15);border:1px solid rgba(52,199,89,0.3);color:#34c759;font-size:12px;padding:10px;margin-bottom:0">💾 Enregistrer URL</button>
+          <button onclick="saveDivUrl()" class="btn" style="background:#34c759;color:#000;font-size:12px;padding:11px;margin-bottom:6px">💾 Enregistrer URL</button>
+          <button onclick="document.getElementById('div-url-setup').style.display='none'" style="width:100%;padding:8px;border:none;background:none;color:var(--text3);font-size:11px;font-family:inherit;cursor:pointer">Annuler</button>
         </div>
-        <div id="div-url-setup" style="display:none"></div>
-        <button onclick="importDividendesFromSheet()" class="btn" style="background:linear-gradient(135deg,#34c759,#059669);font-size:13px;margin-bottom:0">
-          🌿 Importer Dividendes depuis Sheet
+
+        <button id="div-refresh-btn" onclick="triggerDivRefresh()" class="btn" style="background:rgba(10,132,255,0.12);border:1px solid rgba(10,132,255,0.3);color:#4cc2ff;margin-bottom:8px;font-size:13px">
+          🔄 Actualiser les dividendes (script)
+        </button>
+        <button id="div-fetch-btn" onclick="importDividendesFromSheet()" class="btn" style="background:linear-gradient(135deg,#34c759,#059669);font-size:13px;margin-bottom:0">
+          🌿 Sync depuis Google Sheets
         </button>
         <div id="div-import-status" style="display:none;font-size:10px;text-align:center;padding:8px;border-radius:8px;margin-top:8px;line-height:1.6"></div>
+
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:10px;color:var(--text3)">Dernière sync</span>
+            <span style="font-size:10px;font-weight:600;color:var(--text)"><span id="div-sync-date">—</span></span>
+          </div>
+          <div style="display:flex;justify-content:space-between">
+            <span style="font-size:10px;color:var(--text3)">Dividendes en mémoire</span>
+            <span style="font-size:10px;font-weight:600;color:#34c759"><span id="div-sync-count">0</span> actions</span>
+          </div>
+        </div>
       </div>
+
             <!-- IMPORT TAKE PROFIT depuis Google Sheet -->
       <div style="background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.2);border-radius:16px;padding:14px;margin-bottom:12px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -1384,7 +1389,18 @@ function updateDivBadge(){
   }
 }
 
-function renderAll(){updateHeader();updateDivHeader();updateDivBadge();if(curTab==='port')renderList();if(curTab==='div')renderDivGlobal();updateSel();renderTicker();}
+function renderAll(){
+  updateHeader();updateDivHeader();updateDivBadge();
+  if(curTab==='port')renderList();
+  if(curTab==='div')renderDivGlobal();
+  updateSel();renderTicker();
+  // Update div sync info
+  const divDate = localStorage.getItem('div_sync_date');
+  const sdEl = document.getElementById('div-sync-date');
+  const scEl = document.getElementById('div-sync-count');
+  if(sdEl) sdEl.textContent = divDate || '—';
+  if(scEl) scEl.textContent = stocks.filter(s=>s.dpa>0).length;
+}
 
 function showSettingsUrl() {
   const current = localStorage.getItem('gs_csv_url') || '';
@@ -1957,6 +1973,11 @@ function showTab(t){
     const savedDivUrl = localStorage.getItem(DIV_URL_KEY);
     const divInput = document.getElementById('div-url-input');
     if(savedDivUrl && divInput) divInput.value = savedDivUrl;
+    const divDate = localStorage.getItem('div_sync_date');
+    const sdEl = document.getElementById('div-sync-date');
+    const scEl = document.getElementById('div-sync-count');
+    if(sdEl && divDate) sdEl.textContent = divDate;
+    if(scEl) scEl.textContent = stocks.filter(s=>s.dpa>0).length;
   }
 }
 
@@ -2299,6 +2320,43 @@ async function importDividendesFromSheet() {
     }
   }
   btn.disabled = false; btn.textContent = '🌿 Importer Dividendes depuis Sheet';
+  // Update sync info
+  const now = new Date().toLocaleString('fr-MA');
+  localStorage.setItem('div_sync_date', now);
+  const sdEl = document.getElementById('div-sync-date');
+  const scEl = document.getElementById('div-sync-count');
+  if(sdEl) sdEl.textContent = now;
+  if(scEl) scEl.textContent = stocks.filter(s=>s.dpa>0).length;
+}
+
+async function triggerDivRefresh() {
+  const btn = document.getElementById('div-refresh-btn');
+  const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbw0GnztplOdaFMNsv0ehb0vlUURt0xtmPsUVemgmd6_So4HXDqDYX7GIy6SINkufoul/exec';
+  const st = document.getElementById('div-import-status');
+  btn.disabled = true;
+  btn.textContent = '⏳ Mise à jour en cours...';
+  if(st){ st.style.display='block'; st.style.color='#4cc2ff'; st.style.background='rgba(10,132,255,0.08)'; st.innerHTML='📡 Fetch BVC en cours...'; }
+  try {
+    await fetch(WEBAPP_URL + '?action=fetchdividendes', { mode: 'no-cors' });
+    btn.textContent = '✅ Mis à jour — sync dans 6s...';
+    btn.style.color = '#34c759';
+    if(st){ st.innerHTML='✅ Script lancé — sync automatique dans 6s...'; st.style.color='#34c759'; st.style.background='rgba(52,199,89,0.08)'; }
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = '🔄 Actualiser les dividendes (script)';
+      btn.style.color = '#4cc2ff';
+      importDividendesFromSheet();
+    }, 6000);
+  } catch(e) {
+    btn.textContent = '✅ Lancé — sync dans 6s...';
+    btn.style.color = '#34c759';
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = '🔄 Actualiser les dividendes (script)';
+      btn.style.color = '#4cc2ff';
+      importDividendesFromSheet();
+    }, 6000);
+  }
 }
 
 function showGsUrlSettings() {
