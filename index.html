@@ -1696,9 +1696,22 @@ function renderDivGlobal(){
         <div style="background:#0a0a0f;border-radius:6px;padding:5px;text-align:center"><div class="lbl">−${Math.round(RET*1000)/10}%</div><div style="font-size:10px;font-weight:600;color:#ef4444">−${f(b*RET)}</div></div>
         <div style="background:#0a1f0e;border-radius:6px;padding:5px;text-align:center"><div class="lbl">Net</div><div style="font-size:10px;font-weight:700;color:#10b981">+${f(n)}</div></div>
       </div>
-      <button onclick="markDividendeReceived('${s.t}','${s.n}',${s.q},${s.dpa},${n},'${s.pay||''}')" style="width:100%;margin-top:8px;padding:9px;border-radius:10px;background:rgba(90,200,250,0.1);border:1px solid rgba(90,200,250,0.3);color:#5ac8fa;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation">
-        🌿 Marquer comme reçu → Take Profit
-      </button>
+      ${(()=>{
+        if(!s.pay) return '';
+        const today = new Date(); today.setHours(0,0,0,0);
+        const payD = new Date(s.pay); payD.setHours(0,0,0,0);
+        const payD3 = new Date(payD); payD3.setDate(payD3.getDate()+3);
+        const alreadyDone = trades.some(tr => tr.ticker===s.t && tr.type==='dividende' && tr.date===s.pay);
+        if(alreadyDone) return '<div style="text-align:center;padding:7px;font-size:10px;color:#5ac8fa;background:rgba(90,200,250,0.08);border-radius:9px;margin-top:8px">✅ Dividende enregistré dans Take Profit</div>';
+        if(today >= payD && today <= payD3) {
+          return '<button onclick="markDividendeReceived(\''+s.t+'\',\''+s.n+'\','+s.q+','+s.dpa+','+n+',\''+s.pay+'\')" style="width:100%;margin-top:8px;padding:9px;border-radius:10px;background:rgba(90,200,250,0.12);border:1px solid rgba(90,200,250,0.35);color:#5ac8fa;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation">🌿 Marquer comme reçu → Take Profit</button>';
+        }
+        if(today < payD) {
+          const diffJ = Math.ceil((payD-today)/86400000);
+          return '<div style="text-align:center;padding:7px;font-size:10px;color:#636366;background:rgba(255,255,255,0.04);border-radius:9px;margin-top:8px">Disponible dans '+diffJ+' jour'+(diffJ>1?'s':'')+' (date paiement)</div>';
+        }
+        return '';
+      })()}
     </div>`;
   });
   if(noDiv.length){
@@ -2187,8 +2200,6 @@ async function importDividendesFromSheet() {
 
   // Smart parser for French locale
   function parseDivLine(line) {
-    // Format: Ticker,DPA,DateDet,DatePay
-    // French: ATW,"22,00",2026-04-28,2026-05-15 or ATW,22,00,2026-04-28,2026-05-15
     if (line.includes('"')) {
       const result = [];
       let current = '', inQuote = false;
@@ -2201,14 +2212,22 @@ async function importDividendesFromSheet() {
       return result;
     }
     const parts = line.split(',').map(p => p.trim());
-    // Detect French decimal in DPA: ATW,22,00,2026-04-28,2026-05-15 → 5 parts instead of 4
+    // French decimal: ATW,19,50,2026-04-28,2026-05-15 → 5 cols
     if (parts.length === 5) {
       const p1 = parts[1], p2 = parts[2];
-      if (/^\d+$/.test(p1) && /^\d{1,2}$/.test(p2) && parts[3].includes('-')) {
+      if (/^\d+$/.test(p1) && /^\d{1,2}$/.test(p2)) {
         return [parts[0], p1 + '.' + p2, parts[3], parts[4]];
       }
     }
-    return parts;
+    // French decimal with date as DD/MM/YYYY: ATW,19,50,28/04/2026,15/05/2026 → 6 cols
+    if (parts.length === 6) {
+      const p1 = parts[1], p2 = parts[2];
+      if (/^\d+$/.test(p1) && /^\d{1,2}$/.test(p2)) {
+        return [parts[0], p1 + '.' + p2, parts[3], parts[4]];
+      }
+    }
+    // dash "-" in date/dpa columns = empty
+    return parts.map(p => p === '-' ? '' : p);
   }
 
   const allLines = csv.trim().split(/[\r\n]+/).filter(l => l.trim());
@@ -2219,9 +2238,23 @@ async function importDividendesFromSheet() {
     const cols = parseDivLine(allLines[i]).map(c => c.replace(/^"|"$/g,''));
     const ticker = (cols[0]||'').toUpperCase().trim().replace(/\s/g,'');
     if (!ticker || ticker.length < 2) continue;
-    const dpa = parseFloat((cols[1]||'').replace(',','.')) || 0;
-    const det = (cols[2]||'').trim();
-    const pay = (cols[3]||'').trim();
+    // Handle French number format (19,50 or 19.50)
+    const dpa = parseFloat((cols[1]||'').replace(/\s/g,'').replace(',','.')) || 0;
+    // Handle date formats: YYYY-MM-DD or DD/MM/YYYY or with dashes
+    function normDate(raw) {
+      const s = (raw||'').trim().replace(/-/g,'/');
+      if (!s || s === '-') return '';
+      const p = s.split('/');
+      if (p.length === 3) {
+        // DD/MM/YYYY → YYYY-MM-DD
+        if (p[2].length === 4) return p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');
+        // Already YYYY/MM/DD
+        if (p[0].length === 4) return p[0]+'-'+p[1].padStart(2,'0')+'-'+p[2].padStart(2,'0');
+      }
+      return s;
+    }
+    const det = normDate(cols[2]);
+    const pay = normDate(cols[3]);
     if (dpa <= 0) continue;
     const stock = stocks.find(s => s.t === ticker);
     if (stock) {
