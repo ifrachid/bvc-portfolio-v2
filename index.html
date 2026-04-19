@@ -2020,40 +2020,38 @@ function saveGsUrl() {
 
 function parseGsCSV(csv) {
   const prices = {};
-  // Ghir les tickers dyal portfolio dyalna
   const myTickers = stocks.map(s => s.t);
   const lines = csv.trim().split(/[\r\n]+/);
 
+  // Proper CSV parser — handles quoted fields like "36,10"
+  function parseCSVLine(line) {
+    const cols = [];
+    let cur = '', inQuote = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQuote = !inQuote; continue; }
+      if (ch === ',' && !inQuote) { cols.push(cur.trim()); cur = ''; continue; }
+      cur += ch;
+    }
+    cols.push(cur.trim());
+    return cols;
+  }
+
   // Detect header columns
   let tickerCol = 0, priceCol = 1;
-  const header = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g,''));
+  const header = parseCSVLine(lines[0]).map(h => h.toLowerCase());
   const tickerIdx = header.findIndex(h => ['ticker','symbol','code','valeur','action'].includes(h));
-  const priceIdx  = header.findIndex(h => h.includes('prix') || h.includes('price') || h.includes('cours') || h.includes('close') || h.includes('mad'));
+  const priceIdx  = header.findIndex(h => h.includes('prix') || h.includes('price') || h.includes('mad') || h.includes('cours'));
   if (tickerIdx >= 0) tickerCol = tickerIdx;
   if (priceIdx  >= 0) priceCol  = priceIdx;
 
   lines.slice(1).forEach(line => {
     if (!line.trim()) return;
-    // Parse CSV with French decimal (36,10 → split into 2 cols)
-    // Smart join: reconstruct number if next col is 1-2 digit decimal part
-    const rawCols = line.split(',').map(c => c.trim().replace(/"/g,''));
-    const cols = [];
-    let i = 0;
-    while (i < rawCols.length) {
-      const cur = rawCols[i];
-      const next = rawCols[i+1] || '';
-      // Detect French decimal: current=integer, next=2-digit decimal → merge
-      if (/^\d+$/.test(cur) && /^\d{1,2}$/.test(next) && cols.length > 0) {
-        cols.push(cur + '.' + next);
-        i += 2;
-      } else {
-        cols.push(cur);
-        i++;
-      }
-    }
+    const cols = parseCSVLine(line);
     if (cols.length < 2) return;
     const ticker = (cols[tickerCol] || '').toUpperCase().trim();
     if (!ticker || !myTickers.includes(ticker)) return;
+    // Handle French decimal comma: "36,10" → "36.10"
     const rawPrice = (cols[priceCol] || '').replace(/\s/g,'').replace(',','.');
     const price = parseFloat(rawPrice);
     if (price > 0 && price < 200000) {
