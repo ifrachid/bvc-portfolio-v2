@@ -464,14 +464,12 @@ input::placeholder{color:var(--text3)}
           </div>
           <button onclick="showTpUrlSetup()" style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:5px 9px;font-size:11px;color:var(--text2);font-family:inherit;cursor:pointer;touch-action:manipulation">⚙️ URL</button>
         </div>
-
         <div id="tp-url-setup" style="display:none;margin-bottom:10px">
           <div class="lbl" style="margin-bottom:5px">URL CSV — Feuille Take Profit</div>
           <input id="tp-url-input" type="url" placeholder="https://docs.google.com/spreadsheets/...Take Profit..." style="font-size:11px;margin-bottom:8px;border-radius:10px;padding:10px 12px">
           <button onclick="saveTpUrl()" class="btn" style="background:#7c3aed;color:#fff;font-size:12px;padding:11px;margin-bottom:6px">💾 Enregistrer URL Take Profit</button>
           <button onclick="document.getElementById('tp-url-setup').style.display='none'" style="width:100%;padding:8px;border:none;background:none;color:var(--text3);font-size:11px;font-family:inherit;cursor:pointer">Annuler</button>
         </div>
-
         <button onclick="importTakeProfitFromSheet()" class="btn" style="background:linear-gradient(135deg,#7c3aed,#5b21b6);font-size:13px;margin-bottom:0">
           💹 Importer Take Profit depuis Sheet
         </button>
@@ -2851,8 +2849,8 @@ async function importTakeProfitFromSheet() {
   const btn = event.target;
   if (!savedUrl) { showTpUrlSetup(); return; }
   btn.disabled = true; btn.textContent = '⏳ Importation...';
-  if(st){ st.style.display='block'; st.style.color='#a78bfa'; st.style.background='rgba(124,58,237,0.08)'; st.innerHTML='📡 Lecture...'; }
-  
+  if(st){ st.style.display='block'; st.style.color='#a78bfa'; st.style.background='rgba(124,58,237,0.08)'; st.innerHTML='📡 Lecture de la sheet...'; }
+
   let csv = null;
   try {
     const bust = savedUrl + (savedUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
@@ -2867,12 +2865,11 @@ async function importTakeProfitFromSheet() {
     } catch(e) {}
   }
   if (!csv) {
-    if(st){ st.style.color='#ff453a'; st.style.background='rgba(255,69,58,0.08)'; st.innerHTML='❌ Impossible de lire la sheet.'; }
+    if(st){ st.style.color='#ff453a'; st.style.background='rgba(255,69,58,0.08)'; st.innerHTML='❌ Impossible de lire la sheet. Vérifie que elle est publiée publiquement.'; }
     btn.disabled = false; btn.textContent = '💹 Importer Take Profit depuis Sheet'; return;
   }
 
-  const allLines = csv.trim().split(/[
-]+/).filter(l => l.trim());
+  const allLines = csv.trim().split(/[\r\n]+/).filter(l => l.trim());
   let imported = 0;
   const details = [], skipped = [];
 
@@ -2885,7 +2882,7 @@ async function importTakeProfitFromSheet() {
     const sell = parseFloat((cols[3]||'').replace(',','.')) || 0;
     const date = (cols[4]||'').trim();
     if (!buy || !sell || !qty) { skipped.push(ticker); continue; }
-    const year = date ? parseInt(date.split('-')[0] || date.split('/')[2] || new Date().getFullYear()) : new Date().getFullYear();
+    const year = date ? parseInt(date.substring(0,4)) || new Date().getFullYear() : new Date().getFullYear();
     const valSell = sell * qty;
     const valBuy  = buy * qty;
     const fees = (valSell * 0.007) * 1.1;
@@ -2894,8 +2891,7 @@ async function importTakeProfitFromSheet() {
     const tva = benHT > 0 ? benHT * 0.15 : 0;
     const net = benHT - tva;
     const pct = (gross / valBuy) * 100;
-    // Check if trade already exists (same ticker + date)
-    const exists = trades.find(t => t.ticker === ticker && t.date === date);
+    const exists = trades.find(t => t.ticker === ticker && t.date === date && t.qty === qty);
     if (!exists) {
       trades.push({ ticker, qty, buy, sell, date, year,
         fees: Math.round(fees*100)/100,
@@ -2904,7 +2900,7 @@ async function importTakeProfitFromSheet() {
         pct:  Math.round(pct*100)/100
       });
       imported++;
-      details.push('<span style="color:#a78bfa;font-weight:600">' + ticker + '</span> +' + (Math.round(net*100)/100).toFixed(0) + ' DH');
+      details.push('<span style="color:#a78bfa;font-weight:600">' + ticker + '</span> ' + (net>=0?'+':'') + Math.round(net) + ' DH');
     }
   }
 
@@ -2913,12 +2909,12 @@ async function importTakeProfitFromSheet() {
     if(imported === 0){
       st.style.color='#ff9500'; st.style.background='rgba(255,149,0,0.08)';
       st.innerHTML='⚠️ 0 trades importés — déjà existants ou format invalide'
-        + (skipped.length ? '<br><small>Ignorés: ' + skipped.join(', ') + '</small>' : '');
+        + (skipped.length ? '<br><small style="color:#636366">Ignorés: ' + skipped.join(', ') + '</small>' : '');
     } else {
       st.style.color='#a78bfa'; st.style.background='rgba(124,58,237,0.08)';
       st.innerHTML='✅ <strong>' + imported + ' trade' + (imported>1?'s':'') + ' importés</strong><br>'
         + '<div style="margin-top:4px;font-size:9px;line-height:2">' + details.join(' · ') + '</div>'
-        + (skipped.length ? '<br><small style="color:#ff9500">⚠️ Ignorés: ' + skipped.join(', ') + '</small>' : '');
+        + (skipped.length ? '<br><small style="color:#ff9500">Ignorés: ' + skipped.join(', ') + '</small>' : '');
     }
   }
   btn.disabled = false; btn.textContent = '💹 Importer Take Profit depuis Sheet';
