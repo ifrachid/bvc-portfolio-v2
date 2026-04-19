@@ -2020,46 +2020,44 @@ function saveGsUrl() {
 
 function parseGsCSV(csv) {
   const prices = {};
-  const allTickers = stocks.map(s => s.t);
+  // Ghir les tickers dyal portfolio dyalna
+  const myTickers = stocks.map(s => s.t);
   const lines = csv.trim().split(/[\r\n]+/);
 
-  // Find header row to know which column is ticker and which is price
+  // Detect header columns
   let tickerCol = 0, priceCol = 1;
   const header = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g,''));
   const tickerIdx = header.findIndex(h => ['ticker','symbol','code','valeur','action'].includes(h));
-  const priceIdx = header.findIndex(h => h.includes('prix') || h.includes('price') || h.includes('cours') || h.includes('close') || h.includes('last') || h === 'dernier');
+  const priceIdx  = header.findIndex(h => h.includes('prix') || h.includes('price') || h.includes('cours') || h.includes('close') || h.includes('mad'));
   if (tickerIdx >= 0) tickerCol = tickerIdx;
-  if (priceIdx >= 0) priceCol = priceIdx;
+  if (priceIdx  >= 0) priceCol  = priceIdx;
 
-  const dataLines = tickerIdx >= 0 || priceIdx >= 0 ? lines.slice(1) : lines;
-
-  dataLines.forEach(line => {
+  lines.slice(1).forEach(line => {
     if (!line.trim()) return;
-    const cols = line.split(',').map(c => c.trim().replace(/"/g,''));
-    if (cols.length < 2) return;
-
-    // Try configured columns first
-    const t1 = cols[tickerCol]?.toUpperCase();
-    const p1 = parseFloat(cols[priceCol]?.replace(/\s/g,'').replace(',','.'));
-    if (t1 && allTickers.includes(t1) && p1 > 0 && p1 < 200000) {
-      prices[t1] = p1;
-      return;
-    }
-
-    // Scan all columns for ticker + price
-    for (let i = 0; i < cols.length; i++) {
-      const t = cols[i]?.toUpperCase().trim();
-      if (!allTickers.includes(t)) continue;
-      // Found ticker, look for price in nearby columns
-      for (let j = 0; j < cols.length; j++) {
-        if (j === i) continue;
-        const p = parseFloat(cols[j]?.replace(/\s/g,'').replace(',','.'));
-        if (p > 0 && p < 200000) {
-          prices[t] = p;
-          break;
-        }
+    // Parse CSV with French decimal (36,10 → split into 2 cols)
+    // Smart join: reconstruct number if next col is 1-2 digit decimal part
+    const rawCols = line.split(',').map(c => c.trim().replace(/"/g,''));
+    const cols = [];
+    let i = 0;
+    while (i < rawCols.length) {
+      const cur = rawCols[i];
+      const next = rawCols[i+1] || '';
+      // Detect French decimal: current=integer, next=2-digit decimal → merge
+      if (/^\d+$/.test(cur) && /^\d{1,2}$/.test(next) && cols.length > 0) {
+        cols.push(cur + '.' + next);
+        i += 2;
+      } else {
+        cols.push(cur);
+        i++;
       }
-      if (prices[t]) break;
+    }
+    if (cols.length < 2) return;
+    const ticker = (cols[tickerCol] || '').toUpperCase().trim();
+    if (!ticker || !myTickers.includes(ticker)) return;
+    const rawPrice = (cols[priceCol] || '').replace(/\s/g,'').replace(',','.');
+    const price = parseFloat(rawPrice);
+    if (price > 0 && price < 200000) {
+      prices[ticker] = price;
     }
   });
 
