@@ -452,6 +452,23 @@ input::placeholder{color:var(--text3)}
         <div id="div-import-status" style="display:none;font-size:10px;text-align:center;padding:8px;border-radius:8px;margin-top:8px;line-height:1.6"></div>
       </div>
 
+      <!-- SYNC DIVIDENDES 2025 depuis BVC -->
+      <div style="background:rgba(52,199,89,0.07);border:1px solid rgba(52,199,89,0.25);border-radius:16px;padding:14px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:34px;height:34px;border-radius:10px;background:rgba(52,199,89,0.15);display:flex;align-items:center;justify-content:center;font-size:18px">📅</div>
+            <div>
+              <div style="font-size:12px;color:#34c759;font-weight:700">Sync Dividendes 2025</div>
+              <div style="font-size:10px;color:var(--text3)">Fetch direct depuis BVC</div>
+            </div>
+          </div>
+        </div>
+        <button onclick="syncDividendesBVC()" class="btn" style="background:linear-gradient(135deg,#34c759,#059669);font-size:13px;margin-bottom:0">
+          📅 Sync Dividendes 2025 depuis BVC
+        </button>
+        <div id="bvc-div-status" style="display:none;font-size:10px;text-align:center;padding:8px;border-radius:8px;margin-top:8px;line-height:1.6"></div>
+      </div>
+
       <!-- IMPORT TAKE PROFIT depuis Google Sheet -->
       <div style="background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.2);border-radius:16px;padding:14px;margin-bottom:12px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -3016,6 +3033,116 @@ function markDividendeReceived(ticker, name, qty, dpa, net, payDate) {
     btn.style.borderColor = 'rgba(90,200,250,0.3)';
     btn.style.color = '#5ac8fa';
   }, 2000);
+}
+
+
+// ─── SYNC DIVIDENDES 2025 DEPUIS BVC ─────────────────────────
+async function syncDividendesBVC() {
+  const st = document.getElementById('bvc-div-status');
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '⏳ Connexion BVC...';
+  if(st){ st.style.display='block'; st.style.color='#34c759'; st.style.background='rgba(52,199,89,0.08)'; st.innerHTML='📡 Fetch depuis casablanca-bourse.com...'; }
+
+  const BVC_URL = 'https://www.casablanca-bourse.com/fr/calendrier-des-dividendes';
+  const PROXY = 'https://api.allorigins.win/get?url=' + encodeURIComponent(BVC_URL) + '&t=' + Date.now();
+
+  let html = null;
+  try {
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 15000);
+    const res = await fetch(PROXY, { signal: ctrl.signal, cache: 'no-store' });
+    clearTimeout(tid);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.contents && data.contents.length > 500) html = data.contents;
+    }
+  } catch(e) { console.warn('BVC fetch error:', e.message); }
+
+  if (!html) {
+    if(st){ st.style.color='#ff453a'; st.style.background='rgba(255,69,58,0.08)'; st.innerHTML='❌ Impossible de contacter BVC.<br><small>Utilise Import Dividendes depuis Google Sheet à la place.</small>'; }
+    btn.disabled = false; btn.textContent = '📅 Sync Dividendes 2025 depuis BVC'; return;
+  }
+
+  // Parse 2025 table from HTML
+  const divs2025 = parseBVC2025(html);
+
+  if (divs2025.length === 0) {
+    if(st){ st.style.color='#ff9500'; st.style.background='rgba(255,149,0,0.08)'; st.innerHTML='⚠️ Aucune donnée 2025 trouvée sur BVC.<br><small>Les sociétés kayzidou progressivement selon les AGO.</small>'; }
+    btn.disabled = false; btn.textContent = '📅 Sync Dividendes 2025 depuis BVC'; return;
+  }
+
+  // Apply to stocks — match by name
+  let updated = 0;
+  const details = [];
+  const notMatched = [];
+
+  divs2025.forEach(d => {
+    // Try to match stock by name
+    const stock = stocks.find(s => {
+      const sn = s.n.toLowerCase().replace(/[^a-z]/g,'');
+      const dn = d.emetteur.toLowerCase().replace(/[^a-z]/g,'');
+      return sn.includes(dn.substring(0,5)) || dn.includes(sn.substring(0,5));
+    });
+    if (stock) {
+      if (d.montant > 0) stock.dpa = d.montant;
+      if (d.detach)   stock.det = d.detach;
+      if (d.pay)      stock.pay = d.pay;
+      updated++;
+      details.push('<span style="color:#34c759;font-weight:600">' + stock.t + '</span> ' + d.montant + ' MAD');
+    } else {
+      notMatched.push(d.emetteur);
+    }
+  });
+
+  savePortfolioToStorage();
+  renderAll();
+
+  if(st){
+    st.style.color='#34c759'; st.style.background='rgba(52,199,89,0.08)';
+    st.innerHTML='✅ <strong>' + divs2025.length + ' dividendes 2025</strong> récupérés depuis BVC<br>'
+      + '<strong>' + updated + '</strong> actions mises à jour dans ton portfolio<br>'
+      + '<div style="margin-top:4px;font-size:9px;line-height:2">' + details.join(' · ') + '</div>'
+      + (notMatched.length ? '<br><small style="color:#636366">Non dans portfolio: ' + notMatched.slice(0,5).join(', ') + (notMatched.length>5?'...':'') + '</small>' : '');
+  }
+
+  btn.disabled = false; btn.textContent = '📅 Sync Dividendes 2025 depuis BVC';
+  if(updated > 0) setTimeout(() => showTab('div'), 1500);
+}
+
+function parseBVC2025(html) {
+  const results = [];
+  // Find section "Calendrier des dividendes 2025"
+  const idx2025 = html.indexOf('Calendrier des dividendes 2025');
+  if (idx2025 < 0) return results;
+  const idx2024 = html.indexOf('Calendrier des dividendes 2024', idx2025);
+  const section = idx2024 > 0 ? html.substring(idx2025, idx2024) : html.substring(idx2025, idx2025 + 50000);
+
+  // Extract TR rows with class border-y
+  const trRegex = /class="border-y[^"]*"[^>]*>([\s\S]*?)<\/tr>/gi;
+  let trMatch;
+  while ((trMatch = trRegex.exec(section)) !== null) {
+    const cells = [];
+    const tdRegex = /<td[^>]*>([\s\S]*?)<\/td>/gi;
+    let tdMatch;
+    while ((tdMatch = tdRegex.exec(trMatch[1])) !== null) {
+      const txt = tdMatch[1].replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim();
+      cells.push(txt);
+    }
+    if (cells.length < 4 || !cells[0] || cells[0].length < 2) continue;
+    const montantStr = cells[1].replace(',','.');
+    const montant = parseFloat(montantStr) || 0;
+    if (montant <= 0) continue;
+    // Convert DD/MM/YYYY → YYYY-MM-DD
+    function toISO(d) {
+      if (!d) return '';
+      const p = d.split('/');
+      if (p.length === 3) return p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');
+      return d;
+    }
+    results.push({ emetteur: cells[0], montant, detach: toISO(cells[2]), pay: toISO(cells[3]), type: cells[4]||'Ordinaire' });
+  }
+  return results;
 }
 
 function renderSyncPrices(){
