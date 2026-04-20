@@ -1544,7 +1544,10 @@ function updateHeader(){
     const el=document.getElementById('hn');
     const hnColor = tn>=0 ? getComputedStyle(document.documentElement).getPropertyValue('--green').trim() : getComputedStyle(document.documentElement).getPropertyValue('--red').trim();
     el.style.color = hnColor;
-    el.textContent=(tn>=0?'▲ +':'▼ ')+f(Math.abs(tn))+' MAD · '+(pctTotal>=0?'+':'')+pctTotal.toFixed(2)+'%';
+    // pctTotal signe doit matcher tn (profit net)
+    const pctSign = tn >= 0 ? '+' : '-';
+    const pctAbs = Math.abs(pctTotal);
+    el.textContent=(tn>=0?'▲ +':'▼ ')+f(Math.abs(tn))+' MAD · '+(tn>=0?'+':'-')+pctAbs.toFixed(2)+'%';
     el.setAttribute('data-color', hnColor);
     el.setAttribute('data-real', el.textContent);
   }
