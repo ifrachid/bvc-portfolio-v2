@@ -343,12 +343,15 @@ input::placeholder{color:var(--text3)}
     <div style="padding:12px 14px 20px">
 
       <!-- Toggle -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-        <button id="sim-tab-1" onclick="switchSimTab(1)" style="padding:10px;border-radius:11px;border:1.5px solid rgba(10,132,255,0.5);background:rgba(10,132,255,0.12);color:#4cc2ff;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px">
+        <button id="sim-tab-1" onclick="switchSimTab(1)" style="padding:9px 4px;border-radius:11px;border:1.5px solid rgba(10,132,255,0.5);background:rgba(10,132,255,0.12);color:#4cc2ff;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation">
           🎯 Portfolio
         </button>
-        <button id="sim-tab-2" onclick="switchSimTab(2)" style="padding:10px;border-radius:11px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation">
+        <button id="sim-tab-2" onclick="switchSimTab(2)" style="padding:9px 4px;border-radius:11px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-size:11px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation">
           🆕 Avant achat
+        </button>
+        <button id="sim-tab-3" onclick="switchSimTab(3)" style="padding:9px 4px;border-radius:11px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-size:11px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation">
+          📈 Accumulation
         </button>
       </div>
 
@@ -401,6 +404,38 @@ input::placeholder{color:var(--text3)}
         </div>
       </div>
 
+
+      <!-- SIM 3 — Accumulation / DCA -->
+      <div id="sim-section-3" style="display:none">
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <div>
+            <div class="lbl" style="margin-bottom:4px">ACTION (portfolio)</div>
+            <select id="sa-ticker" onchange="loadAccumAction()">
+            </select>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div>
+              <div class="lbl" style="margin-bottom:4px">QTÉ ACTUELLE</div>
+              <input id="sa-qty-cur" type="number" min="0" step="1" placeholder="900" oninput="runSimAccum()">
+            </div>
+            <div>
+              <div class="lbl" style="margin-bottom:4px">CMP ACTUEL</div>
+              <input id="sa-cmp-cur" type="number" step="0.01" placeholder="700.35" oninput="runSimAccum()">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div>
+              <div class="lbl" style="margin-bottom:4px">QTÉ À AJOUTER</div>
+              <input id="sa-qty-add" type="number" min="1" step="1" placeholder="300" oninput="runSimAccum()">
+            </div>
+            <div>
+              <div class="lbl" style="margin-bottom:4px">PRIX ACHAT NOUVEAU</div>
+              <input id="sa-price-add" type="number" step="0.01" placeholder="1066" oninput="runSimAccum()">
+            </div>
+          </div>
+          <div id="sa-result" style="display:none"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1955,6 +1990,19 @@ function runSim(){
     </div>
     <div style="height:env(safe-area-inset-bottom,0px)"></div>
   </div>`;
+
+  // Add break-even
+  const bePrice = (s.b * s.q * (1 + 0.007*1.1) + price * s.q * 0.007 * 1.1) / (s.q * (1 - 0.007*1.1 * 0));
+  // Simpler: breakeven = (valAchat + fraisAchat) / (qty * (1 - 0.007*1.1)) + TVA adjustment
+  const valA = s.b * s.q;
+  const fraisA2 = valA * 0.007 * 1.1;
+  const coutT = valA + fraisA2;
+  // break-even price: valVente - fraisVente - coutTotal = 0 → valVente(1 - 0.007*1.1) = coutTotal
+  const be = coutT / (s.q * (1 - 0.007*1.1));
+  res.innerHTML += `<div style="margin-top:8px;background:rgba(255,149,0,0.08);border-radius:9px;padding:8px 12px;display:flex;justify-content:space-between">
+    <span style="font-size:11px;color:#ff9f0a">Break-even (sans perte)</span>
+    <span style="font-size:11px;font-weight:700;color:#ff9f0a">${be.toFixed(2)} MAD</span>
+  </div>`;
 }
 
 function onSearch(){
@@ -2369,6 +2417,12 @@ async function importDividendesFromSheet() {
       }
     }
   } catch(e) {}
+  // Save ALL prices to cache for simulator
+  try {
+    const cache = JSON.parse(localStorage.getItem('prices_cache')||'{}');
+    Object.entries(prices).forEach(([t,p]) => { if(p>0) cache[t]=p; });
+    localStorage.setItem('prices_cache', JSON.stringify(cache));
+  } catch(e){}
   savePortfolioToStorage(); renderAll();
   if(st){
     if(updated === 0){
@@ -3332,30 +3386,153 @@ function selectSimAction(ticker) {
 }
 
 function switchSimTab(n) {
-  document.getElementById('sim-section-1').style.display = n===1 ? 'block' : 'none';
-  document.getElementById('sim-section-2').style.display = n===2 ? 'block' : 'none';
-  const b1 = document.getElementById('sim-tab-1');
-  const b2 = document.getElementById('sim-tab-2');
-  if(n===1){
-    b1.style.border='1.5px solid rgba(10,132,255,0.5)'; b1.style.background='rgba(10,132,255,0.12)'; b1.style.color='#4cc2ff';
-    b2.style.border='1px solid var(--border)'; b2.style.background='var(--bg2)'; b2.style.color='var(--text2)';
-  } else {
-    b2.style.border='1.5px solid rgba(10,132,255,0.5)'; b2.style.background='rgba(10,132,255,0.12)'; b2.style.color='#4cc2ff';
-    b1.style.border='1px solid var(--border)'; b1.style.background='var(--bg2)'; b1.style.color='var(--text2)';
+  [1,2,3].forEach(i => {
+    const sec = document.getElementById('sim-section-'+i);
+    const btn = document.getElementById('sim-tab-'+i);
+    if (!sec || !btn) return;
+    sec.style.display = n===i ? 'block' : 'none';
+    if (n===i) {
+      btn.style.border='1.5px solid rgba(10,132,255,0.5)';
+      btn.style.background='rgba(10,132,255,0.12)';
+      btn.style.color='#4cc2ff';
+    } else {
+      btn.style.border='1px solid var(--border)';
+      btn.style.background='var(--bg2)';
+      btn.style.color='var(--text2)';
+    }
+  });
+  if (n===3) loadAccumAction();
+}
+
+function loadAccumAction() {
+  const sel = document.getElementById('sa-ticker');
+  if (!sel) return;
+  // Populate select with portfolio stocks
+  if (sel.options.length === 0) {
+    stocks.forEach((s,i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.text = s.t + ' — ' + s.n + ' (' + s.q + ' × ' + s.b.toFixed(2) + ')';
+      sel.appendChild(opt);
+    });
   }
+  const s = stocks[parseInt(sel.value)||0];
+  if (s) {
+    document.getElementById('sa-qty-cur').value = s.q;
+    document.getElementById('sa-cmp-cur').value = s.b.toFixed(2);
+    const lp = s.live || getPriceForTicker(s.t);
+    if (lp > 0) document.getElementById('sa-price-add').value = lp.toFixed(2);
+    runSimAccum();
+  }
+}
+
+function runSimAccum() {
+  const qtyCur  = parseFloat(document.getElementById('sa-qty-cur').value)  || 0;
+  const cmpCur  = parseFloat(document.getElementById('sa-cmp-cur').value)  || 0;
+  const qtyAdd  = parseFloat(document.getElementById('sa-qty-add').value)  || 0;
+  const priceAdd= parseFloat(document.getElementById('sa-price-add').value)|| 0;
+  const res     = document.getElementById('sa-result');
+  if (!qtyCur || !cmpCur || !qtyAdd || !priceAdd) { res.style.display='none'; return; }
+
+  const valCur    = qtyCur * cmpCur;
+  const valAdd    = qtyAdd * priceAdd;
+  const fraisAdd  = valAdd * 0.007 * 1.1;
+  const coutAdd   = valAdd + fraisAdd;
+  const qtyTotal  = qtyCur + qtyAdd;
+  const cmpNew    = (valCur + coutAdd) / qtyTotal;
+  // Break-even: prix de vente minimum pour ne pas perdre
+  const coutTotal = valCur + coutAdd;
+  const be        = coutTotal / (qtyTotal * (1 - 0.007*1.1));
+
+  const fmtN = n => n.toLocaleString('fr-MA', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+  res.style.display = 'block';
+  res.innerHTML = `
+    <div style="background:#1c1c1e;border-radius:12px;padding:12px 13px">
+      <div style="font-size:10px;color:#636366;font-weight:600;margin-bottom:9px">RÉSULTAT ACCUMULATION</div>
+
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+        <span style="font-size:11px;color:#8e8e93">Valeur actuelle (${qtyCur} × ${cmpCur})</span>
+        <span style="font-size:11px;color:#f5f5f7">${fmtN(valCur)} DH</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+        <span style="font-size:11px;color:#8e8e93">Valeur achat (${qtyAdd} × ${priceAdd})</span>
+        <span style="font-size:11px;color:#f5f5f7">${fmtN(valAdd)} DH</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;padding-bottom:8px;border-bottom:0.5px solid rgba(255,255,255,0.07)">
+        <span style="font-size:11px;color:#ff9f0a">Frais achat (0.7% × 1.1)</span>
+        <span style="font-size:11px;color:#ff9f0a">${fmtN(fraisAdd)} DH</span>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+        <span style="font-size:11px;color:#8e8e93">Quantité totale</span>
+        <span style="font-size:12px;font-weight:600;color:#f5f5f7">${qtyTotal} actions</span>
+      </div>
+
+      <div style="background:rgba(10,132,255,0.1);border-radius:9px;padding:9px 11px;margin:8px 0">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;font-weight:600;color:#4cc2ff">Nouveau CMP</span>
+          <span style="font-size:18px;font-weight:700;color:#4cc2ff">${fmtN(cmpNew)} MAD</span>
+        </div>
+        <div style="font-size:10px;color:#4b6080;margin-top:3px">
+          Prix moyen de revient après accumulation
+        </div>
+      </div>
+
+      <div style="background:rgba(255,149,0,0.08);border-radius:9px;padding:9px 11px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;font-weight:600;color:#ff9f0a">Break-even</span>
+          <span style="font-size:16px;font-weight:700;color:#ff9f0a">${fmtN(be)} MAD</span>
+        </div>
+        <div style="font-size:10px;color:#7a5a2a;margin-top:3px">
+          Prix minimum de vente pour ne pas perdre (frais inclus)
+        </div>
+      </div>
+    </div>`;
 }
 
 function checkPortfolio() {
   const ticker = document.getElementById('sb-ticker').value.toUpperCase().trim();
   const hint = document.getElementById('sb-portfolio-hint');
+  const buyInput = document.getElementById('sb-buy');
   const stock = stocks.find(s => s.t === ticker);
+
   if (stock) {
     hint.style.display = 'block';
-    if (stock.b > 0) document.getElementById('sb-buy').value = stock.b.toFixed(2);
+    hint.innerHTML = '✅ Kayen f portfolio — prix achat w quantité zdaw automatiquement';
+    if (stock.b > 0) buyInput.value = stock.b.toFixed(2);
     if (stock.q > 0) document.getElementById('sb-qty').value = stock.q;
   } else {
     hint.style.display = 'none';
+    // Ila ma kaynach f portfolio — chercher prix actuel men prices cache
+    const livePrice = getPriceForTicker(ticker);
+    if (livePrice > 0) {
+      buyInput.placeholder = 'Prix actuel: ' + livePrice.toFixed(2) + ' MAD';
+      hint.style.display = 'block';
+      hint.style.color = '#4cc2ff';
+      hint.style.background = 'rgba(10,132,255,0.08)';
+      hint.innerHTML = '📈 Prix actuel: <strong>' + livePrice.toFixed(2) + ' MAD</strong> — modifie si besoin';
+      buyInput.value = livePrice.toFixed(2);
+    } else {
+      buyInput.placeholder = 'ex: 644.92';
+      hint.style.display = 'none';
+    }
   }
+}
+
+function getPriceForTicker(ticker) {
+  // Check in stocks portfolio first
+  const s = stocks.find(x => x.t === ticker);
+  if (s && s.live > 0) return s.live;
+  // Check in localStorage prices cache
+  try {
+    const cached = localStorage.getItem('prices_cache');
+    if (cached) {
+      const prices = JSON.parse(cached);
+      if (prices[ticker] > 0) return prices[ticker];
+    }
+  } catch(e) {}
+  return 0;
 }
 
 function runSimBA() {
