@@ -368,11 +368,13 @@ input::placeholder{color:var(--text3)}
       <!-- SIM 2 — Avant achat libre -->
       <div id="sim-section-2" style="display:none">
         <div style="display:flex;flex-direction:column;gap:9px">
-          <div>
-            <div class="lbl" style="margin-bottom:4px">ACTION (ticker BVC)</div>
-            <input id="sb-ticker" type="text" placeholder="ex: ATW, NKL, IAM..." maxlength="6"
-              style="text-transform:uppercase;font-weight:700;font-size:14px;letter-spacing:1px"
-              oninput="this.value=this.value.toUpperCase();checkPortfolio();runSimBA()">
+          <div style="position:relative">
+            <div class="lbl" style="margin-bottom:4px">ACTION BVC</div>
+            <input id="sb-ticker" type="text" placeholder="Chercher: ATW, Managem, NKL..."
+              autocomplete="off"
+              oninput="searchSimAction(this.value)"
+              style="font-weight:600;font-size:13px">
+            <div id="sb-suggestions" style="display:none;background:#1c1c1e;border:1px solid rgba(255,255,255,0.1);border-radius:10px;margin-top:4px;overflow:hidden;max-height:180px;overflow-y:auto"></div>
             <div id="sb-portfolio-hint" style="display:none;font-size:10px;color:#34c759;margin-top:4px;padding:5px 9px;background:rgba(52,199,89,0.08);border-radius:8px">
               ✅ Kayen f portfolio — prix achat w quantité zdaw automatiquement
             </div>
@@ -3264,6 +3266,70 @@ function parseBVC2025(html) {
   return results;
 }
 
+
+
+const ALL_BVC = [
+  {t:'ADH',n:'Douja Prom Addoha'},{t:'ADI',n:'Alliances Développement Immobilier'},
+  {t:'AFM',n:'Afma'},{t:'AGM',n:'Agma'},{t:'AKT',n:'Akdital'},
+  {t:'ALM',n:'Aluminium du Maroc'},{t:'ATH',n:'Atlanta'},{t:'ATL',n:'Atlantasanad'},
+  {t:'ATW',n:'Attijariwafa Bank'},{t:'BAL',n:'Balima'},{t:'BCI',n:'BCI'},
+  {t:'BCP',n:'Banque Centrale Populaire'},{t:'BOA',n:'Bank of Africa'},
+  {t:'CAP',n:'Cash Plus'},{t:'CDM',n:'Crédit du Maroc'},{t:'CFG',n:'CFG Bank'},
+  {t:'CIH',n:'CIH Bank'},{t:'CLO',n:'Colorado'},{t:'CMG',n:'CMGP Group'},
+  {t:'CMR',n:'Ciments du Maroc'},{t:'CMT',n:'Compagnie Minière de Touissit'},
+  {t:'COL',n:'Colgate'},{t:'CRS',n:'Cosumar'},{t:'CSR',n:'Cosumar'},
+  {t:'CTM',n:'CTM'},{t:'DHO',n:'Delta Holding'},{t:'DLM',n:'Dari Couspate'},
+  {t:'DYT',n:'Disty Technologies'},{t:'EQD',n:'Eqdom'},
+  {t:'FBR',n:'Fénie Brossette'},{t:'GAZ',n:'Afriquia Gaz'},{t:'HPS',n:'HPS'},
+  {t:'IAM',n:'Maroc Telecom'},{t:'IBC',n:'Immorente'},{t:'IMO',n:'Immorente Invest'},
+  {t:'JET',n:'Jet Contractors'},{t:'LBV',n:'Label Vie'},{t:'LES',n:'Lesieur Cristal'},
+  {t:'LHM',n:'LafargeHolcim Maroc'},{t:'LYD',n:'Lydec'},{t:'MAB',n:'Maghrebail'},
+  {t:'MAN',n:'Managem'},{t:'MAR',n:'Maroc Leasing'},{t:'MIC',n:'Microdata'},
+  {t:'MLE',n:'Maroc Leasing'},{t:'MNG',n:'Managem'},{t:'MOX',n:'Maghreb Oxygène'},
+  {t:'MSA',n:'MSA'},{t:'MUT',n:'Mutandis SCA'},{t:'NEJ',n:'Auto Nejma'},
+  {t:'NKL',n:'Ennakl Automobiles'},{t:'OUL',n:'Eaux Minérales Oulmès'},
+  {t:'RDS',n:'Résidences Dar Saada'},{t:'REB',n:'REB'},{t:'RIS',n:'Risma'},
+  {t:'S2M',n:'S2M'},{t:'SAF',n:'Salafin'},{t:'SAH',n:'Saham Assurance'},
+  {t:'SBM',n:'Société des Boissons du Maroc'},{t:'SID',n:'Sonasid'},
+  {t:'SLF',n:'Salafin'},{t:'SMI',n:'SMI'},{t:'SNA',n:'Stokvis Nord Afrique'},
+  {t:'SOT',n:'Sothema'},{t:'STR',n:'Stroc Industrie'},{t:'TGC',n:'TGCC'},
+  {t:'TMA',n:'TotalEnergies Marketing Maroc'},{t:'TQM',n:'Taqa Morocco'},
+  {t:'UNI',n:'Unimer'},{t:'WAF',n:'Wafa Assurance'},{t:'ZCP',n:'Zellidja'}
+];
+
+function searchSimAction(val) {
+  const q = val.trim().toUpperCase();
+  const sugg = document.getElementById('sb-suggestions');
+  if (!q || q.length < 1) { sugg.style.display='none'; return; }
+  
+  const matches = ALL_BVC.filter(s => 
+    s.t.includes(q) || s.n.toUpperCase().includes(q)
+  ).slice(0, 8);
+  
+  if (matches.length === 0) { sugg.style.display='none'; return; }
+  
+  sugg.style.display = 'block';
+  sugg.innerHTML = matches.map(s => {
+    const inPort = stocks.find(p => p.t === s.t);
+    return `<div onclick="selectSimAction('${s.t}')" 
+      style="padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:0.5px solid rgba(255,255,255,0.06)"
+      onmouseover="this.style.background='rgba(255,255,255,0.05)'"
+      onmouseout="this.style.background='transparent'">
+      <div>
+        <span style="font-size:13px;font-weight:700;color:#f5f5f7">${s.t}</span>
+        <span style="font-size:10px;color:#636366;margin-left:8px">${s.n}</span>
+      </div>
+      ${inPort ? '<span style="font-size:9px;color:#34c759;background:rgba(52,199,89,0.1);padding:2px 7px;border-radius:20px">Portfolio</span>' : ''}
+    </div>`;
+  }).join('');
+}
+
+function selectSimAction(ticker) {
+  document.getElementById('sb-ticker').value = ticker;
+  document.getElementById('sb-suggestions').style.display = 'none';
+  checkPortfolio();
+  runSimBA();
+}
 
 function switchSimTab(n) {
   document.getElementById('sim-section-1').style.display = n===1 ? 'block' : 'none';
