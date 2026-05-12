@@ -287,9 +287,8 @@ input::placeholder{color:var(--text3)}
       <div style="background:var(--bg2);border-radius:10px;padding:8px 11px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
         <span style="font-size:10px;color:#6b7280">Retenue source :</span>
         <div style="display:flex;gap:5px">
-          <div id="r25" onclick="setRet(0.125,'2025')" style="padding:3px 9px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;background:#1c1c1e;color:#6b7280;border:1px solid #2a3040;touch-action:manipulation">12.5%</div>
-          <div id="r26" onclick="setRet(0.1125,'2026')" style="padding:3px 9px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;background:#ffd60a;color:#111318;border:1px solid #ffd60a;touch-action:manipulation">11.25%</div>
-          <div id="r27" onclick="setRet(0.10,'2027')" style="padding:3px 9px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;background:#1c1c1e;color:#6b7280;border:1px solid #2a3040;touch-action:manipulation">10%</div>
+          <div id="r26" onclick="setRet(0.1345,'2026')" style="padding:3px 9px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;background:#ffd60a;color:#111318;border:1px solid #ffd60a;touch-action:manipulation">13.45%</div>
+          <div id="r-custom" onclick="showCustomRet()" style="padding:3px 9px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;background:#1c1c1e;color:#6b7280;border:1px solid #2a3040;touch-action:manipulation">✏️ Modifier</div>
         </div>
       </div>
       <div id="div-list"></div>
@@ -823,7 +822,7 @@ function loadPortfolioFromStorage() {
 }
 
 // ─── CONFIG ───────────────────────────────────────
-let RET = 0.1125;
+let RET = parseFloat(localStorage.getItem('div_ret_rate') || '0.1345');
 let retYear = '2026';
 
 // ─── PORTFOLIO ────────────────────────────────────
@@ -954,14 +953,19 @@ function findTickerInMapping(websiteName) {
 
 // ─── FETCH PRIX (API first, then browser proxy for iPhone/PWA, then local cache) ─────────────
 const BVC_SOURCE_URL = 'https://www.casablancabourse.com/fr/live-market/marche-actions-groupement';
-const SAME_ORIGIN_API_URL = new URL('/api/prices', window.location.origin).href;
+const SAME_ORIGIN_API_URL = (window.location.origin && window.location.origin !== 'null') ? new URL('/api/prices', window.location.origin).href : '';
 const PUBLIC_PROXY_URL = 'https://api.allorigins.win/get?url=' + encodeURIComponent(BVC_SOURCE_URL);
 let activePriceFetch = null;
 
 function buildFreshUrl(baseUrl) {
-  const url = new URL(baseUrl, window.location.origin);
-  url.searchParams.set('_ts', Date.now().toString());
-  return url.href;
+  try {
+    const base = (window.location.origin && window.location.origin !== 'null') ? window.location.origin : 'https://localhost';
+    const url = new URL(baseUrl, base);
+    url.searchParams.set('_ts', Date.now().toString());
+    return url.href;
+  } catch(e) {
+    return baseUrl + (baseUrl.includes('?') ? '&' : '?') + '_ts=' + Date.now();
+  }
 }
 
 function saveLivePrices() {
@@ -1657,10 +1661,30 @@ function updateDivHeader(){
   const dyEl=document.getElementById('div-yield'); if(dyEl) dyEl.textContent=yld.toFixed(2)+'%';
 }
 
+function showCustomRet(){
+  const cur = (RET*100).toFixed(2);
+  const val = prompt('Taux retenue + frais broker (%):\nActuel: ' + cur + '%', cur);
+  if (val === null) return;
+  const num = parseFloat(val.replace(',','.'));
+  if (isNaN(num) || num <= 0 || num > 50) { alert('Taux invalide'); return; }
+  const rate = num / 100;
+  RET = rate;
+  localStorage.setItem('div_ret_rate', rate.toString());
+  // Highlight custom button
+  ['r25','r26','r27'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.style.background='#1c1c1e';el.style.color='#6b7280';el.style.borderColor='#2a3040';}
+  });
+  const cb = document.getElementById('r-custom');
+  if(cb){cb.style.background='#ffd60a';cb.style.color='#111318';cb.style.borderColor='#ffd60a';cb.textContent='✏️ '+num.toFixed(2)+'%';}
+  renderDivGlobal(); renderAll();
+}
+
 function setRet(val,yr){
   RET=val;retYear=yr;
-  ['r25','r26','r27'].forEach(id=>{const el=document.getElementById(id);el.style.background='#1a1f2e';el.style.color='#6b7280';el.style.borderColor='#2a3040';});
-  const m={'2025':'r25','2026':'r26','2027':'r27'};
+  localStorage.setItem('div_ret_rate', val.toString());
+  ['r26','r-custom'].forEach(id=>{const el=document.getElementById(id);el.style.background='#1a1f2e';el.style.color='#6b7280';el.style.borderColor='#2a3040';});
+  const m={'2026':'r26'};
   const el=document.getElementById(m[yr]);
   el.style.background='#ffd60a';el.style.color='#111318';el.style.borderColor='#ffd60a';
   const rlEl=document.getElementById('ret-label'); if(rlEl) rlEl.textContent=Math.round(val*1000)/10+'%';
