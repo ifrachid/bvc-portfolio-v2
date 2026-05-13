@@ -1977,9 +1977,9 @@ function renderDivGlobal(){
         if(!s.pay) return '';
         const today = new Date(); today.setHours(0,0,0,0);
         const payD = new Date(s.pay); payD.setHours(0,0,0,0);
-        const alreadyDone = trades.some(tr => tr.ticker===s.t && tr.type==='dividende' && tr.date===s.pay);
+        if(today < payD) {
           const diffJ = Math.ceil((payD-today)/86400000);
-          return '<div style="text-align:center;padding:7px;font-size:10px;color:#636366;background:rgba(255,255,255,0.04);border-radius:9px;margin-top:8px">Disponible dans '+diffJ+' jour'+(diffJ>1?'s':'')+' (date paiement)</div>';
+          return '<div style="text-align:center;padding:7px;font-size:10px;color:#636366;background:rgba(255,255,255,0.04);border-radius:9px;margin-top:8px">📅 Paiement dans '+diffJ+' jour'+(diffJ>1?'s':'')+' </div>';
         }
         return '';
       })()}
