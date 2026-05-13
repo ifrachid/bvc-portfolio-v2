@@ -1977,13 +1977,7 @@ function renderDivGlobal(){
         if(!s.pay) return '';
         const today = new Date(); today.setHours(0,0,0,0);
         const payD = new Date(s.pay); payD.setHours(0,0,0,0);
-        const payD3 = new Date(payD); payD3.setDate(payD3.getDate()+3); // kept for reference
         const alreadyDone = trades.some(tr => tr.ticker===s.t && tr.type==='dividende' && tr.date===s.pay);
-        if(alreadyDone) return '<div style="text-align:center;padding:7px;font-size:10px;color:#5ac8fa;background:rgba(90,200,250,0.08);border-radius:9px;margin-top:8px">✅ Dividende enregistré dans Take Profit</div>';
-        if(today >= payD) {
-          return '<button onclick="markDividendeReceived(\''+s.t+'\',\''+s.n+'\','+s.q+','+s.dpa+','+n+',\''+s.pay+'\')" style="width:100%;margin-top:8px;padding:9px;border-radius:10px;background:rgba(90,200,250,0.12);border:1px solid rgba(90,200,250,0.35);color:#5ac8fa;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation">🌿 Marquer comme reçu → Take Profit</button>';
-        }
-        if(today < payD) {
           const diffJ = Math.ceil((payD-today)/86400000);
           return '<div style="text-align:center;padding:7px;font-size:10px;color:#636366;background:rgba(255,255,255,0.04);border-radius:9px;margin-top:8px">Disponible dans '+diffJ+' jour'+(diffJ>1?'s':'')+' (date paiement)</div>';
         }
