@@ -594,11 +594,43 @@ input::placeholder{color:var(--text3)}
           <div style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.5px">Take Profit</div>
           <div style="font-size:11px;color:var(--text3);margin-top:2px">Historique des ventes réalisées</div>
         </div>
+        <div style="display:flex;gap:7px">
         <button onclick="showAddTradeForm()" style="background:rgba(10,132,255,0.1);border:1px solid rgba(10,132,255,0.3);border-radius:11px;padding:7px 12px;color:#4cc2ff;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation">➕ Vente</button>
+        <button onclick="showAddDivManuel()" style="background:rgba(90,200,250,0.1);border:1px solid rgba(90,200,250,0.3);border-radius:11px;padding:7px 12px;color:#5ac8fa;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation">🌿 Dividende</button>
+      </div>
       </div>
 
       <!-- Années selector -->
       <div id="tp-years" style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px"></div>
+
+      <!-- Form ajouter dividende manuel -->
+      <div id="div-manuel-form" style="display:none;background:rgba(90,200,250,0.06);border:1px solid rgba(90,200,250,0.25);border-radius:16px;padding:14px;margin-bottom:14px">
+        <div style="font-size:12px;font-weight:700;color:#5ac8fa;margin-bottom:12px">🌿 Ajouter dividende reçu</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div>
+            <div class="lbl" style="margin-bottom:4px">ACTION</div>
+            <select id="dm-ticker" onchange="calcDivManuel()" style="font-size:13px;padding:9px 11px;width:100%;border-radius:9px;background:var(--bg2);color:var(--text);border:1px solid var(--border);font-family:inherit"></select>
+          </div>
+          <div>
+            <div class="lbl" style="margin-bottom:4px">DATE</div>
+            <input id="dm-date" type="date" style="font-size:13px;padding:9px 11px;width:100%;border-radius:9px;background:var(--bg2);color:var(--text);border:1px solid var(--border);font-family:inherit">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div>
+            <div class="lbl" style="margin-bottom:4px">DPA (MAD/action)</div>
+            <input id="dm-dpa" type="number" step="0.01" placeholder="ex: 5.00" oninput="calcDivManuel()" style="font-size:13px;padding:9px 11px;width:100%;border-radius:9px;background:var(--bg2);color:var(--text);border:1px solid var(--border);font-family:inherit">
+          </div>
+          <div>
+            <div class="lbl" style="margin-bottom:4px">NET REÇU</div>
+            <div id="dm-net-preview" style="font-size:16px;font-weight:700;color:#5ac8fa;padding:9px 11px;background:rgba(90,200,250,0.08);border-radius:9px;text-align:center">—</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button onclick="saveDivManuel()" style="flex:1;padding:10px;border-radius:10px;background:rgba(90,200,250,0.15);border:1px solid rgba(90,200,250,0.35);color:#5ac8fa;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation">✅ Enregistrer</button>
+          <button onclick="document.getElementById('div-manuel-form').style.display='none'" style="padding:10px 14px;border-radius:10px;background:var(--bg2);border:1px solid var(--border);color:var(--text3);font-size:13px;font-family:inherit;cursor:pointer;touch-action:manipulation">✕</button>
+        </div>
+      </div>
 
       <!-- Form ajouter vente — auto-fill depuis portfolio -->
       <div id="tp-form" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:14px">
@@ -1440,6 +1472,55 @@ function renderTakeProfit() {
       </div>
     </div>`;
   }).join('');
+}
+
+
+function showAddDivManuel() {
+  const form = document.getElementById('div-manuel-form');
+  const isVisible = form.style.display !== 'none';
+  // Hide TP form if open
+  const tpForm = document.getElementById('tp-form');
+  if (tpForm) tpForm.style.display = 'none';
+  form.style.display = isVisible ? 'none' : 'block';
+  if (!isVisible) {
+    // Populate ticker select
+    const sel = document.getElementById('dm-ticker');
+    sel.innerHTML = stocks.map(s => `<option value="${s.t}">${s.t} — ${s.n} (${s.q} actions)</option>`).join('');
+    // Default date = today
+    document.getElementById('dm-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('dm-dpa').value = '';
+    document.getElementById('dm-net-preview').textContent = '—';
+  }
+}
+
+function calcDivManuel() {
+  const ticker = document.getElementById('dm-ticker').value;
+  const dpa = parseFloat(document.getElementById('dm-dpa').value) || 0;
+  const stock = stocks.find(s => s.t === ticker);
+  const qty = stock ? stock.q : 0;
+  const preview = document.getElementById('dm-net-preview');
+  if (!dpa || !qty) { preview.textContent = '—'; return; }
+  const brut = dpa * qty;
+  const net = brut * (1 - RET);
+  preview.textContent = '+' + f(net) + ' DH';
+}
+
+function saveDivManuel() {
+  const ticker = document.getElementById('dm-ticker').value;
+  const dpa = parseFloat(document.getElementById('dm-dpa').value) || 0;
+  const date = document.getElementById('dm-date').value;
+  const stock = stocks.find(s => s.t === ticker);
+  if (!dpa) { alert('Remplis le DPA'); return; }
+  if (!date) { alert('Choisis une date'); return; }
+  if (!stock) { alert('Action introuvable'); return; }
+  const qty = stock.q;
+  const brut = dpa * qty;
+  const net = Math.round(brut * (1 - RET) * 100) / 100;
+  const year = parseInt(date.split('-')[0]);
+  trades.push({ ticker, qty, buy: stock.b, sell: 0, date, year, fees: 0, tva: 0, net, pct: 0, type: 'dividende', dpa });
+  saveTrades();
+  renderTakeProfit();
+  document.getElementById('div-manuel-form').style.display = 'none';
 }
 
 function addYear(y) {
