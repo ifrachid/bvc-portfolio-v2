@@ -603,6 +603,7 @@ input::placeholder{color:var(--text3)}
       <!-- Années selector -->
       <div id="tp-years" style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px"></div>
 
+      <!-- Form ajouter dividende manuel -->
       <div id="div-manuel-form" style="display:none;background:rgba(90,200,250,0.06);border:1px solid rgba(90,200,250,0.25);border-radius:16px;padding:14px;margin-bottom:14px">
         <div style="font-size:12px;font-weight:700;color:#5ac8fa;margin-bottom:12px">🌿 Ajouter dividende reçu</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
@@ -1394,23 +1395,29 @@ function renderTakeProfit() {
         <div style="font-size:8px;color:var(--text3);margin-top:2px">marge moy. ${avgPct.toFixed(2)}%</div>
       </div>
     </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-      <div style="background:#0a1f0e;border:1px solid rgba(52,199,89,0.2);border-radius:12px;padding:10px">
-        <div style="font-size:9px;color:var(--text3);font-weight:600;letter-spacing:0.4px;margin-bottom:5px">💹 GAINS VENTES</div>
-        <div style="font-size:18px;font-weight:700;color:#34c759">${netVentes>=0?'+':''}${f(netVentes)} DH</div>
-        <div style="font-size:9px;color:var(--text3);margin-top:2px">${tradesVente.length} trade${tradesVente.length>1?'s':''}</div>
+    ${bestTrade ? `
+    <div style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-bottom:8px">🏆 MEILLEUR TRADE</div>
+    <div style="background:rgba(255,214,10,0.07);border:1px solid rgba(255,214,10,0.2);border-radius:16px;padding:12px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:34px;height:34px;border-radius:10px;background:rgba(255,214,10,0.15);display:flex;align-items:center;justify-content:center;font-size:16px">🏆</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text)">${bestTrade.ticker} <span style="font-size:9px;color:var(--text3);font-weight:400">· ${bestTrade.qty}x</span></div>
+            <div style="font-size:10px;color:var(--text3)">${bestTrade.date||''}</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:16px;font-weight:700;color:#34c759">+${f(bestTrade.net)} DH</div>
+          <div style="font-size:10px;color:#34c759">▲ ${bestTrade.pct.toFixed(2)}%</div>
+        </div>
       </div>
-      <div style="background:#0a1a1f;border:1px solid rgba(90,200,250,0.2);border-radius:12px;padding:10px">
-        <div style="font-size:9px;color:var(--text3);font-weight:600;letter-spacing:0.4px;margin-bottom:5px">🌿 DIVIDENDES</div>
-        <div style="font-size:18px;font-weight:700;color:#5ac8fa">+${f(netDivs)} DH</div>
-        <div style="font-size:9px;color:var(--text3);margin-top:2px">${tradesDiv.length} reçu${tradesDiv.length>1?'s':''}</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06)">
+        <div><div style="font-size:7px;color:var(--text3);margin-bottom:2px">Achat</div><div style="font-size:9px;font-weight:600;color:#ffd60a">${bestTrade.buy.toFixed(2)}</div></div>
+        <div><div style="font-size:7px;color:var(--text3);margin-bottom:2px">Vente</div><div style="font-size:9px;font-weight:600;color:var(--text)">${bestTrade.sell.toFixed(2)}</div></div>
+        <div><div style="font-size:7px;color:var(--text3);margin-bottom:2px">Frais</div><div style="font-size:9px;font-weight:600;color:var(--text)">${f(bestTrade.fees)}</div></div>
+        <div><div style="font-size:7px;color:var(--text3);margin-bottom:2px">TVA 15%</div><div style="font-size:9px;font-weight:600;color:var(--red)">${f(bestTrade.tva)}</div></div>
       </div>
-    </div>
-    <div style="background:linear-gradient(135deg,rgba(52,199,89,0.12),rgba(90,200,250,0.08));border:1px solid rgba(52,199,89,0.25);border-radius:14px;padding:14px;text-align:center;margin-bottom:12px">
-      <div style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-bottom:4px">TOTAL NET</div>
-      <div style="font-size:26px;font-weight:700;color:#34c759;letter-spacing:-0.5px">${(netVentes+netDivs)>=0?'+':''}${f(netVentes+netDivs)} DH</div>
-      <div style="font-size:10px;color:var(--text3);margin-top:3px">ventes + dividendes</div>
-    </div>
+    </div>` : ''}
     <div style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-bottom:8px">VENTES RÉALISÉES</div>
   `;
 
@@ -1475,13 +1482,15 @@ function renderTakeProfit() {
 function showAddDivManuel() {
   const form = document.getElementById('div-manuel-form');
   const isVisible = form.style.display !== 'none';
+  // Hide TP form if open
   const tpForm = document.getElementById('tp-form');
   if (tpForm) tpForm.style.display = 'none';
   form.style.display = isVisible ? 'none' : 'block';
   if (!isVisible) {
+    // Populate ticker select
     const sel = document.getElementById('dm-ticker');
     sel.innerHTML = stocks.map(s => `<option value="${s.t}">${s.t} — ${s.n} (${s.q} actions)</option>`).join('');
-    sel.onchange = calcDivManuel;
+    // Default date = today
     document.getElementById('dm-date').value = new Date().toISOString().split('T')[0];
     document.getElementById('dm-dpa').value = '';
     document.getElementById('dm-net-preview').textContent = '—';
@@ -1495,7 +1504,8 @@ function calcDivManuel() {
   const qty = stock ? stock.q : 0;
   const preview = document.getElementById('dm-net-preview');
   if (!dpa || !qty) { preview.textContent = '—'; return; }
-  const net = dpa * qty * (1 - RET);
+  const brut = dpa * qty;
+  const net = brut * (1 - RET);
   preview.textContent = '+' + f(net) + ' DH';
 }
 
@@ -1507,9 +1517,11 @@ function saveDivManuel() {
   if (!dpa) { alert('Remplis le DPA'); return; }
   if (!date) { alert('Choisis une date'); return; }
   if (!stock) { alert('Action introuvable'); return; }
-  const net = Math.round(dpa * stock.q * (1 - RET) * 100) / 100;
+  const qty = stock.q;
+  const brut = dpa * qty;
+  const net = Math.round(brut * (1 - RET) * 100) / 100;
   const year = parseInt(date.split('-')[0]);
-  trades.push({ ticker, qty: stock.q, buy: stock.b, sell: 0, date, year, fees: 0, tva: 0, net, pct: 0, type: 'dividende', dpa });
+  trades.push({ ticker, qty, buy: stock.b, sell: 0, date, year, fees: 0, tva: 0, net, pct: 0, type: 'dividende', dpa });
   saveTrades();
   renderTakeProfit();
   document.getElementById('div-manuel-form').style.display = 'none';
@@ -3191,39 +3203,19 @@ async function importTakeProfitFromSheet() {
       else cur += c;
     }
     result.push(cur.trim());
-    // Handle various column counts due to French number formatting
-    // Normal: 5 cols [ticker, qty, buy, sell, date]
-    // French decimal "6926,00" unquoted: 7 cols [ticker, qty, int, dec, int, dec, date]
-    // French thousands "6 926,00" quoted: should be 5 cols if quoted properly
+    // If we get 7 cols it means numbers like 6926,00 were split -> merge col[2]+col[3] and col[4]+col[5]
     if (result.length === 7) {
-      // Numbers were split: col2,col3=buy, col4,col5=sell, col6=date
-      return [result[0], result[1], result[2]+'.'+result[3], result[4]+'.'+result[5], result[6]];
-    }
-    if (result.length === 6) {
-      // One number split: col2,col3=buy, col4=sell, col5=date
-      const tryBuy = parseFloat(result[2]+'.'+result[3]);
-      const trySell = parseFloat(result[4]);
-      if (!isNaN(tryBuy) && !isNaN(trySell)) {
-        return [result[0], result[1], result[2]+'.'+result[3], result[4], result[5]];
-      }
-      // Or col2=buy, col3,col4=sell, col5=date
-      return [result[0], result[1], result[2], result[3]+'.'+result[4], result[5]];
+      const ticker = result[0], qty = result[1];
+      const buy  = result[2] + '.' + result[3];
+      const sell = result[4] + '.' + result[5];
+      const date = result[6];
+      return [ticker, qty, buy, sell, date];
     }
     return result;
   }
 
   function parseNum(s) {
-    let str = String(s||'').trim();
-    // Remove spaces (thousands separator in French: "6 926,00")
-    str = str.replace(/\s/g,'');
-    // If has comma AND dot: "6.926,00" → remove dot, replace comma
-    if (str.includes('.') && str.includes(',')) {
-      str = str.replace(/\./g,'').replace(',','.');
-    } else {
-      // Only comma: "6926,00" → replace comma with dot
-      str = str.replace(',','.');
-    }
-    return parseFloat(str) || 0;
+    return parseFloat(String(s||'').replace(/\s/g,'').replace(/\.(?=\d{3})/g,'').replace(',','.')) || 0;
   }
 
   function parseDate(s) {
