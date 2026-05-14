@@ -3191,19 +3191,39 @@ async function importTakeProfitFromSheet() {
       else cur += c;
     }
     result.push(cur.trim());
-    // If we get 7 cols it means numbers like 6926,00 were split -> merge col[2]+col[3] and col[4]+col[5]
+    // Handle various column counts due to French number formatting
+    // Normal: 5 cols [ticker, qty, buy, sell, date]
+    // French decimal "6926,00" unquoted: 7 cols [ticker, qty, int, dec, int, dec, date]
+    // French thousands "6 926,00" quoted: should be 5 cols if quoted properly
     if (result.length === 7) {
-      const ticker = result[0], qty = result[1];
-      const buy  = result[2] + '.' + result[3];
-      const sell = result[4] + '.' + result[5];
-      const date = result[6];
-      return [ticker, qty, buy, sell, date];
+      // Numbers were split: col2,col3=buy, col4,col5=sell, col6=date
+      return [result[0], result[1], result[2]+'.'+result[3], result[4]+'.'+result[5], result[6]];
+    }
+    if (result.length === 6) {
+      // One number split: col2,col3=buy, col4=sell, col5=date
+      const tryBuy = parseFloat(result[2]+'.'+result[3]);
+      const trySell = parseFloat(result[4]);
+      if (!isNaN(tryBuy) && !isNaN(trySell)) {
+        return [result[0], result[1], result[2]+'.'+result[3], result[4], result[5]];
+      }
+      // Or col2=buy, col3,col4=sell, col5=date
+      return [result[0], result[1], result[2], result[3]+'.'+result[4], result[5]];
     }
     return result;
   }
 
   function parseNum(s) {
-    return parseFloat(String(s||'').replace(/\s/g,'').replace(/\.(?=\d{3})/g,'').replace(',','.')) || 0;
+    let str = String(s||'').trim();
+    // Remove spaces (thousands separator in French: "6 926,00")
+    str = str.replace(/\s/g,'');
+    // If has comma AND dot: "6.926,00" → remove dot, replace comma
+    if (str.includes('.') && str.includes(',')) {
+      str = str.replace(/\./g,'').replace(',','.');
+    } else {
+      // Only comma: "6926,00" → replace comma with dot
+      str = str.replace(',','.');
+    }
+    return parseFloat(str) || 0;
   }
 
   function parseDate(s) {
