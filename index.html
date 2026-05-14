@@ -603,7 +603,6 @@ input::placeholder{color:var(--text3)}
       <!-- Années selector -->
       <div id="tp-years" style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:2px"></div>
 
-      <!-- Form ajouter dividende manuel -->
       <div id="div-manuel-form" style="display:none;background:rgba(90,200,250,0.06);border:1px solid rgba(90,200,250,0.25);border-radius:16px;padding:14px;margin-bottom:14px">
         <div style="font-size:12px;font-weight:700;color:#5ac8fa;margin-bottom:12px">🌿 Ajouter dividende reçu</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
@@ -1357,11 +1356,7 @@ function renderTakeProfit() {
   `<div onclick="addYear(${nextYear})" style="padding:7px 14px;border-radius:20px;font-size:12px;cursor:pointer;background:var(--bg2);color:var(--text3);border:1px solid var(--border);white-space:nowrap">+ ${nextYear}</div>`;
 
   // Filter trades for current year
-  const yearTrades  = trades.filter(t => t.year === curTpYear);
-  const tradesVente = yearTrades.filter(t => t.type !== 'dividende');
-  const tradesDiv   = yearTrades.filter(t => t.type === 'dividende');
-  const netVentes   = tradesVente.reduce((s,t) => s + (t.net||0), 0);
-  const netDivs     = tradesDiv.reduce((s,t) => s + (t.net||0), 0);
+  const yearTrades = trades.filter(t => t.year === curTpYear);
   const totalNet = yearTrades.reduce((s,t) => s+t.net, 0);
   const perDay = totalNet / 365;
   const perMonth = totalNet / 12;
@@ -1399,8 +1394,7 @@ function renderTakeProfit() {
         <div style="font-size:8px;color:var(--text3);margin-top:2px">marge moy. ${avgPct.toFixed(2)}%</div>
       </div>
     </div>
-    ${bestTrade ? `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
       <div style="background:#0a1f0e;border:1px solid rgba(52,199,89,0.2);border-radius:12px;padding:10px">
         <div style="font-size:9px;color:var(--text3);font-weight:600;letter-spacing:0.4px;margin-bottom:5px">💹 GAINS VENTES</div>
         <div style="font-size:18px;font-weight:700;color:#34c759">${netVentes>=0?'+':''}${f(netVentes)} DH</div>
@@ -1414,10 +1408,10 @@ function renderTakeProfit() {
     </div>
     <div style="background:linear-gradient(135deg,rgba(52,199,89,0.12),rgba(90,200,250,0.08));border:1px solid rgba(52,199,89,0.25);border-radius:14px;padding:14px;text-align:center;margin-bottom:12px">
       <div style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-bottom:4px">TOTAL NET</div>
-      <div style="font-size:26px;font-weight:700;color:#34c759;letter-spacing:-0.5px">${netVentes+netDivs>=0?'+':''}${f(netVentes+netDivs)} DH</div>
+      <div style="font-size:26px;font-weight:700;color:#34c759;letter-spacing:-0.5px">${(netVentes+netDivs)>=0?'+':''}${f(netVentes+netDivs)} DH</div>
       <div style="font-size:10px;color:var(--text3);margin-top:3px">ventes + dividendes</div>
     </div>
-    VENTES RÉALISÉES</div>
+    <div style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-bottom:8px">VENTES RÉALISÉES</div>
   `;
 
   // Trades list
@@ -1481,15 +1475,13 @@ function renderTakeProfit() {
 function showAddDivManuel() {
   const form = document.getElementById('div-manuel-form');
   const isVisible = form.style.display !== 'none';
-  // Hide TP form if open
   const tpForm = document.getElementById('tp-form');
   if (tpForm) tpForm.style.display = 'none';
   form.style.display = isVisible ? 'none' : 'block';
   if (!isVisible) {
-    // Populate ticker select
     const sel = document.getElementById('dm-ticker');
     sel.innerHTML = stocks.map(s => `<option value="${s.t}">${s.t} — ${s.n} (${s.q} actions)</option>`).join('');
-    // Default date = today
+    sel.onchange = calcDivManuel;
     document.getElementById('dm-date').value = new Date().toISOString().split('T')[0];
     document.getElementById('dm-dpa').value = '';
     document.getElementById('dm-net-preview').textContent = '—';
@@ -1503,8 +1495,7 @@ function calcDivManuel() {
   const qty = stock ? stock.q : 0;
   const preview = document.getElementById('dm-net-preview');
   if (!dpa || !qty) { preview.textContent = '—'; return; }
-  const brut = dpa * qty;
-  const net = brut * (1 - RET);
+  const net = dpa * qty * (1 - RET);
   preview.textContent = '+' + f(net) + ' DH';
 }
 
@@ -1516,11 +1507,9 @@ function saveDivManuel() {
   if (!dpa) { alert('Remplis le DPA'); return; }
   if (!date) { alert('Choisis une date'); return; }
   if (!stock) { alert('Action introuvable'); return; }
-  const qty = stock.q;
-  const brut = dpa * qty;
-  const net = Math.round(brut * (1 - RET) * 100) / 100;
+  const net = Math.round(dpa * stock.q * (1 - RET) * 100) / 100;
   const year = parseInt(date.split('-')[0]);
-  trades.push({ ticker, qty, buy: stock.b, sell: 0, date, year, fees: 0, tva: 0, net, pct: 0, type: 'dividende', dpa });
+  trades.push({ ticker, qty: stock.q, buy: stock.b, sell: 0, date, year, fees: 0, tva: 0, net, pct: 0, type: 'dividende', dpa });
   saveTrades();
   renderTakeProfit();
   document.getElementById('div-manuel-form').style.display = 'none';
