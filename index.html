@@ -1357,7 +1357,11 @@ function renderTakeProfit() {
   `<div onclick="addYear(${nextYear})" style="padding:7px 14px;border-radius:20px;font-size:12px;cursor:pointer;background:var(--bg2);color:var(--text3);border:1px solid var(--border);white-space:nowrap">+ ${nextYear}</div>`;
 
   // Filter trades for current year
-  const yearTrades = trades.filter(t => t.year === curTpYear);
+  const yearTrades  = trades.filter(t => t.year === curTpYear);
+  const tradesVente = yearTrades.filter(t => t.type !== 'dividende');
+  const tradesDiv   = yearTrades.filter(t => t.type === 'dividende');
+  const netVentes   = tradesVente.reduce((s,t) => s + (t.net||0), 0);
+  const netDivs     = tradesDiv.reduce((s,t) => s + (t.net||0), 0);
   const totalNet = yearTrades.reduce((s,t) => s+t.net, 0);
   const perDay = totalNet / 365;
   const perMonth = totalNet / 12;
@@ -1396,29 +1400,24 @@ function renderTakeProfit() {
       </div>
     </div>
     ${bestTrade ? `
-    <div style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-bottom:8px">🏆 MEILLEUR TRADE</div>
-    <div style="background:rgba(255,214,10,0.07);border:1px solid rgba(255,214,10,0.2);border-radius:16px;padding:12px;margin-bottom:12px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div style="width:34px;height:34px;border-radius:10px;background:rgba(255,214,10,0.15);display:flex;align-items:center;justify-content:center;font-size:16px">🏆</div>
-          <div>
-            <div style="font-size:13px;font-weight:700;color:var(--text)">${bestTrade.ticker} <span style="font-size:9px;color:var(--text3);font-weight:400">· ${bestTrade.qty}x</span></div>
-            <div style="font-size:10px;color:var(--text3)">${bestTrade.date||''}</div>
-          </div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-size:16px;font-weight:700;color:#34c759">+${f(bestTrade.net)} DH</div>
-          <div style="font-size:10px;color:#34c759">▲ ${bestTrade.pct.toFixed(2)}%</div>
-        </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div style="background:#0a1f0e;border:1px solid rgba(52,199,89,0.2);border-radius:12px;padding:10px">
+        <div style="font-size:9px;color:var(--text3);font-weight:600;letter-spacing:0.4px;margin-bottom:5px">💹 GAINS VENTES</div>
+        <div style="font-size:18px;font-weight:700;color:#34c759">${netVentes>=0?'+':''}${f(netVentes)} DH</div>
+        <div style="font-size:9px;color:var(--text3);margin-top:2px">${tradesVente.length} trade${tradesVente.length>1?'s':''}</div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06)">
-        <div><div style="font-size:7px;color:var(--text3);margin-bottom:2px">Achat</div><div style="font-size:9px;font-weight:600;color:#ffd60a">${bestTrade.buy.toFixed(2)}</div></div>
-        <div><div style="font-size:7px;color:var(--text3);margin-bottom:2px">Vente</div><div style="font-size:9px;font-weight:600;color:var(--text)">${bestTrade.sell.toFixed(2)}</div></div>
-        <div><div style="font-size:7px;color:var(--text3);margin-bottom:2px">Frais</div><div style="font-size:9px;font-weight:600;color:var(--text)">${f(bestTrade.fees)}</div></div>
-        <div><div style="font-size:7px;color:var(--text3);margin-bottom:2px">TVA 15%</div><div style="font-size:9px;font-weight:600;color:var(--red)">${f(bestTrade.tva)}</div></div>
+      <div style="background:#0a1a1f;border:1px solid rgba(90,200,250,0.2);border-radius:12px;padding:10px">
+        <div style="font-size:9px;color:var(--text3);font-weight:600;letter-spacing:0.4px;margin-bottom:5px">🌿 DIVIDENDES</div>
+        <div style="font-size:18px;font-weight:700;color:#5ac8fa">+${f(netDivs)} DH</div>
+        <div style="font-size:9px;color:var(--text3);margin-top:2px">${tradesDiv.length} reçu${tradesDiv.length>1?'s':''}</div>
       </div>
-    </div>` : ''}
-    <div style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-bottom:8px">VENTES RÉALISÉES</div>
+    </div>
+    <div style="background:linear-gradient(135deg,rgba(52,199,89,0.12),rgba(90,200,250,0.08));border:1px solid rgba(52,199,89,0.25);border-radius:14px;padding:14px;text-align:center;margin-bottom:12px">
+      <div style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-bottom:4px">TOTAL NET</div>
+      <div style="font-size:26px;font-weight:700;color:#34c759;letter-spacing:-0.5px">${netVentes+netDivs>=0?'+':''}${f(netVentes+netDivs)} DH</div>
+      <div style="font-size:10px;color:var(--text3);margin-top:3px">ventes + dividendes</div>
+    </div>
+    VENTES RÉALISÉES</div>
   `;
 
   // Trades list
