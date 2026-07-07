@@ -2526,7 +2526,11 @@ async function importPortfolioFromSheet() {
 
 // ─── DIVIDENDES IMPORT ───────────────────────────────────
 const DIV_URL_KEY = 'gs_div_url';
-const DEFAULT_DIV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQiTZzyjt1O8ks2MQGzY65MMLftLY-mCgDjIsHCW5Ea7TVswH_LTVTM_VzaCra5lhcWyl-HjBzYu3aZ/pub?gid=1970360697&single=true&output=csv';
+const DEFAULT_DIV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQiTZzyjt1O8ks2MQGzY65MMLftLY-mCgDjIsHCW5Ea7TVswH_LTVTM_VzaCra5lhcWyl-HjBzYu3aZ/pub?gid=830929235&single=true&output=csv';
+// Force update si l'ancien gid (Dividendes BVC 2025) était sauvegardé
+if (localStorage.getItem('gs_div_url') && localStorage.getItem('gs_div_url').includes('gid=1970360697')) {
+  localStorage.removeItem('gs_div_url');
+}
 
 function showDivUrlSetup() {
   const setup = document.getElementById('div-url-setup');
