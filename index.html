@@ -596,7 +596,7 @@ input::placeholder{color:var(--text3)}
           <div style="display:flex;align-items:center;gap:8px">
             <div style="width:34px;height:34px;border-radius:10px;background:var(--green-soft);display:flex;align-items:center;justify-content:center;font-size:18px">🌿</div>
             <div>
-              <div style="font-size:12px;color:var(--green);font-weight:700">Dividendes 2025</div>
+              <div id="div-title-year" style="font-size:12px;color:var(--green);font-weight:700">Dividendes</div>
               <div style="font-size:10px;color:var(--text3)">Sync automatique des dividendes</div>
             </div>
           </div>
@@ -604,7 +604,7 @@ input::placeholder{color:var(--text3)}
         </div>
 
         <div id="div-url-setup" style="display:none;margin-bottom:10px">
-          <div class="lbl" style="margin-bottom:5px">URL CSV — Feuille "Dividendes BVC 2025"</div>
+          <div id="div-url-label" class="lbl" style="margin-bottom:5px">URL CSV — Feuille "Dividendes BVC"</div>
           <input id="div-url-input" type="url" placeholder="https://docs.google.com/spreadsheets/..." style="font-size:11px;margin-bottom:8px;border-radius:10px;padding:10px 12px">
           <button onclick="saveDivUrl()" class="btn" style="background:var(--green);color:#000;font-size:12px;padding:11px;margin-bottom:6px">💾 Enregistrer URL</button>
           <button onclick="document.getElementById('div-url-setup').style.display='none'" style="width:100%;padding:8px;border:none;background:none;color:var(--text3);font-size:11px;font-family:inherit;cursor:pointer">Annuler</button>
@@ -2308,6 +2308,12 @@ function showTab(t){
   if(t==='sync'){
     const isSafari=/Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
     renderSyncPrices();
+    // Titre dynamique: "Dividendes 2026" (année en cours, mise à jour automatique chaque année)
+    const curYear = new Date().getFullYear();
+    const divTitleEl = document.getElementById('div-title-year');
+    if(divTitleEl) divTitleEl.textContent = 'Dividendes ' + curYear;
+    const divUrlLabelEl = document.getElementById('div-url-label');
+    if(divUrlLabelEl) divUrlLabelEl.textContent = 'URL CSV — Feuille "Dividendes BVC" (dividendes ' + curYear + ')';
     // Pre-fill saved URL
     const savedDivUrl = localStorage.getItem(DIV_URL_KEY) || DEFAULT_DIV_URL;
     const divInput = document.getElementById('div-url-input');
@@ -2526,9 +2532,9 @@ async function importPortfolioFromSheet() {
 
 // ─── DIVIDENDES IMPORT ───────────────────────────────────
 const DIV_URL_KEY = 'gs_div_url';
-const DEFAULT_DIV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQiTZzyjt1O8ks2MQGzY65MMLftLY-mCgDjIsHCW5Ea7TVswH_LTVTM_VzaCra5lhcWyl-HjBzYu3aZ/pub?gid=1824541166&single=true&output=csv';
+const DEFAULT_DIV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQiTZzyjt1O8ks2MQGzY65MMLftLY-mCgDjIsHCW5Ea7TVswH_LTVTM_VzaCra5lhcWyl-HjBzYu3aZ/pub?gid=1385950803&single=true&output=csv';
 // Force update si un ancien gid était sauvegardé
-if (localStorage.getItem('gs_div_url') && (localStorage.getItem('gs_div_url').includes('gid=1970360697') || localStorage.getItem('gs_div_url').includes('gid=830929235'))) {
+if (localStorage.getItem('gs_div_url') && (localStorage.getItem('gs_div_url').includes('gid=1970360697') || localStorage.getItem('gs_div_url').includes('gid=830929235') || localStorage.getItem('gs_div_url').includes('gid=1824541166'))) {
   localStorage.removeItem('gs_div_url');
 }
 
