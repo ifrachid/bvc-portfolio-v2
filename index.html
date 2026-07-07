@@ -2294,7 +2294,7 @@ function showTab(t){
     const isSafari=/Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
     renderSyncPrices();
     // Pre-fill saved URL
-    const savedDivUrl = localStorage.getItem(DIV_URL_KEY);
+    const savedDivUrl = localStorage.getItem(DIV_URL_KEY) || DEFAULT_DIV_URL;
     const divInput = document.getElementById('div-url-input');
     if(savedDivUrl && divInput) divInput.value = savedDivUrl;
     const divDate = localStorage.getItem('div_sync_date');
@@ -2511,12 +2511,13 @@ async function importPortfolioFromSheet() {
 
 // ─── DIVIDENDES IMPORT ───────────────────────────────────
 const DIV_URL_KEY = 'gs_div_url';
+const DEFAULT_DIV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQiTZzyjt1O8ks2MQGzY65MMLftLY-mCgDjIsHCW5Ea7TVswH_LTVTM_VzaCra5lhcWyl-HjBzYu3aZ/pub?gid=1970360697&single=true&output=csv';
 
 function showDivUrlSetup() {
   const setup = document.getElementById('div-url-setup');
   if (setup) {
     setup.style.display = 'block';
-    document.getElementById('div-url-input').value = localStorage.getItem(DIV_URL_KEY) || '';
+    document.getElementById('div-url-input').value = localStorage.getItem(DIV_URL_KEY) || DEFAULT_DIV_URL;
   }
 }
 
@@ -2529,7 +2530,7 @@ function saveDivUrl() {
 }
 
 async function importDividendesFromSheet() {
-  const savedUrl = localStorage.getItem(DIV_URL_KEY);
+  const savedUrl = localStorage.getItem(DIV_URL_KEY) || DEFAULT_DIV_URL;
   const st = document.getElementById('div-import-status');
   const btn = event.target;
   if (!savedUrl) { showDivUrlSetup(); return; }
