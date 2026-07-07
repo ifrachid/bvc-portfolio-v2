@@ -2690,7 +2690,7 @@ async function importDividendesFromSheet() {
 
 async function triggerDivRefresh() {
   const btn = document.getElementById('div-refresh-btn');
-  const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxeFtPuyzkX3lVEgQTEZ1MRgxmehb7BwXAn6Erd9npYqFani3eB2jrklzh0Zsqin65D/exec';
+  const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxdQ-tzKJP-R9Cd3MOpG2bdaiTnXdAfJfrxmxWsknmJQxvCPp6DRgxSTB3349I1FcZ1/exec';
   const st = document.getElementById('div-import-status');
   btn.disabled = true;
   btn.textContent = '⏳ Mise à jour en cours...';
@@ -2721,7 +2721,7 @@ async function triggerDivRefresh() {
 async function actualiserToutSync() {
   const btn = document.getElementById('all-refresh-btn');
   const st = document.getElementById('all-refresh-status');
-  const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxeFtPuyzkX3lVEgQTEZ1MRgxmehb7BwXAn6Erd9npYqFani3eB2jrklzh0Zsqin65D/exec';
+  const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxdQ-tzKJP-R9Cd3MOpG2bdaiTnXdAfJfrxmxWsknmJQxvCPp6DRgxSTB3349I1FcZ1/exec';
   if(btn){ btn.disabled = true; btn.textContent = '⏳ Mise à jour prix + dividendes...'; }
   if(st){ st.style.display='block'; st.style.color='var(--blue)'; st.style.background='rgba(10,132,255,0.08)'; st.innerHTML='📡 Lancement des scripts (prix + dividendes)...'; }
   try {
@@ -2751,7 +2751,7 @@ function showGsUrlSettings() {
 
 async function triggerSheetRefresh() {
   const btn = document.getElementById('gs-refresh-btn');
-  const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxeFtPuyzkX3lVEgQTEZ1MRgxmehb7BwXAn6Erd9npYqFani3eB2jrklzh0Zsqin65D/exec';
+  const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxdQ-tzKJP-R9Cd3MOpG2bdaiTnXdAfJfrxmxWsknmJQxvCPp6DRgxSTB3349I1FcZ1/exec';
 
   btn.disabled = true;
   btn.textContent = '⏳ Mise à jour en cours...';
