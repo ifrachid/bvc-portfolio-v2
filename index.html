@@ -2526,9 +2526,9 @@ async function importPortfolioFromSheet() {
 
 // ─── DIVIDENDES IMPORT ───────────────────────────────────
 const DIV_URL_KEY = 'gs_div_url';
-const DEFAULT_DIV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQiTZzyjt1O8ks2MQGzY65MMLftLY-mCgDjIsHCW5Ea7TVswH_LTVTM_VzaCra5lhcWyl-HjBzYu3aZ/pub?gid=830929235&single=true&output=csv';
-// Force update si l'ancien gid (Dividendes BVC 2025) était sauvegardé
-if (localStorage.getItem('gs_div_url') && localStorage.getItem('gs_div_url').includes('gid=1970360697')) {
+const DEFAULT_DIV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQiTZzyjt1O8ks2MQGzY65MMLftLY-mCgDjIsHCW5Ea7TVswH_LTVTM_VzaCra5lhcWyl-HjBzYu3aZ/pub?gid=1824541166&single=true&output=csv';
+// Force update si un ancien gid était sauvegardé
+if (localStorage.getItem('gs_div_url') && (localStorage.getItem('gs_div_url').includes('gid=1970360697') || localStorage.getItem('gs_div_url').includes('gid=830929235'))) {
   localStorage.removeItem('gs_div_url');
 }
 
@@ -2696,7 +2696,7 @@ async function triggerDivRefresh() {
   btn.textContent = '⏳ Mise à jour en cours...';
   if(st){ st.style.display='block'; st.style.color='var(--blue)'; st.style.background='rgba(10,132,255,0.08)'; st.innerHTML='📡 Fetch BVC en cours...'; }
   try {
-    await fetch(WEBAPP_URL + '?action=fetchdividendes', { mode: 'no-cors' });
+    await fetch(WEBAPP_URL + '?action=fetchCalendrierDividendesBVC', { mode: 'no-cors' });
     btn.textContent = '✅ Mis à jour — sync dans 6s...';
     btn.style.color = 'var(--green)';
     if(st){ st.innerHTML='✅ Script lancé — sync automatique dans 6s...'; st.style.color='var(--green)'; st.style.background='rgba(52,199,89,0.08)'; }
@@ -2727,7 +2727,7 @@ async function actualiserToutSync() {
   try {
     await Promise.all([
       fetch(WEBAPP_URL, { mode: 'no-cors' }),
-      fetch(WEBAPP_URL + '?action=fetchdividendes', { mode: 'no-cors' })
+      fetch(WEBAPP_URL + '?action=fetchCalendrierDividendesBVC', { mode: 'no-cors' })
     ]);
   } catch(e) {}
   if(btn) btn.textContent = '✅ Scripts lancés — sync dans 8s...';
