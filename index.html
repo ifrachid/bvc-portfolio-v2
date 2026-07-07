@@ -506,6 +506,21 @@ input::placeholder{color:var(--text3)}
   <div id="v-sync" style="display:none">
     <div style="padding:12px 14px 20px">
 
+      <!-- TOUT ACTUALISER (Prix + Dividendes) -->
+      <div style="background:linear-gradient(135deg,rgba(79,124,255,0.10),rgba(124,108,255,0.08));border:1px solid var(--border2);border-radius:16px;padding:14px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <div style="width:34px;height:34px;border-radius:10px;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;font-size:18px">⚡</div>
+          <div>
+            <div style="font-size:12px;color:var(--blue);font-weight:700">Tout actualiser</div>
+            <div style="font-size:10px;color:var(--text3)">Prix + Dividendes en un clic</div>
+          </div>
+        </div>
+        <button id="all-refresh-btn" onclick="actualiserToutSync()" class="btn" style="background:linear-gradient(135deg,var(--blue),var(--indigo));font-size:13px;margin-bottom:0">
+          🔄 Actualiser Prix + Dividendes
+        </button>
+        <div id="all-refresh-status" style="display:none;font-size:10px;text-align:center;padding:8px;border-radius:8px;margin-top:8px;line-height:1.6"></div>
+      </div>
+
       <!-- GOOGLE SHEETS SYNC -->
       <div style="background:rgba(52,199,89,0.07);border:1px solid var(--green-soft);border-radius:16px;padding:14px;margin-bottom:12px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -2532,9 +2547,9 @@ function saveDivUrl() {
 async function importDividendesFromSheet() {
   const savedUrl = localStorage.getItem(DIV_URL_KEY) || DEFAULT_DIV_URL;
   const st = document.getElementById('div-import-status');
-  const btn = event.target;
+  const btn = document.getElementById('div-fetch-btn');
   if (!savedUrl) { showDivUrlSetup(); return; }
-  btn.disabled = true; btn.textContent = '⏳ Importation...';
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Importation...'; }
   if(st){ st.style.display='block'; st.style.color='var(--green)'; st.style.background='rgba(52,199,89,0.08)'; st.innerHTML='📡 Lecture...'; }
   let csv = null;
   try {
@@ -2551,7 +2566,7 @@ async function importDividendesFromSheet() {
   }
   if (!csv) {
     if(st){ st.style.color='var(--red)'; st.style.background='rgba(255,69,58,0.08)'; st.innerHTML='❌ Impossible de lire la sheet.'; }
-    btn.disabled = false; btn.textContent = '🌿 Importer Dividendes depuis Sheet'; return;
+    if(btn){ btn.disabled = false; btn.textContent = '🌿 Sync depuis Google Sheets'; } return;
   }
 
   // Smart parser for French locale
@@ -2659,7 +2674,7 @@ async function importDividendesFromSheet() {
         + (notFound.length ? '<br><small style="color:#ff9500">⚠️ Pas dans portfolio: ' + notFound.join(', ') + '</small>' : '');
     }
   }
-  btn.disabled = false; btn.textContent = '🌿 Importer Dividendes depuis Sheet';
+  if(btn){ btn.disabled = false; btn.textContent = '🌿 Sync depuis Google Sheets'; }
   // Update sync info
   const now = new Date().toLocaleString('fr-MA');
   localStorage.setItem('div_sync_date', now);
@@ -2697,6 +2712,30 @@ async function triggerDivRefresh() {
       importDividendesFromSheet();
     }, 6000);
   }
+}
+
+async function actualiserToutSync() {
+  const btn = document.getElementById('all-refresh-btn');
+  const st = document.getElementById('all-refresh-status');
+  const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxeFtPuyzkX3lVEgQTEZ1MRgxmehb7BwXAn6Erd9npYqFani3eB2jrklzh0Zsqin65D/exec';
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Mise à jour prix + dividendes...'; }
+  if(st){ st.style.display='block'; st.style.color='var(--blue)'; st.style.background='rgba(10,132,255,0.08)'; st.innerHTML='📡 Lancement des scripts (prix + dividendes)...'; }
+  try {
+    await Promise.all([
+      fetch(WEBAPP_URL, { mode: 'no-cors' }),
+      fetch(WEBAPP_URL + '?action=fetchdividendes', { mode: 'no-cors' })
+    ]);
+  } catch(e) {}
+  if(btn) btn.textContent = '✅ Scripts lancés — sync dans 8s...';
+  if(st) st.innerHTML = '✅ Scripts lancés — récupération des données dans 8 secondes...';
+  setTimeout(async () => {
+    if(st) st.innerHTML = '📗 Sync des prix...';
+    try { await fetchFromGoogleSheets(); } catch(e){}
+    if(st) st.innerHTML = '🌿 Sync des dividendes...';
+    try { await importDividendesFromSheet(); } catch(e){}
+    if(btn){ btn.disabled = false; btn.textContent = '🔄 Actualiser Prix + Dividendes'; }
+    if(st){ st.style.color='var(--green)'; st.style.background='rgba(52,199,89,0.08)'; st.innerHTML='✅ Prix et dividendes synchronisés !'; }
+  }, 8000);
 }
 
 function showGsUrlSettings() {
