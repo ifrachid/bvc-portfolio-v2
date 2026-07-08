@@ -891,13 +891,17 @@ function loadPortfolioFromStorage() {
     // DEBUG TEMPORAIRE — à retirer une fois le bug trouvé
     try {
       const dbgAll = Object.keys(localStorage).length;
-      const dbgMsg = '🔍 DEBUG\n\n'
-        + 'bvc_stocks trouvé: ' + (saved ? 'OUI' : 'NON') + '\n'
-        + (saved ? ('Longueur: ' + saved.length + ' car.\n') : '')
-        + (saved ? ('Nb actions sauvées: ' + (JSON.parse(saved).length||0) + '\n') : '')
-        + 'Total clés localStorage: ' + dbgAll + '\n'
-        + 'price_date: ' + (localStorage.getItem('price_date')||'—') + '\n'
-        + 'div_sync_date: ' + (localStorage.getItem('div_sync_date')||'—');
+      let stockDetails = '';
+      if(saved) {
+        const p2 = JSON.parse(saved);
+        stockDetails = p2.map(s => s.t + ': q=' + s.q + ' live=' + s.live + ' dpa=' + s.dpa).join('\n');
+      }
+      const dbgMsg = '🔍 DEBUG bvc_stocks\n\n' + stockDetails
+        + '\n\n---\nTotal clés: ' + dbgAll
+        + '\nprice_date: ' + (localStorage.getItem('price_date')||'—')
+        + '\ndiv_sync_date: ' + (localStorage.getItem('div_sync_date')||'—')
+        + '\n\nSMI price_ key: ' + (localStorage.getItem('price_SMI')||'—')
+        + '\nTGC price_ key: ' + (localStorage.getItem('price_TGC')||'—');
       setTimeout(() => alert(dbgMsg), 600);
     } catch(dbgErr) { setTimeout(() => alert('🔍 DEBUG ERROR: ' + dbgErr.message), 600); }
     if(saved) {
