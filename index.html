@@ -891,29 +891,10 @@ function loadPortfolioFromStorage() {
     if(saved) {
       const parsed = JSON.parse(saved);
       if(Array.isArray(parsed) && parsed.length > 0) {
-        // Merge saved data into stocks (preserve live prices from default)
-        parsed.forEach(saved => {
-          const idx = stocks.findIndex(s => s.t === saved.t);
-          if(idx >= 0) {
-            // Update editable fields only
-            stocks[idx].q   = saved.q;
-            stocks[idx].b   = saved.b;
-            stocks[idx].dpa = saved.dpa;
-            stocks[idx].det = saved.det;
-            stocks[idx].pay = saved.pay;
-            stocks[idx].an  = saved.an;
-          } else {
-            // New stock added by user
-            stocks.push(saved);
-          }
-        });
-        // Remove stocks user deleted
-        const savedTickers = parsed.map(s => s.t);
-        for(let i = stocks.length - 1; i >= 0; i--) {
-          if(!savedTickers.includes(stocks[i].t)) {
-            stocks.splice(i, 1);
-          }
-        }
+        // Les données sauvegardées SONT la source de vérité — on les utilise
+        // directement, sans fusion partielle (l'ancienne fusion ignorait le
+        // prix live et provoquait des retours en arrière après fermeture).
+        stocks = parsed;
       }
     }
     // Load saved live prices
