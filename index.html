@@ -584,7 +584,7 @@ input::placeholder{color:var(--text3)}
           <button onclick="document.getElementById('port-url-setup').style.display='none'" style="width:100%;padding:8px;border:none;background:none;color:var(--text3);font-size:11px;font-family:inherit;cursor:pointer">Annuler</button>
         </div>
 
-        <button onclick="importPortfolioFromSheet()" class="btn" style="background:linear-gradient(135deg,var(--blue),#0066cc);font-size:13px;margin-bottom:0">
+        <button id="port-fetch-btn" onclick="importPortfolioFromSheet()" class="btn" style="background:linear-gradient(135deg,var(--blue),#0066cc);font-size:13px;margin-bottom:0">
           📥 Importer Portfolio depuis Sheet
         </button>
         <div id="port-status" style="display:none;font-size:10px;text-align:center;padding:8px;border-radius:8px;margin-top:8px;line-height:1.6"></div>
@@ -888,22 +888,6 @@ function savePortfolioToStorage() {
 function loadPortfolioFromStorage() {
   try {
     const saved = localStorage.getItem('bvc_stocks');
-    // DEBUG TEMPORAIRE — à retirer une fois le bug trouvé
-    try {
-      const dbgAll = Object.keys(localStorage).length;
-      let stockDetails = '';
-      if(saved) {
-        const p2 = JSON.parse(saved);
-        stockDetails = p2.map(s => s.t + ': q=' + s.q + ' live=' + s.live + ' dpa=' + s.dpa).join('\n');
-      }
-      const dbgMsg = '🔍 DEBUG bvc_stocks\n\n' + stockDetails
-        + '\n\n---\nTotal clés: ' + dbgAll
-        + '\nprice_date: ' + (localStorage.getItem('price_date')||'—')
-        + '\ndiv_sync_date: ' + (localStorage.getItem('div_sync_date')||'—')
-        + '\n\nSMI price_ key: ' + (localStorage.getItem('price_SMI')||'—')
-        + '\nTGC price_ key: ' + (localStorage.getItem('price_TGC')||'—');
-      setTimeout(() => alert(dbgMsg), 600);
-    } catch(dbgErr) { setTimeout(() => alert('🔍 DEBUG ERROR: ' + dbgErr.message), 600); }
     if(saved) {
       const parsed = JSON.parse(saved);
       if(Array.isArray(parsed) && parsed.length > 0) {
@@ -2347,6 +2331,10 @@ function showTab(t){
 // ─── GOOGLE SHEETS SYNC ──────────────────────────
 
 const GS_URL_KEY = 'gs_csv_url';
+// Force update si l'ancien format "pub?output=csv" (cache Google) était sauvegardé
+if (localStorage.getItem(GS_URL_KEY) && localStorage.getItem(GS_URL_KEY).includes('pub?')) {
+  localStorage.removeItem(GS_URL_KEY);
+}
 
 function saveGsUrl() {
   const url = document.getElementById('gs-url').value.trim();
@@ -2425,11 +2413,16 @@ function parseGsCSV(csv) {
 
 // ─── PORTFOLIO IMPORT FROM GOOGLE SHEET ──────────────────
 const PORT_URL_KEY = 'gs_portfolio_url';
+const DEFAULT_PORT_URL = 'https://docs.google.com/spreadsheets/d/1Sa9qKWQAe4cWQ7mbxxQxA9i81UUNGH6cWg2yDKc0lEw/gviz/tq?tqx=out:csv&gid=257981885';
+// Force update si un ancien format "pub?" (cache Google) était sauvegardé
+if (localStorage.getItem(PORT_URL_KEY) && localStorage.getItem(PORT_URL_KEY).includes('pub?')) {
+  localStorage.removeItem(PORT_URL_KEY);
+}
 
 function showPortfolioUrlSetup() {
   const setup = document.getElementById('port-url-setup');
   setup.style.display = setup.style.display === 'none' ? 'block' : 'none';
-  const current = localStorage.getItem(PORT_URL_KEY) || '';
+  const current = localStorage.getItem(PORT_URL_KEY) || DEFAULT_PORT_URL;
   document.getElementById('port-url-input').value = current;
 }
 
@@ -2446,11 +2439,11 @@ function savePortfolioUrl() {
 }
 
 async function importPortfolioFromSheet() {
-  const savedUrl = localStorage.getItem(PORT_URL_KEY);
+  const savedUrl = localStorage.getItem(PORT_URL_KEY) || DEFAULT_PORT_URL;
   const st = document.getElementById('port-status');
-  const btn = event.target;
+  const btn = document.getElementById('port-fetch-btn');
   if (!savedUrl) { showPortfolioUrlSetup(); return; }
-  btn.disabled = true; btn.textContent = '⏳ Importation...';
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ Importation...'; }
   if(st){ st.style.display='block'; st.style.color='var(--blue)'; st.style.background='rgba(10,132,255,0.08)'; st.innerHTML='📡 Lecture...'; }
   let csv = null;
   try {
@@ -2467,7 +2460,7 @@ async function importPortfolioFromSheet() {
   }
   if (!csv) {
     if(st){ st.style.color='var(--red)'; st.style.background='rgba(255,69,58,0.08)'; st.innerHTML='❌ Impossible de lire la sheet.'; }
-    btn.disabled = false; btn.textContent = '📥 Importer Portfolio depuis Sheet'; return;
+    if(btn){ btn.disabled = false; btn.textContent = '📥 Importer Portfolio depuis Sheet'; } return;
   }
 
   // Smart CSV parser — handles French locale (comma as decimal separator)
@@ -2542,15 +2535,15 @@ async function importPortfolioFromSheet() {
         + (skipped.length ? '<br><small style="color:#ff9500">⚠️ Sans prix: ' + skipped.join(', ') + '</small>' : '');
     }
   }
-  btn.disabled = false; btn.textContent = '📥 Importer Portfolio depuis Sheet';
+  if(btn){ btn.disabled = false; btn.textContent = '📥 Importer Portfolio depuis Sheet'; }
   if(total > 0) setTimeout(() => showTab('port'), 1500);
 }
 
 // ─── DIVIDENDES IMPORT ───────────────────────────────────
 const DIV_URL_KEY = 'gs_div_url';
-const DEFAULT_DIV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQiTZzyjt1O8ks2MQGzY65MMLftLY-mCgDjIsHCW5Ea7TVswH_LTVTM_VzaCra5lhcWyl-HjBzYu3aZ/pub?gid=1385950803&single=true&output=csv';
-// Force update si un ancien gid était sauvegardé
-if (localStorage.getItem('gs_div_url') && (localStorage.getItem('gs_div_url').includes('gid=1970360697') || localStorage.getItem('gs_div_url').includes('gid=830929235') || localStorage.getItem('gs_div_url').includes('gid=1824541166'))) {
+const DEFAULT_DIV_URL = 'https://docs.google.com/spreadsheets/d/1Sa9qKWQAe4cWQ7mbxxQxA9i81UUNGH6cWg2yDKc0lEw/gviz/tq?tqx=out:csv&gid=1385950803';
+// Force update si un ancien gid ou ancien format "pub?" était sauvegardé
+if (localStorage.getItem('gs_div_url') && (localStorage.getItem('gs_div_url').includes('pub?') || localStorage.getItem('gs_div_url').includes('gid=1970360697') || localStorage.getItem('gs_div_url').includes('gid=830929235') || localStorage.getItem('gs_div_url').includes('gid=1824541166'))) {
   localStorage.removeItem('gs_div_url');
 }
 
@@ -2806,7 +2799,7 @@ async function fetchFromGoogleSheets() {
   // Force update if old gid=0 URL is saved
 if (localStorage.getItem(GS_URL_KEY) && localStorage.getItem(GS_URL_KEY).includes('gid=0')) { localStorage.removeItem(GS_URL_KEY); }
 if (!localStorage.getItem(GS_URL_KEY)) {
-    localStorage.setItem(GS_URL_KEY, 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQiTZzyjt1O8ks2MQGzY65MMLftLY-mCgDjIsHCW5Ea7TVswH_LTVTM_VzaCra5lhcWyl-HjBzYu3aZ/pub?gid=1307110515&single=true&output=csv');
+    localStorage.setItem(GS_URL_KEY, 'https://docs.google.com/spreadsheets/d/1Sa9qKWQAe4cWQ7mbxxQxA9i81UUNGH6cWg2yDKc0lEw/gviz/tq?tqx=out:csv&gid=1307110515');
   }
   const savedUrl = localStorage.getItem(GS_URL_KEY);
   const st = document.getElementById('gs-status');
@@ -2931,7 +2924,7 @@ if (!localStorage.getItem(GS_URL_KEY)) {
 
 // Show setup if URL already saved on tab open
 function initGsSection() {
-  const DEFAULT_GS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQiTZzyjt1O8ks2MQGzY65MMLftLY-mCgDjIsHCW5Ea7TVswH_LTVTM_VzaCra5lhcWyl-HjBzYu3aZ/pub?gid=1307110515&single=true&output=csv';
+  const DEFAULT_GS_URL = 'https://docs.google.com/spreadsheets/d/1Sa9qKWQAe4cWQ7mbxxQxA9i81UUNGH6cWg2yDKc0lEw/gviz/tq?tqx=out:csv&gid=1307110515';
   if (!localStorage.getItem(GS_URL_KEY)) {
     localStorage.setItem(GS_URL_KEY, DEFAULT_GS_URL);
   }
