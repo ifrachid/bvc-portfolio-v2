@@ -888,6 +888,18 @@ function savePortfolioToStorage() {
 function loadPortfolioFromStorage() {
   try {
     const saved = localStorage.getItem('bvc_stocks');
+    // DEBUG TEMPORAIRE — à retirer une fois le bug trouvé
+    try {
+      const dbgAll = Object.keys(localStorage).length;
+      const dbgMsg = '🔍 DEBUG\n\n'
+        + 'bvc_stocks trouvé: ' + (saved ? 'OUI' : 'NON') + '\n'
+        + (saved ? ('Longueur: ' + saved.length + ' car.\n') : '')
+        + (saved ? ('Nb actions sauvées: ' + (JSON.parse(saved).length||0) + '\n') : '')
+        + 'Total clés localStorage: ' + dbgAll + '\n'
+        + 'price_date: ' + (localStorage.getItem('price_date')||'—') + '\n'
+        + 'div_sync_date: ' + (localStorage.getItem('div_sync_date')||'—');
+      setTimeout(() => alert(dbgMsg), 600);
+    } catch(dbgErr) { setTimeout(() => alert('🔍 DEBUG ERROR: ' + dbgErr.message), 600); }
     if(saved) {
       const parsed = JSON.parse(saved);
       if(Array.isArray(parsed) && parsed.length > 0) {
