@@ -657,6 +657,10 @@ input::placeholder{color:var(--text3)}
       <!-- Prix sauvegardés -->
       <div style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-bottom:8px">PRIX EN MÉMOIRE</div>
       <div id="sync-prices" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
+
+      <div style="text-align:center;margin-top:20px;padding-bottom:10px">
+        <span style="font-size:9px;color:var(--text3);opacity:0.5">Build: 2026-07-08-v4-simplify</span>
+      </div>
     </div>
   </div>
 
@@ -888,6 +892,18 @@ function savePortfolioToStorage() {
 function loadPortfolioFromStorage() {
   try {
     const saved = localStorage.getItem('bvc_stocks');
+    // DEBUG TEMPORAIRE v4
+    try {
+      let stockDetails = 'stocks.length AVANT chargement: ' + stocks.length + '\n\n';
+      if(saved) {
+        const p2 = JSON.parse(saved);
+        stockDetails += 'bvc_stocks contient ' + p2.length + ' actions:\n';
+        stockDetails += p2.slice(0,6).map(s => s.t + ': q=' + s.q + ' live=' + s.live).join('\n');
+      } else {
+        stockDetails += '❌ bvc_stocks EST VIDE/INEXISTANT !';
+      }
+      setTimeout(() => alert('🔍 DEBUG v4\n\n' + stockDetails), 600);
+    } catch(dbgErr) { setTimeout(() => alert('🔍 DEBUG ERROR: ' + dbgErr.message), 600); }
     if(saved) {
       const parsed = JSON.parse(saved);
       if(Array.isArray(parsed) && parsed.length > 0) {
