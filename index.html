@@ -2869,6 +2869,7 @@ if (!localStorage.getItem(GS_URL_KEY)) {
     });
 
     localStorage.setItem('price_date', now);
+    savePortfolioToStorage();
 
     const missed = stocks.filter(s => !prices[s.t]).map(s => s.t);
 
@@ -3114,6 +3115,7 @@ async function fetchPricesWithAI() {
   });
 
   localStorage.setItem('price_date', now);
+  savePortfolioToStorage();
 
   document.getElementById('dot').style.background = 'var(--green)';
   document.getElementById('dot').style.boxShadow = '0 0 8px rgba(16,185,129,0.6)';
@@ -3288,6 +3290,7 @@ function importPrices(){
   });
   
   localStorage.setItem('price_date',now);
+  savePortfolioToStorage();
   
   if(updated>0){
     console.log('✅ Imported '+updated+' prices');
