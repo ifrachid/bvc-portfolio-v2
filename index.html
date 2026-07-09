@@ -506,6 +506,18 @@ input::placeholder{color:var(--text3)}
   <div id="v-sync" style="display:none">
     <div style="padding:12px 14px 20px">
 
+      <!-- NOTIFICATIONS DIVIDENDES -->
+      <div style="background:linear-gradient(135deg,rgba(255,149,0,0.08),rgba(255,149,0,0.04));border:1px solid rgba(255,149,0,0.2);border-radius:16px;padding:14px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <div style="width:34px;height:34px;border-radius:10px;background:rgba(255,149,0,0.12);display:flex;align-items:center;justify-content:center;font-size:18px">🔔</div>
+          <div>
+            <div style="font-size:12px;color:#ff9500;font-weight:700">Notifications dividendes</div>
+            <div style="font-size:10px;color:var(--text3)">Alerte le jour du paiement</div>
+          </div>
+        </div>
+        <div id="notif-settings"></div>
+      </div>
+
       <!-- TOUT ACTUALISER (Prix + Dividendes) -->
       <div style="background:linear-gradient(135deg,rgba(79,124,255,0.10),rgba(124,108,255,0.08));border:1px solid var(--border2);border-radius:16px;padding:14px;margin-bottom:12px">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
@@ -657,10 +669,6 @@ input::placeholder{color:var(--text3)}
       <!-- Prix sauvegardés -->
       <div style="font-size:10px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-bottom:8px">PRIX EN MÉMOIRE</div>
       <div id="sync-prices" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
-
-      <div style="text-align:center;margin-top:20px;padding-bottom:10px">
-        <span style="font-size:9px;color:var(--text3);opacity:0.5">Build: 2026-07-08-v6</span>
-      </div>
     </div>
   </div>
 
@@ -885,13 +893,85 @@ function unlock() {
 // Importe automatiquement Prix + Dividendes + Portfolio depuis Google Sheets
 // à chaque déverrouillage, pour ne jamais dépendre uniquement du localStorage.
 async function autoSyncOnOpen() {
-  const updEl = document.getElementById('upd');
-  if(updEl) updEl.textContent = '🔄 Sync auto en cours...';
+  showSyncBanner('🔄 Synchronisation automatique en cours...', 'var(--blue)');
   try { await fetchFromGoogleSheets(); } catch(e) { console.warn('auto sync prix:', e.message); }
   try { await importDividendesFromSheet(); } catch(e) { console.warn('auto sync div:', e.message); }
   try { await importPortfolioFromSheet(); } catch(e) { console.warn('auto sync portfolio:', e.message); }
   renderAll();
-  if(updEl) updEl.textContent = '✅ Sync auto terminée · ' + new Date().toLocaleTimeString('fr-MA');
+  showSyncBanner('✅ Synchronisé · ' + new Date().toLocaleTimeString('fr-MA'), 'var(--green)');
+  setTimeout(hideSyncBanner, 3000);
+  checkAndNotifyDividendes();
+}
+
+// ─── NOTIFICATIONS DIVIDENDES ─────────────────────
+function requestNotifPermission() {
+  if (!('Notification' in window)) { alert('Notifications non supportées sur ce navigateur.'); return; }
+  Notification.requestPermission().then(perm => {
+    localStorage.setItem('notif_permission_asked', '1');
+    if (perm === 'granted') {
+      new Notification('Rach Invest', { body: '🔔 Notifications activées — tu seras alerté le jour du paiement.' });
+      renderNotifSettingsUI();
+    } else {
+      alert('Notifications refusées. Tu peux les activer depuis Réglages Safari > Notifications si tu changes d\'avis.');
+    }
+  });
+}
+
+function checkAndNotifyDividendes() {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const already = JSON.parse(localStorage.getItem('notif_sent_today') || '{}');
+  const todayKey = today.toISOString().split('T')[0];
+  if (already.date !== todayKey) { already.date = todayKey; already.tickers = []; }
+  stocks.forEach(s => {
+    if (!s.dpa || s.dpa<=0 || !s.pay) return;
+    const payD = new Date(s.pay); payD.setHours(0,0,0,0);
+    if (payD.getTime() !== today.getTime()) return;
+    const alreadyDone = trades.some(tr => tr.ticker===s.t && tr.type==='dividende' && tr.date===s.pay);
+    if (alreadyDone) return;
+    if (already.tickers.includes(s.t)) return;
+    const net = s.dpa*dQty(s)*(1-RET);
+    try {
+      new Notification('🌿 Dividende disponible', {
+        body: s.t + ' — paiement aujourd\'hui, +' + f(net) + ' DH net à encaisser'
+      });
+    } catch(e) {}
+    already.tickers.push(s.t);
+  });
+  localStorage.setItem('notif_sent_today', JSON.stringify(already));
+}
+
+function renderNotifSettingsUI() {
+  const el = document.getElementById('notif-settings');
+  if (!el) return;
+  const supported = 'Notification' in window;
+  const perm = supported ? Notification.permission : 'unsupported';
+  if (perm === 'granted') {
+    el.innerHTML = '<div style="text-align:center;padding:10px;font-size:11px;color:var(--green);background:rgba(52,199,89,0.08);border-radius:10px">🔔 Notifications activées</div>';
+  } else if (perm === 'denied') {
+    el.innerHTML = '<div style="text-align:center;padding:10px;font-size:11px;color:var(--text3);background:var(--bg2);border-radius:10px">Notifications refusées — active-les depuis Réglages Safari</div>';
+  } else {
+    el.innerHTML = '<button onclick="requestNotifPermission()" class="btn" style="background:linear-gradient(135deg,var(--blue),var(--indigo));font-size:13px">🔔 Activer les notifications</button>';
+  }
+}
+
+function showSyncBanner(text, color) {
+  let el = document.getElementById('auto-sync-banner');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'auto-sync-banner';
+    el.style.cssText = 'position:fixed;top:env(safe-area-inset-top,44px);left:12px;right:12px;z-index:99998;padding:10px 14px;border-radius:12px;font-size:12px;font-weight:600;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,0.4);transition:opacity 0.3s';
+    document.body.appendChild(el);
+  }
+  el.style.display = 'block';
+  el.style.opacity = '1';
+  el.style.background = color;
+  el.style.color = '#fff';
+  el.textContent = text;
+}
+function hideSyncBanner() {
+  const el = document.getElementById('auto-sync-banner');
+  if (el) { el.style.opacity = '0'; setTimeout(() => { el.style.display='none'; }, 300); }
 }
 
 // PIN only — no Face ID (not supported in PWA)
@@ -949,7 +1029,7 @@ function syncDivLocks(){
 let retYear = '2026';
 
 // ─── PORTFOLIO ────────────────────────────────────
-let stocks = [
+const DEFAULT_STOCKS = [
   {t:'ATW',n:'Attijariwafa Bank',    q:210,  b:644.92, live:711.00, chg:0, dpa:19.00, det:'2026-06-10', pay:'2026-07-02', an:'2025'},
   {t:'DYT',n:'Disty Technologies',   q:210,  b:372.46, live:335.00, chg:0, dpa:0,     det:null,         pay:null,         an:null},
   {t:'FBR',n:'Fenie Brossette',      q:230,  b:461.52, live:297.90, chg:0, dpa:0,     det:null,         pay:null,         an:null},
@@ -968,6 +1048,20 @@ let stocks = [
   {t:'CMG',n:'CMGP Group',           q:450,  b:380.57, live:385.00, chg:0, dpa:15.00, det:'2026-06-08', pay:'2026-06-24', an:'2025'},
   {t:'CAP',n:'Cash Plus',            q:1579, b:319.46, live:300.00, chg:0, dpa:0,     det:null,         pay:null,         an:null},
 ];
+
+// stocks est chargé DIRECTEMENT depuis localStorage au parsing du script,
+// exactement comme `trades` plus bas — ne dépend d'aucun appel ultérieur
+// (PIN, unlock, etc.) pour être correct. C'est la source de vérité dès le départ.
+let stocks = (function loadStocksAtParseTime(){
+  try {
+    const saved = localStorage.getItem('bvc_stocks');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch(e) { console.warn('loadStocksAtParseTime error:', e.message); }
+  return DEFAULT_STOCKS;
+})();
 
 const allBVC=[
   {t:'ATW',n:'Attijariwafa Bank',live:0},{t:'IAM',n:'Maroc Telecom',live:0},
@@ -1976,8 +2070,40 @@ function renderList(){
 function renderDivGlobal(){
   syncDivLocks();
   let brut=0,inv=0;stocks.forEach(s=>{if(s.dpa>0)brut+=s.dpa*dQty(s);inv+=s.b*s.q;});
-  // Rappels J-7
   const today = new Date();
+  // Dividendes à encaisser — paiement aujourd'hui ou déjà passé, pas encore dans Take Profit
+  const toCollect = stocks.filter(s=>{
+    if(!s.dpa||s.dpa<=0||!s.pay) return false;
+    const payD = new Date(s.pay); payD.setHours(0,0,0,0);
+    const t0 = new Date(); t0.setHours(0,0,0,0);
+    const alreadyDone = trades.some(tr => tr.ticker===s.t && tr.type==='dividende' && tr.date===s.pay);
+    return payD <= t0 && !alreadyDone;
+  }).map(s=>{
+    const payD = new Date(s.pay); payD.setHours(0,0,0,0);
+    const t0 = new Date(); t0.setHours(0,0,0,0);
+    const diffLate = Math.floor((t0-payD)/86400000);
+    const net = s.dpa*dQty(s)*(1-RET);
+    const isToday = diffLate === 0;
+    const badgeColor = isToday ? 'var(--gold)' : 'var(--red)';
+    const badgeBg = isToday ? 'rgba(242,200,121,0.15)' : 'rgba(255,59,48,0.15)';
+    const badgeBorder = isToday ? 'rgba(242,200,121,0.3)' : 'rgba(255,59,48,0.3)';
+    const badgeText = isToday ? "Aujourd'hui" : ('En retard '+diffLate+'j');
+    return '<div style="background:'+(isToday?'rgba(242,200,121,0.08)':'rgba(255,59,48,0.08)')+';border:1px solid '+badgeBorder+';border-radius:12px;padding:10px 12px;margin-bottom:8px">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">'
+        + '<div style="display:flex;align-items:center;gap:7px">'
+          + '<div style="width:24px;height:24px;border-radius:7px;background:'+badgeBg+';display:flex;align-items:center;justify-content:center;font-size:11px">'+(isToday?'📅':'⏰')+'</div>'
+          + '<div style="font-size:12px;font-weight:700;color:var(--text)">'+s.t+'</div>'
+        + '</div>'
+        + '<div style="background:'+badgeBg+';border:1px solid '+badgeBorder+';border-radius:7px;padding:2px 8px;font-size:9px;font-weight:700;color:'+badgeColor+'">'+badgeText+'</div>'
+      + '</div>'
+      + '<div style="font-size:10px;color:var(--text2);margin-bottom:8px">Paiement le '+fdate(s.pay)+' · +'+f(net)+' DH net</div>'
+      + '<button onclick="markDividendeReceived(\''+s.t+'\',\''+s.n+'\','+dQty(s)+','+s.dpa+','+net+',\''+s.pay+'\')" style="width:100%;background:rgba(90,200,250,0.15);border:1px solid rgba(90,200,250,0.35);border-radius:8px;padding:7px;font-size:10px;font-weight:700;color:#5ac8fa;font-family:inherit;cursor:pointer;touch-action:manipulation">🌿 Marquer comme reçu → Take Profit</button>'
+    + '</div>';
+  });
+  const toCollectHtml = toCollect.length > 0
+    ? '<div style="font-size:9px;color:var(--gold);font-weight:700;letter-spacing:0.5px;margin-bottom:7px">🔔 DIVIDENDES À ENCAISSER</div>' + toCollect.join('')
+    : '';
+  // Rappels J-7
   const rappels = stocks.filter(s=>{
     if(!s.dpa||s.dpa<=0) return false;
     const d = s.det ? new Date(s.det) : (s.pay ? new Date(s.pay) : null);
@@ -2014,7 +2140,7 @@ function renderDivGlobal(){
   const net=brut*(1-RET),yld=inv>0?(brut/inv)*100:0;
   const withDiv=stocks.filter(s=>s.dpa>0).sort((a,b)=>(b.dpa/b.b)-(a.dpa/a.b));
   const noDiv=stocks.filter(s=>s.dpa===0);
-  let html=rappelHtml+`<div style="background:rgba(240,165,0,0.1);border:1px solid rgba(240,165,0,0.3);border-radius:13px;padding:13px;margin-bottom:12px">
+  let html=toCollectHtml+rappelHtml+`<div style="background:rgba(240,165,0,0.1);border:1px solid rgba(240,165,0,0.3);border-radius:13px;padding:13px;margin-bottom:12px">
     <div style="font-size:10px;color:var(--gold);font-weight:700;margin-bottom:9px">TOTAL PORTFOLIO — retenue ${Math.round(RET*1000)/10}% (${retYear})</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px">
       <div style="background:var(--bg);border-radius:8px;padding:8px;text-align:center"><div class="lbl">Brut</div><div style="font-size:12px;font-weight:700;color:var(--gold)">${f(brut)} DH</div></div>
@@ -2026,13 +2152,17 @@ function renderDivGlobal(){
   withDiv.forEach((s,i)=>{
     const b=s.dpa*dQty(s),n=b*(1-RET),y=(s.dpa/s.b)*100;
     const diff=s.pay?Math.ceil((new Date(s.pay)-new Date())/(86400000)):null;
+    const realIdx = stocks.indexOf(s);
     html+=`<div class="card" style="cursor:default">
       <div class="row" style="margin-bottom:7px">
         <div style="display:flex;align-items:center;gap:8px">
           <div style="width:26px;height:26px;border-radius:7px;background:rgba(240,165,0,0.15);border:1px solid rgba(240,165,0,0.3);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:var(--gold)">#${i+1}</div>
           <div><div style="font-size:12px;font-weight:700;color:var(--text)">${s.t} <span style="font-size:9px;color:var(--text2)">×${dQty(s)}</span></div><div style="font-size:9px;color:var(--text2)">${s.n}${s.an?' · ex.'+s.an:''}</div></div>
         </div>
+        <div style="display:flex;align-items:center;gap:8px">
+        <button onclick="openEdit(${realIdx})" style="background:var(--blue-soft);border:1px solid rgba(79,124,255,0.28);border-radius:8px;padding:5px 8px;color:var(--blue);font-size:10px;font-family:inherit;cursor:pointer;touch-action:manipulation">✏️</button>
         <div style="text-align:right"><div style="font-size:15px;font-weight:700;color:var(--gold)">${y.toFixed(2)}%</div><div style="font-size:9px;color:var(--text2)">yield/achat</div></div>
+        </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:7px">
         <div style="background:var(--bg);border-radius:7px;padding:6px 8px"><div class="lbl">📌 Détachement</div><div style="font-size:10px;font-weight:600;color:var(--blue)">${fdate(s.det)}</div></div>
@@ -2046,20 +2176,16 @@ function renderDivGlobal(){
         <div style="background:#0a1f0e;border-radius:6px;padding:5px;text-align:center"><div class="lbl">Net</div><div style="font-size:10px;font-weight:700;color:#10b981">+${f(n)}</div></div>
       </div>
       ${(()=>{
-        if(!s.pay) return '';
+        const alreadyDone = s.pay ? trades.some(tr => tr.ticker===s.t && tr.type==='dividende' && tr.date===s.pay) : trades.some(tr => tr.ticker===s.t && tr.type==='dividende' && tr.dpa===s.dpa);
+        if(alreadyDone) return '<div style="text-align:center;padding:7px;font-size:10px;color:#5ac8fa;background:rgba(90,200,250,0.08);border-radius:9px;margin-top:8px">✅ Dividende enregistré dans Take Profit</div>';
+        if(!s.pay) {
+          return '<button onclick="markDividendeReceived(\''+s.t+'\',\''+s.n+'\','+dQty(s)+','+s.dpa+','+n+',\'\')" style="width:100%;margin-top:8px;padding:9px;border-radius:10px;background:rgba(90,200,250,0.12);border:1px solid rgba(90,200,250,0.35);color:#5ac8fa;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation">🌿 Marquer comme reçu → Take Profit</button>';
+        }
         const today = new Date(); today.setHours(0,0,0,0);
         const payD = new Date(s.pay); payD.setHours(0,0,0,0);
-        const payD3 = new Date(payD); payD3.setDate(payD3.getDate()+3);
-        const alreadyDone = trades.some(tr => tr.ticker===s.t && tr.type==='dividende' && tr.date===s.pay);
-        if(alreadyDone) return '<div style="text-align:center;padding:7px;font-size:10px;color:#5ac8fa;background:rgba(90,200,250,0.08);border-radius:9px;margin-top:8px">✅ Dividende enregistré dans Take Profit</div>';
-        if(today >= payD && today <= payD3) {
-          return '<button onclick="markDividendeReceived(\''+s.t+'\',\''+s.n+'\','+dQty(s)+','+s.dpa+','+n+',\''+s.pay+'\')" style="width:100%;margin-top:8px;padding:9px;border-radius:10px;background:rgba(90,200,250,0.12);border:1px solid rgba(90,200,250,0.35);color:#5ac8fa;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation">🌿 Marquer comme reçu → Take Profit</button>';
-        }
-        if(today < payD) {
-          const diffJ = Math.ceil((payD-today)/86400000);
-          return '<div style="text-align:center;padding:7px;font-size:10px;color:#636366;background:rgba(255,255,255,0.04);border-radius:9px;margin-top:8px">Disponible dans '+diffJ+' jour'+(diffJ>1?'s':'')+' (date paiement)</div>';
-        }
-        return '';
+        // Le bouton reste toujours disponible (même longtemps après le paiement)
+        // pour permettre d'ajouter rétroactivement les dividendes déjà passés.
+        return '<button onclick="markDividendeReceived(\''+s.t+'\',\''+s.n+'\','+dQty(s)+','+s.dpa+','+n+',\''+s.pay+'\')" style="width:100%;margin-top:8px;padding:9px;border-radius:10px;background:rgba(90,200,250,0.12);border:1px solid rgba(90,200,250,0.35);color:#5ac8fa;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation">🌿 Marquer comme reçu → Take Profit'+(today<payD?' <span style="opacity:0.7">(à venir)</span>':'')+'</button>';
       })()}
     </div>`;
   });
@@ -2307,6 +2433,7 @@ function showTab(t){
   if(t==='sync'){
     const isSafari=/Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
     renderSyncPrices();
+    renderNotifSettingsUI();
     // Titre dynamique: "Dividendes 2026" (année en cours, mise à jour automatique chaque année)
     const curYear = new Date().getFullYear();
     const divTitleEl = document.getElementById('div-title-year');
