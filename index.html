@@ -22,7 +22,7 @@
 <meta name="msapplication-config" content="./browserconfig.xml?v=rt4">
 <title>Rach Invest</title>
 <!-- system font stack; external display font removed for performance -->
-<script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=chpNeLJReKeSVHSoe2hWmaFjoPV3v3sA-98orkLctO3oeMGHTg-eeS-PwH0NlxZeZ1QogNreY8IMMxF1cR5N4jLHzqLWJlre_6lnA_z3KIG0gqn0JW4r0tQ7_lTzq0TuabHExZXeEkO6U1IHDcVN_ypxVf8kUrxfileLjinZEfzb9W9ImTE-orJ9Abr1Xb6Ei-73ag6UUgGnhHG6JJLwTEpAjGsL_eMlUh5kP_17CJmHPkuEDaTJ0h8WdMg-tT9S_XleyuE4ln_o7wOPS9tRl5lD8JM9VdZkjQe6hwYpdEIHa7-QpSJPn_Rm64EXm5V3SewdOLZjqbyj-Fw0XbG_TGUkKTMwALHGRJCoBiyLuEU" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://me.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9jaGF0Z3B0LmNvbS9iYWNrZW5kLWFwaS9lc3R1YXJ5L2NvbnRlbnQ_aWQ9ZmlsZV8wMDAwMDAwMGI5Yzg3MWY0OTJhZTI5MThjZTQzZmMxOSZmbj1pbmRleF9maXhlZF90YWtlcHJvZml0X3NvcnRfcGF5bWVudF9kYXRlLmh0bWwmY2Q9YXR0YWNobWVudCZ0cz00OTU0NDkmcD1mcyZjaWQ9MSZzaWc9NWY2ZTk1ZDdiZWY3Nzg5YjNjYTUwYjE1ZWZiZDAyMDUzMDFjOGNhNWE0NzYxMGE4NmY4NmExZDI1ZjhmYjBlYiZ2PTA"/><style>
+<style>
 :root{
   --bg:#0a0c11; --bg2:#11151e; --bg3:#1a1f2b;
   --text:#eef1f6; --text2:#9aa3b2; --text3:#5f6a7a;
@@ -1136,6 +1136,15 @@ function calc(b,c,q){
 function f(n){return n.toLocaleString('fr-MA',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function sg(n){return n>=0?'+':(n<0?'':'');}
 function fdate(d){if(!d)return'—';try{return new Date(d).toLocaleDateString('fr-MA',{day:'2-digit',month:'short',year:'numeric'});}catch{return d;}}
+function fdateNum(d){
+  if(!d) return '—';
+  try{
+    if(/^\d{2}\/\d{2}\/\d{4}$/.test(String(d))) return d;
+    const dt = new Date(d);
+    if(isNaN(dt.getTime())) return d;
+    return dt.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  }catch(e){return d;}
+}
 
 // ─── TICKER MAPPING (in case website uses different names) ─────
 const tickerMapping = {
@@ -1678,7 +1687,7 @@ function renderTakeProfit() {
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
           <div>
             <div style="font-size:13px;font-weight:700;color:#5ac8fa">${t.ticker} <span style="font-size:9px;color:#f5f5f7;font-weight:600">· ${t.qty}x</span></div>
-            <div style="font-size:10px;color:var(--text3);margin-top:1px">${t.date||''} · Gain dividende</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.66);margin-top:1px;font-weight:500">${fdateNum(t.date)} · Gain dividende</div>
           </div>
           <div style="display:flex;align-items:center;gap:8px">
             <div style="text-align:right">
@@ -1699,7 +1708,7 @@ function renderTakeProfit() {
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
         <div>
           <div style="font-size:13px;font-weight:700;color:var(--text)">${t.ticker} <span style="font-size:9px;color:var(--text3)">· ${t.qty}x</span></div>
-          <div style="font-size:10px;color:var(--text3);margin-top:1px">${t.date||''}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.66);margin-top:1px;font-weight:500">${fdateNum(t.date)}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
           <div style="text-align:right">
