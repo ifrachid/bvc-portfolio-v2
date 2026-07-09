@@ -22,7 +22,7 @@
 <meta name="msapplication-config" content="./browserconfig.xml?v=rt4">
 <title>Rach Invest</title>
 <!-- system font stack; external display font removed for performance -->
-<style>
+<script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=Io_UoP--eCqikxskqxOWQbHhyTDwrEAb6lBPpIJTW9vjZ3QBJDyVF3q4JA0ADzthTsTFizP1jddU2LG_Pu0l5ZI8enX9Nog9iVtY5zaxYmDLEbU7-Nrx6ds3EZFvSKlMrQeonERzoogwcgahAwEpHCBjAr7Be7ZAU8MNOhjBWw8vigOk-0CBkIxMJOL9huc1FsCPCyT_j-m_g6c6KSwl8W5ThEKoDQjpmyyNCxNALksmTpOKApJGguyjPpz3zSgVeN-QujFBLaBTQtVeNaGZ0am4WMn983ypqriSFAQtz8AHyNcMC3r9w6Q4bewoqCLbpLVv4-3_ZvKq7mhfNS5JbA" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://me.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9jaGF0Z3B0LmNvbS9iYWNrZW5kLWFwaS9lc3R1YXJ5L2NvbnRlbnQ_aWQ9ZmlsZV8wMDAwMDAwMDBhMzQ3MWY0YmJkOGYzNDFhYWFkYzM0NiZmbj1pbmRleF9maXhlZF9kaXZpZGVuZGVzX3NoZWV0X29ubHkuaHRtbCZjZD1hdHRhY2htZW50JnRzPTQ5NTQ0OSZwPWZzJmNpZD0xJnNpZz1jNjBlNzk0MjI3MjE0MTdlMTNlOWUwZTE4OGFiYjhhZjIyYjkyNGIxY2VhNzhmODhmODI4Y2FlYzZiZDk4M2U4JnY9MA"/><style>
 :root{
   --bg:#0a0c11; --bg2:#11151e; --bg3:#1a1f2b;
   --text:#eef1f6; --text2:#9aa3b2; --text3:#5f6a7a;
@@ -2716,105 +2716,147 @@ async function importDividendesFromSheet() {
   const st = document.getElementById('div-import-status');
   const btn = document.getElementById('div-fetch-btn');
   if (!savedUrl) { showDivUrlSetup(); return; }
+
   if(btn){ btn.disabled = true; btn.textContent = '⏳ Importation...'; }
   if(st){ st.style.display='block'; st.style.color='var(--green)'; st.style.background='rgba(52,199,89,0.08)'; st.innerHTML='📡 Lecture...'; }
+
   let csv = null;
   try {
     const bust = savedUrl + (savedUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
     const res = await fetch(bust, { cache: 'no-store' });
     if (res.ok) { const t = await res.text(); if(t && t.length > 5) csv = t; }
   } catch(e) {}
+
   if (!csv) {
     try {
-      const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(savedUrl);
-      const res = await fetch(proxyUrl);
+      // Cache-bust aussi le proxy, sinon Safari/PWA peut récupérer une ancienne version.
+      const proxyTarget = savedUrl + (savedUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+      const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(proxyTarget);
+      const res = await fetch(proxyUrl, { cache: 'no-store' });
       if (res.ok) { const d = await res.json(); if(d && d.contents) csv = d.contents; }
     } catch(e) {}
   }
+
   if (!csv) {
     if(st){ st.style.color='var(--red)'; st.style.background='rgba(255,69,58,0.08)'; st.innerHTML='❌ Impossible de lire la sheet.'; }
-    if(btn){ btn.disabled = false; btn.textContent = '🌿 Sync depuis Google Sheets'; } return;
+    if(btn){ btn.disabled = false; btn.textContent = '🌿 Sync depuis Google Sheets'; }
+    return;
   }
 
-  // Smart parser for French locale
+  function cleanCell(v){ return String(v || '').replace(/^\uFEFF/, '').replace(/^"|"$/g, '').trim(); }
+
+  // Parser robuste: accepte CSV comma, CSV point-virgule et surtout TSV Google Sheet (colonnes séparées par TAB).
   function parseDivLine(line) {
-    if (line.includes('"')) {
-      const result = [];
-      let current = '', inQuote = false;
-      for (let c of line) {
-        if (c === '"') inQuote = !inQuote;
-        else if (c === ',' && !inQuote) { result.push(current.trim()); current = ''; }
-        else current += c;
-      }
-      result.push(current.trim());
-      return result;
+    if (line.indexOf('\t') !== -1) return line.split('\t').map(cleanCell);
+    const sep = line.indexOf(';') !== -1 ? ';' : ',';
+    const result = [];
+    let current = '', inQuote = false;
+    for (let i=0; i<line.length; i++) {
+      const c = line[i];
+      if (c === '"') inQuote = !inQuote;
+      else if (c === sep && !inQuote) { result.push(cleanCell(current)); current = ''; }
+      else current += c;
     }
-    const parts = line.split(',').map(p => p.trim());
-    // French decimal: ATW,19,50,2026-04-28,2026-05-15 → 5 cols
-    if (parts.length === 5) {
-      const p1 = parts[1], p2 = parts[2];
-      if (/^\d+$/.test(p1) && /^\d{1,2}$/.test(p2)) {
-        return [parts[0], p1 + '.' + p2, parts[3], parts[4]];
-      }
+    result.push(cleanCell(current));
+
+    // Cas ancien: ticker,dpa decimal coupé par virgule,date det,date pay
+    if (sep === ',' && result.length >= 5 && /^\d+$/.test(result[1]||'') && /^\d{1,2}$/.test(result[2]||'')) {
+      return [result[0], result[1] + '.' + result[2], result[3], result[4], result[5] || '', result[6] || ''];
     }
-    // French decimal with date as DD/MM/YYYY: ATW,19,50,28/04/2026,15/05/2026 → 6 cols
-    if (parts.length === 6) {
-      const p1 = parts[1], p2 = parts[2];
-      if (/^\d+$/.test(p1) && /^\d{1,2}$/.test(p2)) {
-        return [parts[0], p1 + '.' + p2, parts[3], parts[4]];
-      }
-    }
-    // dash "-" in date/dpa columns = empty
-    return parts.map(p => p === '-' ? '' : p);
+    return result;
   }
 
-  const allLines = csv.trim().split(/[\r\n]+/).filter(l => l.trim());
-  let updated = 0;
+  function normDate(raw) {
+    const s = cleanCell(raw).replace(/-/g,'/');
+    if (!s || s === '-') return '';
+    const p = s.split('/');
+    if (p.length === 3) {
+      if (p[2].length === 4) return p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0'); // DD/MM/YYYY
+      if (p[0].length === 4) return p[0]+'-'+p[1].padStart(2,'0')+'-'+p[2].padStart(2,'0'); // YYYY/MM/DD
+    }
+    return s;
+  }
+
+  function parseAmount(raw){
+    return parseFloat(cleanCell(raw).replace(/\s/g,'').replace(',', '.')) || 0;
+  }
+
+  const allLines = csv.split(/[\r\n]+/).filter(l => l && l.trim());
+  const rowsByTicker = {};
   const details = [], notFound = [];
 
-  for (let i = 1; i < allLines.length; i++) {
-    const cols = parseDivLine(allLines[i]).map(c => c.replace(/^"|"$/g,''));
-    const rawTicker5 = (cols[5]||'').toUpperCase().trim().replace(/[^A-Z0-9]/g,'');
-    const ticker = rawTicker5.length >= 2 ? rawTicker5 : (cols[0]||'').toUpperCase().trim().replace(/\s/g,'');
-    if (!ticker || ticker.length < 2) continue;
-    // Handle French number format (19,50 or 19.50)
-    const dpa = parseFloat((cols[1]||'').replace(/\s/g,'').replace(',','.')) || 0;
-    // Handle date formats: YYYY-MM-DD or DD/MM/YYYY or with dashes
-    function normDate(raw) {
-      const s = (raw||'').trim().replace(/-/g,'/');
-      if (!s || s === '-') return '';
-      const p = s.split('/');
-      if (p.length === 3) {
-        // DD/MM/YYYY → YYYY-MM-DD
-        if (p[2].length === 4) return p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');
-        // Already YYYY/MM/DD
-        if (p[0].length === 4) return p[0]+'-'+p[1].padStart(2,'0')+'-'+p[2].padStart(2,'0');
-      }
-      return s;
-    }
+  for (let i = 0; i < allLines.length; i++) {
+    const cols = parseDivLine(allLines[i]);
+    const first = (cols[0] || '').toLowerCase();
+    if (!cols.length || first.includes('émetteur') || first.includes('emetteur') || first.includes('derni')) continue;
+
+    // Format de ta sheet: Émetteur | Montant | Date Détachement | Date Paiement | Type | Ticker
+    const rawTicker = (cols[5] || '').toUpperCase().trim().replace(/[^A-Z0-9]/g,'');
+    const ticker = rawTicker.length >= 2 && rawTicker !== '0' ? rawTicker : '';
+    const dpa = parseAmount(cols[1]);
     const det = normDate(cols[2]);
     const pay = normDate(cols[3]);
-    if (dpa <= 0) continue;
+    const type = cleanCell(cols[4]);
+    const name = cleanCell(cols[0]);
+
+    // Important: on ignore les lignes vides, "Dernière mise à jour", et les tickers 0/non valides.
+    if (!ticker || dpa <= 0) continue;
+
+    if (!rowsByTicker[ticker]) rowsByTicker[ticker] = { ticker, name, dpa:0, det:'', pay:'', type:'' };
+    rowsByTicker[ticker].dpa += dpa;
+    if (det) rowsByTicker[ticker].det = det;
+    if (pay) rowsByTicker[ticker].pay = pay;
+    if (type) rowsByTicker[ticker].type = type;
+  }
+
+  const sheetTickers = Object.keys(rowsByTicker);
+
+  if (sheetTickers.length === 0) {
+    if(st){ st.style.color='#ff9500'; st.style.background='rgba(255,149,0,0.08)'; st.innerHTML='⚠️ Aucune ligne dividende valide trouvée dans la sheet.'; }
+    if(btn){ btn.disabled = false; btn.textContent = '🌿 Sync depuis Google Sheets'; }
+    return;
+  }
+
+  // FIX PRINCIPAL:
+  // La sheet devient la source de vérité. On efface d'abord tous les anciens dividendes
+  // sauvegardés dans le téléphone, puis on remet uniquement les tickers présents dans la sheet.
+  stocks.forEach(s => {
+    s.dpa = 0;
+    s.det = null;
+    s.pay = null;
+    s.an = null;
+    s.detQty = null;
+    s.detFor = null;
+    localStorage.removeItem('dpa_' + s.t);
+    localStorage.removeItem('det_' + s.t);
+    localStorage.removeItem('pay_' + s.t);
+  });
+
+  let updated = 0;
+  sheetTickers.forEach(ticker => {
+    const row = rowsByTicker[ticker];
     const stock = stocks.find(s => s.t === ticker);
     if (stock) {
-      stock.dpa = dpa;
-      if (det) stock.det = det;
-      if (pay) stock.pay = pay;
-      localStorage.setItem('dpa_' + ticker, String(dpa));
-      if (det) localStorage.setItem('det_' + ticker, det);
-      if (pay) localStorage.setItem('pay_' + ticker, pay);
+      stock.dpa = row.dpa;
+      stock.det = row.det || null;
+      stock.pay = row.pay || null;
+      stock.an = '2026';
+      localStorage.setItem('dpa_' + ticker, String(row.dpa));
+      if (row.det) localStorage.setItem('det_' + ticker, row.det);
+      if (row.pay) localStorage.setItem('pay_' + ticker, row.pay);
       updated++;
-      details.push('<span style="color:var(--green)">' + ticker + ' ' + dpa.toFixed(2) + ' DH</span>');
+      details.push('<span style="color:var(--green)">' + ticker + ' ' + row.dpa.toFixed(2) + ' DH</span>');
     } else {
       notFound.push(ticker);
     }
-  }
-  // Lire date depuis la feuille (ligne "Dernière mise à jour")
+  });
+
+  // Date réelle depuis la feuille si elle existe.
   try {
     for (const line of allLines) {
       if (line.toLowerCase().includes('derni') && line.toLowerCase().includes('jour')) {
-        const cols = parseDivLine(line).map(c => c.replace(/^"|"$/g,'').trim());
-        const dateVal = cols[1] || cols[0].replace(/dernière mise à jour/i,'').replace(':','').trim();
+        const cols = parseDivLine(line);
+        const dateVal = cleanCell(cols[1] || cols[0].replace(/dernière mise à jour/i,'').replace(':',''));
         if (dateVal && dateVal.length > 5 && !dateVal.toLowerCase().includes('jour')) {
           localStorage.setItem('div_sync_date', dateVal);
           break;
@@ -2822,34 +2864,32 @@ async function importDividendesFromSheet() {
       }
     }
   } catch(e) {}
-  // Save ALL prices to cache for simulator
-  try {
-    const cache = JSON.parse(localStorage.getItem('prices_cache')||'{}');
-    Object.entries(prices).forEach(([t,p]) => { if(p>0) cache[t]=p; });
-    localStorage.setItem('prices_cache', JSON.stringify(cache));
-  } catch(e){}
-  savePortfolioToStorage(); renderAll();
+
+  localStorage.setItem('div_sheet_tickers', JSON.stringify(sheetTickers));
+  savePortfolioToStorage();
+  renderAll();
+
   if(st){
     if(updated === 0){
       st.style.color='#ff9500'; st.style.background='rgba(255,149,0,0.08)';
-      st.innerHTML='⚠️ 0 mis à jour — Les tickers doivent être dans ton portfolio'
-        + (notFound.length ? '<br><small style="color:var(--red)">Non trouvés: ' + notFound.join(', ') + '</small>' : '');
+      st.innerHTML='⚠️ Aucun ticker de la sheet ne correspond à ton portfolio.'
+        + (notFound.length ? '<br><small style="color:var(--red)">Pas dans portfolio: ' + notFound.join(', ') + '</small>' : '');
     } else {
       st.style.color='var(--green)'; st.style.background='rgba(52,199,89,0.08)';
       st.innerHTML='✅ <strong>' + updated + ' dividende' + (updated>1?'s':'') + ' importés</strong><br>'
+        + '<small style="color:var(--text2)">Les anciens dividendes absents de la sheet ont été supprimés.</small><br>'
         + '<div style="margin-top:4px;font-size:9px;line-height:2">' + details.join(' · ') + '</div>'
-        + '<br><small style="color:var(--text2)">💾 Sauvegardé dans le téléphone</small>'
-        + (notFound.length ? '<br><small style="color:#ff9500">⚠️ Pas dans portfolio: ' + notFound.join(', ') + '</small>' : '');
+        + (notFound.length ? '<br><small style="color:#ff9500">⚠️ Dans sheet mais pas dans portfolio: ' + notFound.join(', ') + '</small>' : '');
     }
   }
+
   if(btn){ btn.disabled = false; btn.textContent = '🌿 Sync depuis Google Sheets'; }
-  // Update sync info
-  const now = new Date().toLocaleString('fr-MA');
-  localStorage.setItem('div_sync_date', now);
+
+  const now = localStorage.getItem('div_sync_date') || new Date().toLocaleString('fr-MA');
   const sdEl = document.getElementById('div-sync-date');
   const scEl = document.getElementById('div-sync-count');
   if(sdEl) sdEl.textContent = now;
-  if(scEl) scEl.textContent = stocks.filter(s=>s.dpa>0).length;
+  if(scEl) scEl.textContent = String(updated);
 }
 
 async function triggerDivRefresh() {
