@@ -22,7 +22,7 @@
 <meta name="msapplication-config" content="./browserconfig.xml?v=rt4">
 <title>Rach Invest</title>
 <!-- system font stack; external display font removed for performance -->
-<script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=3Motq0szaxhtg0veFmrrkJgIBx9JsgrD2BpULVwVyU3hc_U2EAGqHLaJ5ayKaVUnf_uZqqAhn_2Oon-Wrg0OaAamlj7X02_W2kb7yws5ZCMD4BHmuOCOzRt8QqqavycPmbA32HrmvNy_AY8YQwC5I_o6lP28fhcQftyk9pMIOpXDqjZJq2lzf4yNxSD_AGlQnHRot7tvy8074VdDmef1A_BYRKU1Ze-4WSVDuRA3Ahi8FRVSIZpoUL0ZEMXslMj-FQ7hZGjmNZbEJBot_kyQSH2nzsr1HWnF3NkVnlVcYWjQaPuX_6YYdezdn3LE6BLkI-VtO-bh0B7QpoTOaw6i7Mg_ElAhmt99lx4xAn7Xp-I" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://me.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9jaGF0Z3B0LmNvbS9iYWNrZW5kLWFwaS9lc3R1YXJ5L2NvbnRlbnQ_aWQ9ZmlsZV8wMDAwMDAwMDc4Nzg3MWY0YjdmZWZiOWYxZTk0NTMyNSZmbj1pbmRleF9maXhlZF9kaXZpZGVuZGVzX3JlY3VfcGF5bWVudF9kYXRlLmh0bWwmY2Q9YXR0YWNobWVudCZ0cz00OTU0NDkmcD1mcyZjaWQ9MSZzaWc9Yjg4YjJmYmI4YWNmNDU0MDdjZDcwYTQ4MjFkZWM4NWZmOTdhOWJhZmExMzdlOTBmNTNlOGI4NzdkN2FkZGU1ZiZ2PTA"/><style>
+<script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=chpNeLJReKeSVHSoe2hWmaFjoPV3v3sA-98orkLctO3oeMGHTg-eeS-PwH0NlxZeZ1QogNreY8IMMxF1cR5N4jLHzqLWJlre_6lnA_z3KIG0gqn0JW4r0tQ7_lTzq0TuabHExZXeEkO6U1IHDcVN_ypxVf8kUrxfileLjinZEfzb9W9ImTE-orJ9Abr1Xb6Ei-73ag6UUgGnhHG6JJLwTEpAjGsL_eMlUh5kP_17CJmHPkuEDaTJ0h8WdMg-tT9S_XleyuE4ln_o7wOPS9tRl5lD8JM9VdZkjQe6hwYpdEIHa7-QpSJPn_Rm64EXm5V3SewdOLZjqbyj-Fw0XbG_TGUkKTMwALHGRJCoBiyLuEU" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://me.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9jaGF0Z3B0LmNvbS9iYWNrZW5kLWFwaS9lc3R1YXJ5L2NvbnRlbnQ_aWQ9ZmlsZV8wMDAwMDAwMGI5Yzg3MWY0OTJhZTI5MThjZTQzZmMxOSZmbj1pbmRleF9maXhlZF90YWtlcHJvZml0X3NvcnRfcGF5bWVudF9kYXRlLmh0bWwmY2Q9YXR0YWNobWVudCZ0cz00OTU0NDkmcD1mcyZjaWQ9MSZzaWc9NWY2ZTk1ZDdiZWY3Nzg5YjNjYTUwYjE1ZWZiZDAyMDUzMDFjOGNhNWE0NzYxMGE4NmY4NmExZDI1ZjhmYjBlYiZ2PTA"/><style>
 :root{
   --bg:#0a0c11; --bg2:#11151e; --bg3:#1a1f2b;
   --text:#eef1f6; --text2:#9aa3b2; --text3:#5f6a7a;
@@ -1586,8 +1586,21 @@ function renderTakeProfit() {
   ).join('') +
   `<div onclick="addYear(${nextYear})" style="padding:7px 14px;border-radius:20px;font-size:12px;cursor:pointer;background:var(--bg2);color:var(--text3);border:1px solid var(--border);white-space:nowrap">+ ${nextYear}</div>`;
 
-  // Filter trades for current year
-  const yearTrades  = trades.filter(t => t.year === curTpYear);
+  // Filter trades for current year + classement par date
+  // Take Profit: les dividendes sont classés par DATE DE PAIEMENT (t.date).
+  // Plus récent en haut pour éviter que les paiements soient mélangés.
+  const parseTpDate = (v) => {
+    if(!v) return 0;
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? 0 : d.getTime();
+  };
+  const yearTradesRaw = trades.filter(t => t.year === curTpYear);
+  const yearTrades  = yearTradesRaw.slice().sort((a,b) => {
+    const da = parseTpDate(a.date);
+    const db = parseTpDate(b.date);
+    if(db !== da) return db - da;
+    return (b.net || 0) - (a.net || 0);
+  });
   const tradesVente = yearTrades.filter(t => t.type !== 'dividende');
   const tradesDiv   = yearTrades.filter(t => t.type === 'dividende');
   const netVentes   = tradesVente.reduce((s,t) => s + (t.net||0), 0);
