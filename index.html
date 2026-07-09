@@ -977,25 +977,47 @@ function hideSyncBanner() {
 // PIN only — no Face ID (not supported in PWA)
 
 // ─── STORAGE — sauvegarde / restauration portfolio ──
+const PORTFOLIO_STORAGE_KEY = 'bvc_stocks';
+const PORTFOLIO_BACKUP_KEY  = 'bvc_stocks_backup';
+const PORTFOLIO_SAVED_AT_KEY = 'bvc_stocks_saved_at';
+
+function _validPortfolioArray(arr) {
+  return Array.isArray(arr) && arr.length > 0 && arr.every(s => s && s.t && !isNaN(parseFloat(s.b)));
+}
+
+function _readPortfolioKey(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return _validPortfolioArray(parsed) ? parsed : null;
+  } catch(e) { return null; }
+}
+
 function savePortfolioToStorage() {
   try {
-    localStorage.setItem('bvc_stocks', JSON.stringify(stocks));
-  } catch(e) {}
+    const payload = JSON.stringify(stocks);
+    const now = new Date().toISOString();
+    // Double sauvegarde: ila Safari/PWA ma confirmach l'écriture principale, backup kaybqa.
+    localStorage.setItem(PORTFOLIO_STORAGE_KEY, payload);
+    localStorage.setItem(PORTFOLIO_BACKUP_KEY, payload);
+    localStorage.setItem(PORTFOLIO_SAVED_AT_KEY, now);
+
+    // Vérification immédiate: ila localStorage ma tsjlatsh, n'affichi warning f console.
+    const check = localStorage.getItem(PORTFOLIO_STORAGE_KEY);
+    if (check !== payload) console.warn('⚠️ Portfolio storage verification failed');
+  } catch(e) {
+    console.error('❌ savePortfolioToStorage error:', e.message);
+    alert('⚠️ Sauvegarde impossible sur ce navigateur. Vérifie stockage Safari / mode privé.');
+  }
 }
 
 function loadPortfolioFromStorage() {
   try {
-    const saved = localStorage.getItem('bvc_stocks');
-    if(saved) {
-      const parsed = JSON.parse(saved);
-      if(Array.isArray(parsed) && parsed.length > 0) {
-        // Les données sauvegardées SONT la source de vérité — on les utilise
-        // directement, sans fusion partielle (l'ancienne fusion ignorait le
-        // prix live et provoquait des retours en arrière après fermeture).
-        stocks = parsed;
-      }
-    }
-    // Load saved live prices
+    const saved = _readPortfolioKey(PORTFOLIO_STORAGE_KEY) || _readPortfolioKey(PORTFOLIO_BACKUP_KEY);
+    if (saved) stocks = saved;
+
+    // Load saved live prices without touching quantities / buy prices.
     stocks.forEach(s => {
       const p = localStorage.getItem('price_' + s.t);
       if(p) { const n = parseFloat(p); if(n>0) s.live = n; }
@@ -1006,6 +1028,7 @@ function loadPortfolioFromStorage() {
     const themeBtn = document.getElementById('theme-btn');
     if(themeBtn) themeBtn.textContent = isDark ? '🌙' : '☀️';
   } catch(e) {
+    console.error('❌ loadPortfolioFromStorage error:', e.message);
     renderAll();
     showTab('port');
   }
@@ -1054,11 +1077,8 @@ const DEFAULT_STOCKS = [
 // (PIN, unlock, etc.) pour être correct. C'est la source de vérité dès le départ.
 let stocks = (function loadStocksAtParseTime(){
   try {
-    const saved = localStorage.getItem('bvc_stocks');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-    }
+    const parsed = _readPortfolioKey(PORTFOLIO_STORAGE_KEY) || _readPortfolioKey(PORTFOLIO_BACKUP_KEY);
+    if (parsed) return parsed;
   } catch(e) { console.warn('loadStocksAtParseTime error:', e.message); }
   return DEFAULT_STOCKS;
 })();
@@ -2579,8 +2599,8 @@ async function importPortfolioFromSheet() {
   } catch(e) {}
   if (!csv) {
     try {
-      const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(savedUrl);
-      const res = await fetch(proxyUrl);
+      const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(bust);
+      const res = await fetch(proxyUrl, { cache: 'no-store' });
       if (res.ok) { const d = await res.json(); if(d && d.contents) csv = d.contents; }
     } catch(e) {}
   }
@@ -2648,6 +2668,7 @@ async function importPortfolioFromSheet() {
       details.push('<span style="color:var(--green)">+' + ticker + ' ' + buyPrice.toFixed(2) + '</span>');
     }
   }
+  localStorage.setItem('portfolio_import_date', new Date().toLocaleString('fr-MA'));
   savePortfolioToStorage(); renderAll();
   const total = imported + updated;
   if(st){
@@ -2658,6 +2679,7 @@ async function importPortfolioFromSheet() {
       st.style.color='var(--green)'; st.style.background='rgba(52,199,89,0.08)';
       st.innerHTML='✅ <strong>' + total + ' action' + (total>1?'s':'') + '</strong> (' + updated + ' mises à jour, ' + imported + ' ajoutées)<br>'
         + '<div style="margin-top:4px;font-size:9px;line-height:2">' + details.join(' · ') + '</div>'
+        + '<br><small style="color:var(--text2)">💾 Sauvegardé dans le téléphone</small>'
         + (skipped.length ? '<br><small style="color:#ff9500">⚠️ Sans prix: ' + skipped.join(', ') + '</small>' : '');
     }
   }
@@ -2816,6 +2838,7 @@ async function importDividendesFromSheet() {
       st.style.color='var(--green)'; st.style.background='rgba(52,199,89,0.08)';
       st.innerHTML='✅ <strong>' + updated + ' dividende' + (updated>1?'s':'') + ' importés</strong><br>'
         + '<div style="margin-top:4px;font-size:9px;line-height:2">' + details.join(' · ') + '</div>'
+        + '<br><small style="color:var(--text2)">💾 Sauvegardé dans le téléphone</small>'
         + (notFound.length ? '<br><small style="color:#ff9500">⚠️ Pas dans portfolio: ' + notFound.join(', ') + '</small>' : '');
     }
   }
@@ -3605,6 +3628,7 @@ async function importTakeProfitFromSheet() {
       st.style.color='#a78bfa'; st.style.background='rgba(124,58,237,0.08)';
       st.innerHTML='✅ <strong>' + imported + ' trade' + (imported>1?'s':'') + ' importés</strong><br>'
         + '<div style="margin-top:4px;font-size:9px;line-height:2">' + details.join(' · ') + '</div>'
+        + '<br><small style="color:var(--text2)">💾 Sauvegardé dans le téléphone</small>'
         + (skipped.length ? '<br><small style="color:#ff9500">Ignorés: ' + skipped.join(', ') + '</small>' : '');
     }
   }
@@ -3721,6 +3745,7 @@ async function syncDividendesBVC() {
     st.innerHTML='✅ <strong>' + divs2025.length + ' dividendes 2025</strong> récupérés depuis BVC<br>'
       + '<strong>' + updated + '</strong> actions mises à jour dans ton portfolio<br>'
       + '<div style="margin-top:4px;font-size:9px;line-height:2">' + details.join(' · ') + '</div>'
+        + '<br><small style="color:var(--text2)">💾 Sauvegardé dans le téléphone</small>'
       + (notMatched.length ? '<br><small style="color:#636366">Non dans portfolio: ' + notMatched.slice(0,5).join(', ') + (notMatched.length>5?'...':'') + '</small>' : '');
   }
 
