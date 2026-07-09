@@ -22,7 +22,7 @@
 <meta name="msapplication-config" content="./browserconfig.xml?v=rt4">
 <title>Rach Invest</title>
 <!-- system font stack; external display font removed for performance -->
-<script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=Io_UoP--eCqikxskqxOWQbHhyTDwrEAb6lBPpIJTW9vjZ3QBJDyVF3q4JA0ADzthTsTFizP1jddU2LG_Pu0l5ZI8enX9Nog9iVtY5zaxYmDLEbU7-Nrx6ds3EZFvSKlMrQeonERzoogwcgahAwEpHCBjAr7Be7ZAU8MNOhjBWw8vigOk-0CBkIxMJOL9huc1FsCPCyT_j-m_g6c6KSwl8W5ThEKoDQjpmyyNCxNALksmTpOKApJGguyjPpz3zSgVeN-QujFBLaBTQtVeNaGZ0am4WMn983ypqriSFAQtz8AHyNcMC3r9w6Q4bewoqCLbpLVv4-3_ZvKq7mhfNS5JbA" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://me.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9jaGF0Z3B0LmNvbS9iYWNrZW5kLWFwaS9lc3R1YXJ5L2NvbnRlbnQ_aWQ9ZmlsZV8wMDAwMDAwMDBhMzQ3MWY0YmJkOGYzNDFhYWFkYzM0NiZmbj1pbmRleF9maXhlZF9kaXZpZGVuZGVzX3NoZWV0X29ubHkuaHRtbCZjZD1hdHRhY2htZW50JnRzPTQ5NTQ0OSZwPWZzJmNpZD0xJnNpZz1jNjBlNzk0MjI3MjE0MTdlMTNlOWUwZTE4OGFiYjhhZjIyYjkyNGIxY2VhNzhmODhmODI4Y2FlYzZiZDk4M2U4JnY9MA"/><style>
+<script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=3Motq0szaxhtg0veFmrrkJgIBx9JsgrD2BpULVwVyU3hc_U2EAGqHLaJ5ayKaVUnf_uZqqAhn_2Oon-Wrg0OaAamlj7X02_W2kb7yws5ZCMD4BHmuOCOzRt8QqqavycPmbA32HrmvNy_AY8YQwC5I_o6lP28fhcQftyk9pMIOpXDqjZJq2lzf4yNxSD_AGlQnHRot7tvy8074VdDmef1A_BYRKU1Ze-4WSVDuRA3Ahi8FRVSIZpoUL0ZEMXslMj-FQ7hZGjmNZbEJBot_kyQSH2nzsr1HWnF3NkVnlVcYWjQaPuX_6YYdezdn3LE6BLkI-VtO-bh0B7QpoTOaw6i7Mg_ElAhmt99lx4xAn7Xp-I" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://me.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly9jaGF0Z3B0LmNvbS9iYWNrZW5kLWFwaS9lc3R1YXJ5L2NvbnRlbnQ_aWQ9ZmlsZV8wMDAwMDAwMDc4Nzg3MWY0YjdmZWZiOWYxZTk0NTMyNSZmbj1pbmRleF9maXhlZF9kaXZpZGVuZGVzX3JlY3VfcGF5bWVudF9kYXRlLmh0bWwmY2Q9YXR0YWNobWVudCZ0cz00OTU0NDkmcD1mcyZjaWQ9MSZzaWc9Yjg4YjJmYmI4YWNmNDU0MDdjZDcwYTQ4MjFkZWM4NWZmOTdhOWJhZmExMzdlOTBmNTNlOGI4NzdkN2FkZGU1ZiZ2PTA"/><style>
 :root{
   --bg:#0a0c11; --bg2:#11151e; --bg3:#1a1f2b;
   --text:#eef1f6; --text2:#9aa3b2; --text3:#5f6a7a;
@@ -2087,9 +2087,21 @@ function renderList(){
   }).join('');
 }
 
+function divPayDateReached(s){
+  if(!s || !s.pay) return false;
+  const t0 = new Date(); t0.setHours(0,0,0,0);
+  const payD = new Date(s.pay); payD.setHours(0,0,0,0);
+  return !isNaN(payD.getTime()) && payD <= t0;
+}
+function divAlreadyReceived(s){
+  if(!s || !s.dpa || s.dpa <= 0) return false;
+  if(s.pay) return trades.some(tr => tr.ticker===s.t && tr.type==='dividende' && tr.date===s.pay);
+  return trades.some(tr => tr.ticker===s.t && tr.type==='dividende' && tr.dpa===s.dpa);
+}
+
 function renderDivGlobal(){
   syncDivLocks();
-  let brut=0,inv=0;stocks.forEach(s=>{if(s.dpa>0)brut+=s.dpa*dQty(s);inv+=s.b*s.q;});
+  let brut=0,inv=0;stocks.forEach(s=>{if(s.dpa>0 && !divAlreadyReceived(s))brut+=s.dpa*dQty(s);inv+=s.b*s.q;});
   const today = new Date();
   // Dividendes à encaisser — paiement aujourd'hui ou déjà passé, pas encore dans Take Profit
   const toCollect = stocks.filter(s=>{
@@ -2158,7 +2170,9 @@ function renderDivGlobal(){
     ? '<div style="font-size:9px;color:var(--red);font-weight:700;letter-spacing:0.5px;margin-bottom:7px">RAPPELS — J-7</div>' + rappels.join('') 
     : '';
   const net=brut*(1-RET),yld=inv>0?(brut/inv)*100:0;
-  const withDiv=stocks.filter(s=>s.dpa>0).sort((a,b)=>(b.dpa/b.b)-(a.dpa/a.b));
+  // Affichage Dividendes = uniquement dividendes encore à recevoir.
+  // Une fois marqué reçu, il part dans Take Profit et disparaît de cette liste.
+  const withDiv=stocks.filter(s=>s.dpa>0 && !divAlreadyReceived(s)).sort((a,b)=>(b.dpa/b.b)-(a.dpa/a.b));
   const noDiv=stocks.filter(s=>s.dpa===0);
   let html=toCollectHtml+rappelHtml+`<div style="background:rgba(240,165,0,0.1);border:1px solid rgba(240,165,0,0.3);border-radius:13px;padding:13px;margin-bottom:12px">
     <div style="font-size:10px;color:var(--gold);font-weight:700;margin-bottom:9px">TOTAL PORTFOLIO — retenue ${Math.round(RET*1000)/10}% (${retYear})</div>
@@ -2196,16 +2210,15 @@ function renderDivGlobal(){
         <div style="background:#0a1f0e;border-radius:6px;padding:5px;text-align:center"><div class="lbl">Net</div><div style="font-size:10px;font-weight:700;color:#10b981">+${f(n)}</div></div>
       </div>
       ${(()=>{
-        const alreadyDone = s.pay ? trades.some(tr => tr.ticker===s.t && tr.type==='dividende' && tr.date===s.pay) : trades.some(tr => tr.ticker===s.t && tr.type==='dividende' && tr.dpa===s.dpa);
-        if(alreadyDone) return '<div style="text-align:center;padding:7px;font-size:10px;color:#5ac8fa;background:rgba(90,200,250,0.08);border-radius:9px;margin-top:8px">✅ Dividende enregistré dans Take Profit</div>';
         if(!s.pay) {
-          return '<button onclick="markDividendeReceived(\''+s.t+'\',\''+s.n+'\','+dQty(s)+','+s.dpa+','+n+',\'\')" style="width:100%;margin-top:8px;padding:9px;border-radius:10px;background:rgba(90,200,250,0.12);border:1px solid rgba(90,200,250,0.35);color:#5ac8fa;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation">🌿 Marquer comme reçu → Take Profit</button>';
+          return '<div style="text-align:center;padding:8px;font-size:10px;color:var(--text3);background:var(--bg);border-radius:9px;margin-top:8px">⏳ Ajoute la date de paiement pour activer le bouton reçu</div>';
         }
         const today = new Date(); today.setHours(0,0,0,0);
         const payD = new Date(s.pay); payD.setHours(0,0,0,0);
-        // Le bouton reste toujours disponible (même longtemps après le paiement)
-        // pour permettre d'ajouter rétroactivement les dividendes déjà passés.
-        return '<button onclick="markDividendeReceived(\''+s.t+'\',\''+s.n+'\','+dQty(s)+','+s.dpa+','+n+',\''+s.pay+'\')" style="width:100%;margin-top:8px;padding:9px;border-radius:10px;background:rgba(90,200,250,0.12);border:1px solid rgba(90,200,250,0.35);color:#5ac8fa;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation">🌿 Marquer comme reçu → Take Profit'+(today<payD?' <span style="opacity:0.7">(à venir)</span>':'')+'</button>';
+        if(payD > today) {
+          return '<div style="text-align:center;padding:8px;font-size:10px;color:var(--gold);background:var(--gold-soft);border:1px solid rgba(242,200,121,0.25);border-radius:9px;margin-top:8px">⏳ Bouton disponible le '+fdate(s.pay)+'</div>';
+        }
+        return '<button onclick="markDividendeReceived(\''+s.t+'\',\''+s.n+'\','+dQty(s)+','+s.dpa+','+n+',\''+s.pay+'\')" style="width:100%;margin-top:8px;padding:9px;border-radius:10px;background:rgba(90,200,250,0.12);border:1px solid rgba(90,200,250,0.35);color:#5ac8fa;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation">🌿 Marquer comme reçu → Take Profit</button>';
       })()}
     </div>`;
   });
@@ -3679,12 +3692,23 @@ async function importTakeProfitFromSheet() {
 
 // ─── MARQUER DIVIDENDE REÇU → TAKE PROFIT ────────────────────
 function markDividendeReceived(ticker, name, qty, dpa, net, payDate) {
-  const date = payDate || new Date().toISOString().split('T')[0];
+  if(!payDate){
+    alert('Date de paiement manquante. Impossible de marquer comme reçu.');
+    return;
+  }
+  const today = new Date(); today.setHours(0,0,0,0);
+  const payD = new Date(payDate); payD.setHours(0,0,0,0);
+  if(isNaN(payD.getTime()) || payD > today){
+    alert('Le bouton sera disponible à partir de la date de paiement.');
+    return;
+  }
+  const date = payDate;
   const year = parseInt(date.substring(0,4)) || new Date().getFullYear();
   // Check not already added
   const exists = trades.find(t => t.ticker === ticker && t.date === date && t.type === 'dividende');
   if (exists) {
     alert('Dividende ' + ticker + ' déjà enregistré pour cette date !');
+    renderDivGlobal();
     return;
   }
   trades.push({
@@ -3702,19 +3726,9 @@ function markDividendeReceived(ticker, name, qty, dpa, net, payDate) {
     dpa
   });
   saveTrades();
+  renderDivGlobal();
   renderTakeProfit();
-  // Show confirmation
-  const btn = event.target;
-  btn.textContent = '✅ Enregistré !';
-  btn.style.background = 'var(--green-soft)';
-  btn.style.borderColor = 'rgba(52,199,89,0.4)';
-  btn.style.color = 'var(--green)';
-  setTimeout(() => {
-    btn.textContent = '🌿 Marquer comme reçu → Take Profit';
-    btn.style.background = 'rgba(90,200,250,0.1)';
-    btn.style.borderColor = 'rgba(90,200,250,0.3)';
-    btn.style.color = '#5ac8fa';
-  }, 2000);
+  showTab('tp');
 }
 
 
