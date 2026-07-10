@@ -912,7 +912,7 @@ async function autoSyncOnOpen() {
   try { await importPortfolioFromSheet(); } catch(e) { console.warn('auto sync portfolio:', e.message); }
   renderAll();
   showSyncBanner('✅ Synchronisé · ' + new Date().toLocaleTimeString('fr-MA'), 'var(--green)');
-  setTimeout(hideSyncBanner, 3000);
+  setTimeout(hideSyncBanner, 5000);
   checkAndNotifyDividendes();
 }
 
@@ -973,18 +973,30 @@ function showSyncBanner(text, color) {
   if (!el) {
     el = document.createElement('div');
     el.id = 'auto-sync-banner';
-    el.style.cssText = 'position:fixed;top:env(safe-area-inset-top,44px);left:12px;right:12px;z-index:99998;padding:10px 14px;border-radius:12px;font-size:12px;font-weight:600;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,0.4);transition:opacity 0.3s';
+    el.style.cssText = 'position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:12px;right:12px;z-index:99998;padding:13px 42px 13px 14px;border-radius:16px;font-size:12px;font-weight:700;text-align:left;box-shadow:0 14px 38px rgba(0,0,0,0.45);transition:opacity 0.3s,transform 0.3s;border:1px solid rgba(255,255,255,0.12);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)';
+    const msg = document.createElement('div');
+    msg.id = 'auto-sync-banner-text';
+    el.appendChild(msg);
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.setAttribute('aria-label','Fermer');
+    close.textContent = '×';
+    close.onclick = hideSyncBanner;
+    close.style.cssText = 'position:absolute;right:10px;top:50%;transform:translateY(-50%);width:28px;height:28px;border:0;border-radius:9px;background:rgba(255,255,255,0.14);color:#fff;font-size:20px;line-height:24px;cursor:pointer';
+    el.appendChild(close);
     document.body.appendChild(el);
   }
   el.style.display = 'block';
   el.style.opacity = '1';
-  el.style.background = color;
+  el.style.transform = 'translateY(0)';
+  el.style.background = 'linear-gradient(135deg,' + color + ',rgba(17,21,30,0.96))';
   el.style.color = '#fff';
-  el.textContent = text;
+  const msg = document.getElementById('auto-sync-banner-text');
+  if (msg) msg.textContent = text;
 }
 function hideSyncBanner() {
   const el = document.getElementById('auto-sync-banner');
-  if (el) { el.style.opacity = '0'; setTimeout(() => { el.style.display='none'; }, 300); }
+  if (el) { el.style.opacity = '0'; el.style.transform='translateY(-8px)'; setTimeout(() => { el.style.display='none'; }, 300); }
 }
 
 // PIN only — no Face ID (not supported in PWA)
