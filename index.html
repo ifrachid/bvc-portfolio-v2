@@ -324,6 +324,12 @@ input::placeholder{color:var(--text3)}
 
   <!-- PORTFOLIO -->
   <div id="v-port">
+    <div id="startup-smart-card" style="display:none;margin:8px 16px 8px;padding:14px 15px;border-radius:17px;background:linear-gradient(135deg,rgba(79,124,255,.16),rgba(17,21,30,.96));border:1px solid rgba(79,124,255,.28);box-shadow:0 14px 32px -22px rgba(0,0,0,.85);position:relative;opacity:0;transform:translateY(-8px);transition:opacity .3s,transform .3s">
+      <button type="button" onclick="hideStartupSmartCard()" aria-label="Fermer" style="position:absolute;right:10px;top:10px;width:26px;height:26px;border:0;border-radius:8px;background:rgba(255,255,255,.10);color:var(--text2);font-size:18px;line-height:24px;cursor:pointer">×</button>
+      <div id="startup-card-title" style="font-size:13px;font-weight:800;color:var(--text);padding-right:34px">Bonjour Rach 👋</div>
+      <div id="startup-card-status" style="font-size:11px;color:var(--text2);margin-top:5px">🔄 Vérification des mises à jour…</div>
+      <div id="startup-card-details" style="font-size:10.5px;color:var(--text3);margin-top:7px;line-height:1.55"></div>
+    </div>
     <div id="alloc-top"></div>
     <!-- Barre de recherche -->
     <div style="padding:5px 16px 2px;flex-shrink:0">
@@ -905,14 +911,41 @@ function unlock() {
 // ─── AUTO-SYNC À L'OUVERTURE ──────────────────────
 // Importe automatiquement Prix + Dividendes + Portfolio depuis Google Sheets
 // à chaque déverrouillage, pour ne jamais dépendre uniquement du localStorage.
+function showStartupSmartCard(status, details) {
+  const card = document.getElementById('startup-smart-card');
+  if (!card) return;
+  const st = document.getElementById('startup-card-status');
+  const dt = document.getElementById('startup-card-details');
+  if (st) st.textContent = status || '🔄 Vérification des mises à jour…';
+  if (dt) dt.textContent = details || '';
+  card.style.display = 'block';
+  requestAnimationFrame(() => { card.style.opacity='1'; card.style.transform='translateY(0)'; });
+}
+function hideStartupSmartCard() {
+  const card = document.getElementById('startup-smart-card');
+  if (!card) return;
+  card.style.opacity='0';
+  card.style.transform='translateY(-8px)';
+  setTimeout(() => { card.style.display='none'; }, 300);
+}
+
 async function autoSyncOnOpen() {
-  showSyncBanner('🔄 Synchronisation automatique en cours...', 'var(--blue)');
-  try { await fetchFromGoogleSheets(); } catch(e) { console.warn('auto sync prix:', e.message); }
-  try { await importDividendesFromSheet(); } catch(e) { console.warn('auto sync div:', e.message); }
-  try { await importPortfolioFromSheet(); } catch(e) { console.warn('auto sync portfolio:', e.message); }
+  showStartupSmartCard('🔄 Vérification des mises à jour…', 'Prix, dividendes et portefeuille');
+  let ok = 0, errors = 0;
+  try { await fetchFromGoogleSheets(); ok++; } catch(e) { errors++; console.warn('auto sync prix:', e.message); }
+  try { await importDividendesFromSheet(); ok++; } catch(e) { errors++; console.warn('auto sync div:', e.message); }
+  try { await importPortfolioFromSheet(); ok++; } catch(e) { errors++; console.warn('auto sync portfolio:', e.message); }
   renderAll();
-  showSyncBanner('✅ Synchronisé · ' + new Date().toLocaleTimeString('fr-MA'), 'var(--green)');
-  setTimeout(hideSyncBanner, 5000);
+  const now = new Date().toLocaleTimeString('fr-MA',{hour:'2-digit',minute:'2-digit'});
+  if (errors === 0) {
+    showStartupSmartCard('✅ Portefeuille à jour', 'Dernière synchronisation : ' + now);
+  } else if (ok > 0) {
+    showStartupSmartCard('✅ Mise à jour partielle terminée', ok + ' source(s) synchronisée(s) · ' + now);
+  } else {
+    showStartupSmartCard('⚠️ Données locales affichées', 'Connexion impossible · dernière sauvegarde conservée');
+  }
+  clearTimeout(window.__startupCardTimer);
+  window.__startupCardTimer = setTimeout(hideStartupSmartCard, 5000);
   checkAndNotifyDividendes();
 }
 
