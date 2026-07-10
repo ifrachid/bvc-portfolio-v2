@@ -157,9 +157,9 @@ input::placeholder{color:var(--text3)}
   <img id="splash-img" src="./splash.png" 
     style="width:100%;height:100%;object-fit:cover;object-position:center;opacity:0;transition:opacity 0.4s ease"
     onerror="this.style.display='none'">
-  <div id="market-startup-status" style="position:absolute;left:0;right:0;bottom:calc(42px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:9px;color:#fff;text-align:center;padding:0 24px;text-shadow:0 2px 12px rgba(0,0,0,.75)">
-    <span class="spin" style="width:20px;height:20px;border-color:rgba(255,255,255,.28);border-top-color:#fff"></span>
-    <div id="market-startup-text" style="font-size:13px;font-weight:700;letter-spacing:.1px">Actualisation du marché...</div>
+  <div id="market-startup-status" style="position:absolute;left:24px;right:24px;bottom:calc(44px + env(safe-area-inset-bottom,0px));text-align:center;color:#eef1f6;font-size:12px;font-weight:700;letter-spacing:.1px;text-shadow:0 2px 12px rgba(0,0,0,.9)">
+    <span class="spin" style="width:14px;height:14px;margin-right:7px;vertical-align:-2px;border-color:rgba(255,255,255,.25);border-top-color:#fff"></span>Actualisation du marché…
+    <div style="font-size:9px;font-weight:500;color:rgba(238,241,246,.68);margin-top:5px">Prix + dividendes</div>
   </div>
 </div>
 
@@ -534,11 +534,11 @@ input::placeholder{color:var(--text3)}
           <div style="width:34px;height:34px;border-radius:10px;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;font-size:18px">⚡</div>
           <div>
             <div style="font-size:12px;color:var(--blue);font-weight:700">Tout actualiser</div>
-            <div style="font-size:10px;color:var(--text3)">Prix + Dividendes en un clic</div>
+            <div style="font-size:10px;color:var(--text3)">Prix + dividendes en un clic</div>
           </div>
         </div>
         <button id="all-refresh-btn" onclick="actualiserToutSync()" class="btn" style="background:linear-gradient(135deg,var(--blue),var(--indigo));font-size:13px;margin-bottom:0">
-          🔄 Actualiser Prix + Dividendes
+          🔄 Actualiser le marché
         </button>
         <div id="all-refresh-status" style="display:none;font-size:10px;text-align:center;padding:8px;border-radius:8px;margin-top:8px;line-height:1.6"></div>
       </div>
@@ -844,36 +844,38 @@ input::placeholder{color:var(--text3)}
   </div>
 
 <script>
-// ─── SPLASH + ACTUALISATION DU MARCHÉ AVANT PIN ───────────
-const MARKET_REFRESH_URL = 'https://script.google.com/macros/s/AKfycbxWc2FgCDJuMW2OZfLcTqF9QhlpB_6ehLfkVTTizTjfX0whlOZR8PZAbxM9zjsfSrs6/exec';
-let marketRefreshBeforePinPromise = null;
+// ─── SPLASH / ACTUALISATION DU MARCHÉ ─────────────
+const MARKET_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxWc2FgCDJuMW2OZfLcTqF9QhlpB_6ehLfkVTTizTjfX0whlOZR8PZAbxM9zjsfSrs6/exec';
+let marketRefreshStartedAt = 0;
+let marketRefreshPromise = null;
 
-function startMarketRefreshBeforePin() {
-  if (marketRefreshBeforePinPromise) return marketRefreshBeforePinPromise;
-  marketRefreshBeforePinPromise = (async () => {
-    const txt = document.getElementById('market-startup-text');
+function launchMarketRefreshBeforePin() {
+  if (marketRefreshPromise) return marketRefreshPromise;
+  marketRefreshStartedAt = Date.now();
+  marketRefreshPromise = (async () => {
     try {
-      // no-cors : le script reçoit la demande même si la réponse n'est pas lisible.
-      await fetch(MARKET_REFRESH_URL + '?startup=1&_t=' + Date.now(), { mode:'no-cors', cache:'no-store' });
-      if (txt) txt.textContent = 'Marché en cours de mise à jour...';
-      // Laisser le Google Apps Script écrire les nouveaux prix dans la Sheet.
-      await new Promise(resolve => setTimeout(resolve, 6000));
-      return { ok:true };
-    } catch (e) {
-      if (txt) txt.textContent = 'Mode hors ligne — données locales';
-      return { ok:false, error:e };
+      await Promise.allSettled([
+        fetch(MARKET_WEBAPP_URL + '?_t=' + Date.now(), { mode:'no-cors', cache:'no-store' }),
+        fetch(MARKET_WEBAPP_URL + '?action=fetchCalendrierDividendesBVC&_t=' + Date.now(), { mode:'no-cors', cache:'no-store' })
+      ]);
+    } catch(e) {
+      console.warn('Actualisation marché lancée en mode dégradé:', e.message);
     }
+    // Les Apps Script travaillent en arrière-plan. On laisse le temps aux Sheets d'être mises à jour.
+    const elapsed = Date.now() - marketRefreshStartedAt;
+    const wait = Math.max(0, 6500 - elapsed);
+    if (wait) await new Promise(r => setTimeout(r, wait));
+    return true;
   })();
-  return marketRefreshBeforePinPromise;
+  return marketRefreshPromise;
 }
 
 function initSplash() {
   const splash = document.getElementById('splash-screen');
   const img = document.getElementById('splash-img');
   setTimeout(() => { if(img) img.style.opacity='1'; }, 60);
-  startMarketRefreshBeforePin();
-
-  // Le PIN apparaît rapidement; l'actualisation continue en arrière-plan.
+  launchMarketRefreshBeforePin();
+  // Le lancement des scripts se fait avant le PIN, sans bloquer l'utilisateur inutilement.
   setTimeout(() => {
     if(splash) splash.style.opacity='0';
     setTimeout(() => { if(splash) splash.style.display='none'; }, 400);
@@ -891,95 +893,105 @@ function updateDots() {
     d.style.background = i < pinEntered.length ? 'var(--blue)' : '#3a3a3c';
   }
 }
-
 function pinInput(n) {
   if(pinEntered.length >= 4) return;
-  pinEntered += String(n);
-  updateDots();
-  if(pinEntered.length === 4) {
-    setTimeout(() => checkPin(), 200);
-  }
+  pinEntered += String(n); updateDots();
+  if(pinEntered.length === 4) setTimeout(() => checkPin(), 200);
 }
-
-function pinDelete() {
-  pinEntered = pinEntered.slice(0, -1);
-  updateDots();
-}
-
+function pinDelete() { pinEntered = pinEntered.slice(0,-1); updateDots(); }
 function checkPin() {
   const current = localStorage.getItem('bvc_pin') || '0000';
-  if(pinEntered === current) {
-    unlock();
-  } else {
-    pinEntered = '';
-    updateDots();
-    const msg = document.getElementById('lock-msg');
-    msg.textContent = 'Code incorrect — réessaie';
-    msg.style.color = 'var(--red)';
-    // shake effect
-    const dots = document.getElementById('pin-dots');
-    dots.style.transform = 'translateX(8px)';
-    setTimeout(()=>{dots.style.transform='translateX(-8px)';},80);
-    setTimeout(()=>{dots.style.transform='translateX(4px)';},160);
+  if(pinEntered === current) unlock();
+  else {
+    pinEntered=''; updateDots();
+    const msg=document.getElementById('lock-msg');
+    msg.textContent='Code incorrect — réessaie'; msg.style.color='var(--red)';
+    const dots=document.getElementById('pin-dots');
+    dots.style.transform='translateX(8px)';
+    setTimeout(()=>dots.style.transform='translateX(-8px)',80);
+    setTimeout(()=>dots.style.transform='translateX(4px)',160);
     setTimeout(()=>{dots.style.transform='translateX(0)';msg.textContent='Entrer le code PIN';msg.style.color='#636366';},240);
   }
 }
-
 function unlock() {
-  document.getElementById('lock-screen').style.opacity='0';
-  document.getElementById('lock-screen').style.transition='opacity 0.3s';
+  const lock=document.getElementById('lock-screen');
+  lock.style.opacity='0'; lock.style.transition='opacity .3s';
   setTimeout(()=>{
-    document.getElementById('lock-screen').style.display='none';
+    lock.style.display='none';
     loadPortfolioFromStorage();
     autoSyncOnOpen();
-  }, 300);
+  },300);
 }
 
-// ─── AUTO-SYNC À L'OUVERTURE ──────────────────────
-// Importe automatiquement Prix + Dividendes + Portfolio depuis Google Sheets
-// à chaque déverrouillage, pour ne jamais dépendre uniquement du localStorage.
-function showStartupSmartCard(status, details) {
-  const card = document.getElementById('startup-smart-card');
-  if (!card) return;
-  const st = document.getElementById('startup-card-status');
-  const dt = document.getElementById('startup-card-details');
-  if (st) st.textContent = status || '🔄 Vérification des mises à jour…';
-  if (dt) dt.textContent = details || '';
-  card.style.display = 'block';
-  requestAnimationFrame(() => { card.style.opacity='1'; card.style.transform='translateY(0)'; });
+// ─── SMART CARD / IMPORT APRÈS PIN ─────────────────
+function showStartupSmartCard(status, details, useHtml=false) {
+  const card=document.getElementById('startup-smart-card'); if(!card) return;
+  const st=document.getElementById('startup-card-status');
+  const dt=document.getElementById('startup-card-details');
+  if(st) st.textContent=status || '🔄 Vérification des mises à jour…';
+  if(dt) useHtml ? (dt.innerHTML=details||'') : (dt.textContent=details||'');
+  card.style.display='block';
+  requestAnimationFrame(()=>{card.style.opacity='1';card.style.transform='translateY(0)';});
 }
 function hideStartupSmartCard() {
-  const card = document.getElementById('startup-smart-card');
-  if (!card) return;
-  card.style.opacity='0';
-  card.style.transform='translateY(-8px)';
-  setTimeout(() => { card.style.display='none'; }, 300);
+  const card=document.getElementById('startup-smart-card'); if(!card) return;
+  card.style.opacity='0'; card.style.transform='translateY(-8px)';
+  setTimeout(()=>card.style.display='none',300);
 }
-
+function snapshotMarketData() {
+  const out={};
+  (stocks||[]).forEach(s=>out[s.t]={live:Number(s.live)||0,dpa:Number(s.dpa)||0,pay:s.pay||'',q:Number(s.q)||0,b:Number(s.b)||0});
+  return out;
+}
+function buildMarketChanges(before, after) {
+  const priceChanges=[], newDividends=[], portfolioChanges=[];
+  Object.keys(after).forEach(t=>{
+    const a=after[t], b=before[t];
+    if(!b){ portfolioChanges.push('➕ <b>'+t+'</b> ajouté au portefeuille'); return; }
+    if(a.live && b.live && Math.abs(a.live-b.live)>0.0001){
+      const pct=b.live ? ((a.live-b.live)/b.live*100) : 0;
+      const icon=a.live>=b.live?'📈':'📉';
+      priceChanges.push(icon+' <b>'+t+'</b> : '+b.live.toFixed(2)+' → '+a.live.toFixed(2)+' DH <span style="color:'+(pct>=0?'var(--green)':'var(--red)')+'">('+(pct>=0?'+':'')+pct.toFixed(2)+'%)</span>');
+    }
+    if(a.q!==b.q || Math.abs(a.b-b.b)>0.0001) portfolioChanges.push('📁 <b>'+t+'</b> position mise à jour');
+    if(a.dpa>0 && (b.dpa<=0 || a.dpa!==b.dpa || a.pay!==b.pay)){
+      newDividends.push('🌿 <b>'+t+'</b> : '+a.dpa.toFixed(2)+' DH · Paiement prévu '+(a.pay?fdate(a.pay):'à confirmer'));
+    }
+  });
+  return {priceChanges,newDividends,portfolioChanges,total:priceChanges.length+newDividends.length+portfolioChanges.length};
+}
 async function autoSyncOnOpen() {
-  showStartupSmartCard('📥 Import des données…', 'Finalisation des prix du marché');
-
-  // Si le PIN a été saisi rapidement, attendre la fin de l'actualisation lancée au splash.
-  try {
-    if (marketRefreshBeforePinPromise) await marketRefreshBeforePinPromise;
-  } catch(e) {}
-
-  showStartupSmartCard('🔄 Synchronisation en cours…', 'Prix, dividendes et portefeuille');
-  let ok = 0, errors = 0;
-  try { await fetchFromGoogleSheets(); ok++; } catch(e) { errors++; console.warn('auto sync prix:', e.message); }
-  try { await importDividendesFromSheet(); ok++; } catch(e) { errors++; console.warn('auto sync div:', e.message); }
-  try { await importPortfolioFromSheet(); ok++; } catch(e) { errors++; console.warn('auto sync portfolio:', e.message); }
+  showStartupSmartCard('📥 Import des données…','Mise à jour des prix, dividendes et portefeuille');
+  const before=snapshotMarketData();
+  let ok=0, errors=0;
+  try { await launchMarketRefreshBeforePin(); } catch(e) {}
+  // Portfolio d'abord, puis prix et dividendes, pour appliquer les données aux positions les plus récentes.
+  try { await importPortfolioFromSheet(); ok++; } catch(e){errors++;console.warn('auto portfolio',e.message);}
+  try { await fetchFromGoogleSheets(); ok++; } catch(e){errors++;console.warn('auto prix',e.message);}
+  try { await importDividendesFromSheet(); ok++; } catch(e){errors++;console.warn('auto dividendes',e.message);}
   renderAll();
-  const now = new Date().toLocaleTimeString('fr-MA',{hour:'2-digit',minute:'2-digit'});
-  if (errors === 0) {
-    showStartupSmartCard('✅ Portefeuille à jour', 'Dernière synchronisation : ' + now);
-  } else if (ok > 0) {
-    showStartupSmartCard('✅ Mise à jour partielle terminée', ok + ' source(s) synchronisée(s) · ' + now);
+  const after=snapshotMarketData();
+  const changes=buildMarketChanges(before,after);
+  const now=new Date().toLocaleTimeString('fr-MA',{hour:'2-digit',minute:'2-digit'});
+  let title, html, duration;
+  if(changes.total){
+    title='✅ Marché actualisé';
+    const lines=[...changes.priceChanges.slice(0,5),...changes.newDividends.slice(0,4),...changes.portfolioChanges.slice(0,3)];
+    const hidden=changes.total-lines.length;
+    html=lines.join('<br>')+(hidden>0?'<br><span style="color:var(--text2)">+'+hidden+' autre(s) modification(s)</span>':'')+'<br><span style="color:var(--text3)">Dernière synchronisation · '+now+'</span>';
+    duration=changes.newDividends.length?7000:5000;
+  } else if(ok>0){
+    title=errors?'✅ Mise à jour partielle':'✅ Portefeuille à jour';
+    html=(errors?'Certaines sources n’ont pas répondu. ':'')+'Aucune modification détectée.<br><span style="color:var(--text3)">Dernière synchronisation · '+now+'</span>';
+    duration=3000;
   } else {
-    showStartupSmartCard('⚠️ Données locales affichées', 'Connexion impossible · dernière sauvegarde conservée');
+    title='⚠️ Mode hors ligne';
+    html='Les données locales ont été conservées.';
+    duration=5000;
   }
+  showStartupSmartCard(title,html,true);
   clearTimeout(window.__startupCardTimer);
-  window.__startupCardTimer = setTimeout(hideStartupSmartCard, 5000);
+  window.__startupCardTimer=setTimeout(hideStartupSmartCard,duration);
   checkAndNotifyDividendes();
 }
 
@@ -3069,7 +3081,7 @@ async function actualiserToutSync() {
     try { await fetchFromGoogleSheets(); } catch(e){}
     if(st) st.innerHTML = '🌿 Sync des dividendes...';
     try { await importDividendesFromSheet(); } catch(e){}
-    if(btn){ btn.disabled = false; btn.textContent = '🔄 Actualiser Prix + Dividendes'; }
+    if(btn){ btn.disabled = false; btn.textContent = '🔄 Actualiser le marché'; }
     if(st){ st.style.color='var(--green)'; st.style.background='rgba(52,199,89,0.08)'; st.innerHTML='✅ Prix et dividendes synchronisés !'; }
   }, 8000);
 }
