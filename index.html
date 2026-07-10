@@ -157,6 +157,10 @@ input::placeholder{color:var(--text3)}
   <img id="splash-img" src="./splash.png" 
     style="width:100%;height:100%;object-fit:cover;object-position:center;opacity:0;transition:opacity 0.4s ease"
     onerror="this.style.display='none'">
+  <div id="market-startup-status" style="position:absolute;left:0;right:0;bottom:calc(42px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:9px;color:#fff;text-align:center;padding:0 24px;text-shadow:0 2px 12px rgba(0,0,0,.75)">
+    <span class="spin" style="width:20px;height:20px;border-color:rgba(255,255,255,.28);border-top-color:#fff"></span>
+    <div id="market-startup-text" style="font-size:13px;font-weight:700;letter-spacing:.1px">Actualisation du marché...</div>
+  </div>
 </div>
 
 <!-- LOCK SCREEN -->
@@ -840,17 +844,40 @@ input::placeholder{color:var(--text3)}
   </div>
 
 <script>
-// ─── SPLASH SCREEN ───────────────────────────────
+// ─── SPLASH + ACTUALISATION DU MARCHÉ AVANT PIN ───────────
+const MARKET_REFRESH_URL = 'https://script.google.com/macros/s/AKfycbxWc2FgCDJuMW2OZfLcTqF9QhlpB_6ehLfkVTTizTjfX0whlOZR8PZAbxM9zjsfSrs6/exec';
+let marketRefreshBeforePinPromise = null;
+
+function startMarketRefreshBeforePin() {
+  if (marketRefreshBeforePinPromise) return marketRefreshBeforePinPromise;
+  marketRefreshBeforePinPromise = (async () => {
+    const txt = document.getElementById('market-startup-text');
+    try {
+      // no-cors : le script reçoit la demande même si la réponse n'est pas lisible.
+      await fetch(MARKET_REFRESH_URL + '?startup=1&_t=' + Date.now(), { mode:'no-cors', cache:'no-store' });
+      if (txt) txt.textContent = 'Marché en cours de mise à jour...';
+      // Laisser le Google Apps Script écrire les nouveaux prix dans la Sheet.
+      await new Promise(resolve => setTimeout(resolve, 6000));
+      return { ok:true };
+    } catch (e) {
+      if (txt) txt.textContent = 'Mode hors ligne — données locales';
+      return { ok:false, error:e };
+    }
+  })();
+  return marketRefreshBeforePinPromise;
+}
+
 function initSplash() {
   const splash = document.getElementById('splash-screen');
   const img = document.getElementById('splash-img');
-  // Fade image in
   setTimeout(() => { if(img) img.style.opacity='1'; }, 60);
-  // Fade out after 2.5s
+  startMarketRefreshBeforePin();
+
+  // Le PIN apparaît rapidement; l'actualisation continue en arrière-plan.
   setTimeout(() => {
-    if(splash){ splash.style.opacity='0'; }
-    setTimeout(() => { if(splash){ splash.style.display='none'; } }, 400);
-  }, 1000);
+    if(splash) splash.style.opacity='0';
+    setTimeout(() => { if(splash) splash.style.display='none'; }, 400);
+  }, 1800);
 }
 window.addEventListener('load', initSplash);
 
@@ -930,7 +957,14 @@ function hideStartupSmartCard() {
 }
 
 async function autoSyncOnOpen() {
-  showStartupSmartCard('🔄 Vérification des mises à jour…', 'Prix, dividendes et portefeuille');
+  showStartupSmartCard('📥 Import des données…', 'Finalisation des prix du marché');
+
+  // Si le PIN a été saisi rapidement, attendre la fin de l'actualisation lancée au splash.
+  try {
+    if (marketRefreshBeforePinPromise) await marketRefreshBeforePinPromise;
+  } catch(e) {}
+
+  showStartupSmartCard('🔄 Synchronisation en cours…', 'Prix, dividendes et portefeuille');
   let ok = 0, errors = 0;
   try { await fetchFromGoogleSheets(); ok++; } catch(e) { errors++; console.warn('auto sync prix:', e.message); }
   try { await importDividendesFromSheet(); ok++; } catch(e) { errors++; console.warn('auto sync div:', e.message); }
