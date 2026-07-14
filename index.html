@@ -3765,19 +3765,60 @@ async function exportDividendToSheet(idx, btn) {
     return;
   }
   if(btn){ btn.disabled=true; btn.textContent='⏳ Export...'; }
+
   try{
-    // no-cors permet l'écriture Apps Script même si le navigateur ne donne pas accès à la réponse.
-    await fetch(buildDividendExportUrl(t),{mode:'no-cors',cache:'no-store'});
+    const response=await fetch(buildDividendExportUrl(t),{
+      method:'GET',
+      cache:'no-store',
+      redirect:'follow'
+    });
+
+    if(!response.ok) throw new Error('HTTP '+response.status);
+
+    const result=await response.json();
+    if(!result || result.success===false){
+      throw new Error((result&&result.error)||'Réponse Apps Script invalide');
+    }
+
+    // Vérification réelle: relire Take Profit depuis Sheet.
+    await new Promise(r=>setTimeout(r,700));
+    const verifyRes=await fetch(MARKET_WEBAPP_URL+'?action=takeprofit&_t='+Date.now(),{
+      cache:'no-store',
+      redirect:'follow'
+    });
+    if(!verifyRes.ok) throw new Error('Vérification HTTP '+verifyRes.status);
+    const verify=await verifyRes.json();
+
+    const targetDate=normalizeApiDate(t.date);
+    const found=(verify.dividends||[]).some(d=>
+      String(d.ticker||'').trim().toUpperCase()===String(t.ticker||'').trim().toUpperCase()
+      && normalizeApiDate(d.date)===targetDate
+    );
+
+    if(!found) throw new Error('Le dividende n’a pas été retrouvé dans Google Sheet');
+
     t.sheetSynced=true;
     t.sheetSyncedAt=new Date().toISOString();
     saveTrades();
     renderTakeProfit();
-    showStartupSmartCard('✅ Dividende exporté','🌿 <b>'+t.ticker+'</b> · '+f(t.net)+' DH ajouté à Google Sheet',true);
+
+    showStartupSmartCard(
+      result.duplicate?'✓ Déjà présent dans Sheet':'✅ Dividende exporté',
+      '🌿 <b>'+t.ticker+'</b> · '+f(t.net)+' DH confirmé dans Google Sheet',
+      true
+    );
     clearTimeout(window.__startupCardTimer);
-    window.__startupCardTimer=setTimeout(hideStartupSmartCard,4000);
+    window.__startupCardTimer=setTimeout(hideStartupSmartCard,4500);
   }catch(e){
-    if(btn){ btn.disabled=false; btn.textContent='☁️ Exporter vers Sheet'; }
-    alert('Export impossible. Vérifie la connexion et le déploiement Apps Script.');
+    console.error('Export dividende:',e);
+    if(btn){
+      btn.disabled=false;
+      btn.textContent='☁️ Réessayer l’export';
+    }
+    alert(
+      'Export impossible : '+e.message+
+      '\n\nVérifie que tu as redéployé Apps Script en “Nouvelle version” et que l’accès est réglé sur “Toute personne”.'
+    );
   }
 }
 
@@ -3787,21 +3828,41 @@ async function exportAllPendingDividendsToSheet() {
     alert('Tous les dividendes sont déjà synchronisés avec Google Sheet.');
     return;
   }
-  let ok=0;
+
+  let ok=0, failed=0;
   for(const x of pending){
     try{
-      await fetch(buildDividendExportUrl(x.t),{mode:'no-cors',cache:'no-store'});
+      const response=await fetch(buildDividendExportUrl(x.t),{
+        method:'GET',
+        cache:'no-store',
+        redirect:'follow'
+      });
+      if(!response.ok) throw new Error('HTTP '+response.status);
+      const result=await response.json();
+      if(!result || result.success===false) throw new Error((result&&result.error)||'Erreur API');
       x.t.sheetSynced=true;
       x.t.sheetSyncedAt=new Date().toISOString();
       ok++;
-      await new Promise(r=>setTimeout(r,180));
-    }catch(e){}
+    }catch(e){
+      console.error('Export '+x.t.ticker,e);
+      failed++;
+    }
+    await new Promise(r=>setTimeout(r,250));
   }
+
+  // Réimporte depuis Sheet pour confirmer et consolider.
+  try{ await importTakeProfitFromApi(true); }catch(e){ console.warn(e); }
   saveTrades();
   renderTakeProfit();
-  showStartupSmartCard('☁️ Export terminé','<b>'+ok+'</b> dividende(s) envoyé(s) vers Google Sheet',true);
+
+  showStartupSmartCard(
+    failed?'⚠️ Export partiel':'☁️ Export terminé',
+    '<b>'+ok+'</b> dividende(s) confirmé(s) dans Sheet'
+      +(failed?'<br><span style="color:var(--red)">'+failed+' échec(s)</span>':''),
+    true
+  );
   clearTimeout(window.__startupCardTimer);
-  window.__startupCardTimer=setTimeout(hideStartupSmartCard,4500);
+  window.__startupCardTimer=setTimeout(hideStartupSmartCard,5000);
 }
 
 // ─── TAKE PROFIT IMPORT FROM GOOGLE SHEET ────────────────────
