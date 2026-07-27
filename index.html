@@ -856,7 +856,7 @@ function launchMarketRefreshBeforePin() {
   marketRefreshPromise = (async () => {
     try {
       await Promise.allSettled([
-        fetch(MARKET_WEBAPP_URL + '?_t=' + Date.now(), { mode:'no-cors', cache:'no-store' }),
+        fetch(MARKET_WEBAPP_URL + '?action=prices&_t=' + Date.now(), { mode:'no-cors', cache:'no-store' }),
         fetch(MARKET_WEBAPP_URL + '?action=fetchCalendrierDividendesBVC&_t=' + Date.now(), { mode:'no-cors', cache:'no-store' })
       ]);
     } catch(e) {
@@ -1197,7 +1197,7 @@ const allBVC=[
   {t:'SMI',n:'SMI',live:0},{t:'AKT',n:'Akdital',live:0},
   {t:'CDM',n:'Crédit du Maroc',live:0},{t:'BOA',n:'Bank of Africa',live:0},
   {t:'CIH',n:'CIH Bank',live:0},{t:'WAA',n:'Wafa Assurance',live:0},
-  {t:'MRS',n:'Marsa Maroc',live:0},{t:'TGC',n:'TGCC',live:0},
+  {t:'MRS',n:'Marsa Maroc',live:0},{t:'TGC',n:'TGCC',live:0},{t:'T2S',n:'T2S',live:0},
   {t:'NKL',n:'Ennakl Automobiles',live:0},{t:'DYT',n:'Disty Technologies',live:0},
   {t:'FBR',n:'Fenie Brossette',live:0},{t:'S2M',n:'S2M',live:0},
   {t:'STR',n:'Stroc Industrie',live:0},{t:'MUT',n:'Mutandis',live:0},
@@ -3075,7 +3075,7 @@ async function actualiserToutSync() {
   if(st){ st.style.display='block'; st.style.color='var(--blue)'; st.style.background='rgba(10,132,255,0.08)'; st.innerHTML='📡 Lancement des scripts (prix + dividendes)...'; }
   try {
     await Promise.all([
-      fetch(WEBAPP_URL, { mode: 'no-cors' }),
+      fetch(WEBAPP_URL + '?action=prices&_t=' + Date.now(), { mode: 'no-cors', cache:'no-store' }),
       fetch(WEBAPP_URL + '?action=fetchCalendrierDividendesBVC', { mode: 'no-cors' })
     ]);
   } catch(e) {}
@@ -3106,7 +3106,7 @@ async function triggerSheetRefresh() {
   btn.textContent = '⏳ Mise à jour en cours...';
 
   try {
-    await fetch(WEBAPP_URL, { mode: 'no-cors' });
+    await fetch(WEBAPP_URL + '?action=prices&_t=' + Date.now(), { mode: 'no-cors', cache:'no-store' });
     btn.textContent = '✅ Prices updated — sync in 6s...';
     btn.style.color = 'var(--green)';
     setTimeout(() => {
