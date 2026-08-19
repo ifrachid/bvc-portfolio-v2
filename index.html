@@ -159,7 +159,7 @@ input::placeholder{color:var(--text3)}
     onerror="this.style.display='none'">
   <div id="market-startup-status" style="position:absolute;left:24px;right:24px;bottom:calc(44px + env(safe-area-inset-bottom,0px));text-align:center;color:#eef1f6;font-size:12px;font-weight:700;letter-spacing:.1px;text-shadow:0 2px 12px rgba(0,0,0,.9)">
     <span class="spin" style="width:14px;height:14px;margin-right:7px;vertical-align:-2px;border-color:rgba(255,255,255,.25);border-top-color:#fff"></span>Actualisation du marché…
-    <div style="font-size:9px;font-weight:500;color:rgba(238,241,246,.68);margin-top:5px">Prix + dividendes</div>
+    <div style="font-size:9px;font-weight:500;color:rgba(238,241,246,.68);margin-top:5px">Prix</div>
   </div>
 </div>
 
@@ -528,17 +528,17 @@ input::placeholder{color:var(--text3)}
         <div id="notif-settings"></div>
       </div>
 
-      <!-- TOUT ACTUALISER (Prix + Dividendes) -->
+      <!-- ACTUALISER LES PRIX UNIQUEMENT -->
       <div style="background:linear-gradient(135deg,rgba(79,124,255,0.10),rgba(124,108,255,0.08));border:1px solid var(--border2);border-radius:16px;padding:14px;margin-bottom:12px">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
           <div style="width:34px;height:34px;border-radius:10px;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;font-size:18px">⚡</div>
           <div>
-            <div style="font-size:12px;color:var(--blue);font-weight:700">Tout actualiser</div>
-            <div style="font-size:10px;color:var(--text3)">Prix + dividendes en un clic</div>
+            <div style="font-size:12px;color:var(--blue);font-weight:700">Actualiser les prix</div>
+            <div style="font-size:10px;color:var(--text3)">Mise à jour des prix uniquement</div>
           </div>
         </div>
         <button id="all-refresh-btn" onclick="actualiserToutSync()" class="btn" style="background:linear-gradient(135deg,var(--blue),var(--indigo));font-size:13px;margin-bottom:0">
-          🔄 Actualiser le marché
+          🔄 Actualiser les prix
         </button>
         <div id="all-refresh-status" style="display:none;font-size:10px;text-align:center;padding:8px;border-radius:8px;margin-top:8px;line-height:1.6"></div>
       </div>
@@ -619,7 +619,7 @@ input::placeholder{color:var(--text3)}
             <div style="width:34px;height:34px;border-radius:10px;background:var(--green-soft);display:flex;align-items:center;justify-content:center;font-size:18px">🌿</div>
             <div>
               <div id="div-title-year" style="font-size:12px;color:var(--green);font-weight:700">Dividendes</div>
-              <div style="font-size:10px;color:var(--text3)">Sync automatique des dividendes</div>
+              <div style="font-size:10px;color:var(--text3)">Lecture depuis Google Sheets</div>
             </div>
           </div>
           <button onclick="showDivUrlSetup()" style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:5px 9px;font-size:11px;color:var(--text2);font-family:inherit;cursor:pointer;touch-action:manipulation">⚙️ URL</button>
@@ -631,10 +631,6 @@ input::placeholder{color:var(--text3)}
           <button onclick="saveDivUrl()" class="btn" style="background:var(--green);color:#000;font-size:12px;padding:11px;margin-bottom:6px">💾 Enregistrer URL</button>
           <button onclick="document.getElementById('div-url-setup').style.display='none'" style="width:100%;padding:8px;border:none;background:none;color:var(--text3);font-size:11px;font-family:inherit;cursor:pointer">Annuler</button>
         </div>
-
-        <button id="div-refresh-btn" onclick="triggerDivRefresh()" class="btn" style="background:var(--blue-soft);border:1px solid rgba(10,132,255,0.3);color:var(--blue);margin-bottom:8px;font-size:13px">
-          🔄 Actualiser les dividendes (script)
-        </button>
         <button id="div-fetch-btn" onclick="importDividendesFromSheet()" class="btn" style="background:linear-gradient(135deg,var(--green),#059669);font-size:13px;margin-bottom:0">
           🌿 Sync depuis Google Sheets
         </button>
@@ -855,12 +851,12 @@ function launchMarketRefreshBeforePin() {
   marketRefreshStartedAt = Date.now();
   marketRefreshPromise = (async () => {
     try {
+      // Prix uniquement. Les dividendes ne sont plus actualisés par l'app.
       await Promise.allSettled([
-        fetch(MARKET_WEBAPP_URL + '?action=prices&_t=' + Date.now(), { mode:'no-cors', cache:'no-store' }),
-        fetch(MARKET_WEBAPP_URL + '?action=fetchCalendrierDividendesBVC&_t=' + Date.now(), { mode:'no-cors', cache:'no-store' })
+        fetch(MARKET_WEBAPP_URL + '?action=prices&_t=' + Date.now(), { mode:'no-cors', cache:'no-store' })
       ]);
     } catch(e) {
-      console.warn('Actualisation marché lancée en mode dégradé:', e.message);
+      console.warn('Actualisation prix lancée en mode dégradé:', e.message);
     }
     // Les Apps Script travaillent en arrière-plan. On laisse le temps aux Sheets d'être mises à jour.
     const elapsed = Date.now() - marketRefreshStartedAt;
@@ -962,11 +958,11 @@ function buildMarketChanges(before, after) {
   return {priceChanges,newDividends,portfolioChanges,total:priceChanges.length+newDividends.length+portfolioChanges.length};
 }
 async function autoSyncOnOpen() {
-  showStartupSmartCard('📥 Import des données…','Mise à jour des prix, dividendes et portefeuille');
+  showStartupSmartCard('📥 Import des données…','Mise à jour des prix et du portefeuille');
   const before=snapshotMarketData();
   let ok=0, errors=0;
   try { await launchMarketRefreshBeforePin(); } catch(e) {}
-  // Portfolio d'abord, puis prix et dividendes, pour appliquer les données aux positions les plus récentes.
+  // Portfolio d'abord, puis prix. Les dividendes sont seulement lus depuis la feuille existante.
   try { await importPortfolioFromSheet(); ok++; } catch(e){errors++;console.warn('auto portfolio',e.message);}
   try { await fetchFromGoogleSheets(); ok++; } catch(e){errors++;console.warn('auto prix',e.message);}
   try { await importDividendesFromSheet(); ok++; } catch(e){errors++;console.warn('auto dividendes',e.message);}
@@ -3037,57 +3033,50 @@ async function importDividendesFromSheet() {
   if(scEl) scEl.textContent = String(updated);
 }
 
-async function triggerDivRefresh() {
-  const btn = document.getElementById('div-refresh-btn');
-  const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxWc2FgCDJuMW2OZfLcTqF9QhlpB_6ehLfkVTTizTjfX0whlOZR8PZAbxM9zjsfSrs6/exec';
-  const st = document.getElementById('div-import-status');
-  btn.disabled = true;
-  btn.textContent = '⏳ Mise à jour en cours...';
-  if(st){ st.style.display='block'; st.style.color='var(--blue)'; st.style.background='rgba(10,132,255,0.08)'; st.innerHTML='📡 Fetch BVC en cours...'; }
-  try {
-    await fetch(WEBAPP_URL + '?action=fetchCalendrierDividendesBVC', { mode: 'no-cors' });
-    btn.textContent = '✅ Mis à jour — sync dans 6s...';
-    btn.style.color = 'var(--green)';
-    if(st){ st.innerHTML='✅ Script lancé — sync automatique dans 6s...'; st.style.color='var(--green)'; st.style.background='rgba(52,199,89,0.08)'; }
-    setTimeout(() => {
-      btn.disabled = false;
-      btn.textContent = '🔄 Actualiser les dividendes (script)';
-      btn.style.color = 'var(--blue)';
-      importDividendesFromSheet();
-    }, 6000);
-  } catch(e) {
-    btn.textContent = '✅ Lancé — sync dans 6s...';
-    btn.style.color = 'var(--green)';
-    setTimeout(() => {
-      btn.disabled = false;
-      btn.textContent = '🔄 Actualiser les dividendes (script)';
-      btn.style.color = 'var(--blue)';
-      importDividendesFromSheet();
-    }, 6000);
-  }
-}
-
 async function actualiserToutSync() {
   const btn = document.getElementById('all-refresh-btn');
   const st = document.getElementById('all-refresh-status');
   const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxWc2FgCDJuMW2OZfLcTqF9QhlpB_6ehLfkVTTizTjfX0whlOZR8PZAbxM9zjsfSrs6/exec';
-  if(btn){ btn.disabled = true; btn.textContent = '⏳ Mise à jour prix + dividendes...'; }
-  if(st){ st.style.display='block'; st.style.color='var(--blue)'; st.style.background='rgba(10,132,255,0.08)'; st.innerHTML='📡 Lancement des scripts (prix + dividendes)...'; }
+
+  if(btn){
+    btn.disabled = true;
+    btn.textContent = '⏳ Mise à jour des prix...';
+  }
+
+  if(st){
+    st.style.display='block';
+    st.style.color='var(--blue)';
+    st.style.background='rgba(10,132,255,0.08)';
+    st.innerHTML='📡 Lancement du script des prix...';
+  }
+
   try {
-    await Promise.all([
-      fetch(WEBAPP_URL + '?action=prices&_t=' + Date.now(), { mode: 'no-cors', cache:'no-store' }),
-      fetch(WEBAPP_URL + '?action=fetchCalendrierDividendesBVC', { mode: 'no-cors' })
-    ]);
+    await fetch(
+      WEBAPP_URL + '?action=prices&_t=' + Date.now(),
+      { mode:'no-cors', cache:'no-store' }
+    );
   } catch(e) {}
-  if(btn) btn.textContent = '✅ Scripts lancés — sync dans 8s...';
-  if(st) st.innerHTML = '✅ Scripts lancés — récupération des données dans 8 secondes...';
+
+  if(btn) btn.textContent = '✅ Script prix lancé — sync dans 8s...';
+  if(st) st.innerHTML = '✅ Mise à jour des prix lancée — récupération dans 8 secondes...';
+
   setTimeout(async () => {
     if(st) st.innerHTML = '📗 Sync des prix...';
-    try { await fetchFromGoogleSheets(); } catch(e){}
-    if(st) st.innerHTML = '🌿 Sync des dividendes...';
-    try { await importDividendesFromSheet(); } catch(e){}
-    if(btn){ btn.disabled = false; btn.textContent = '🔄 Actualiser le marché'; }
-    if(st){ st.style.color='var(--green)'; st.style.background='rgba(52,199,89,0.08)'; st.innerHTML='✅ Prix et dividendes synchronisés !'; }
+
+    try {
+      await fetchFromGoogleSheets();
+    } catch(e) {}
+
+    if(btn){
+      btn.disabled = false;
+      btn.textContent = '🔄 Actualiser les prix';
+    }
+
+    if(st){
+      st.style.color='var(--green)';
+      st.style.background='rgba(52,199,89,0.08)';
+      st.innerHTML='✅ Prix synchronisés !';
+    }
   }, 8000);
 }
 
