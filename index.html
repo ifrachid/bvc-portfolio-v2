@@ -2974,11 +2974,47 @@ async function importDividendesFromSheet() {
     // Important: on ignore les lignes vides, "Dernière mise à jour", et les tickers 0/non valides.
     if (!ticker || dpa <= 0) continue;
 
-    if (!rowsByTicker[ticker]) rowsByTicker[ticker] = { ticker, name, dpa:0, det:'', pay:'', type:'' };
-    rowsByTicker[ticker].dpa += dpa;
-    if (det) rowsByTicker[ticker].det = det;
-    if (pay) rowsByTicker[ticker].pay = pay;
-    if (type) rowsByTicker[ticker].type = type;
+    // Pour un même ticker:
+    // - garder la date de détachement la plus récente
+    // - additionner seulement les lignes de cette même date
+    //   (ex: Ordinaire + Exceptionnel le même jour)
+    // Cela évite qu'une ancienne ligne TGC 12 DH + une nouvelle TGCC 15 DH deviennent 27 DH.
+    if (!rowsByTicker[ticker]) {
+      rowsByTicker[ticker] = {
+        ticker,
+        name,
+        dpa: dpa,
+        det: det || '',
+        pay: pay || '',
+        type: type || ''
+      };
+    } else {
+      const existing = rowsByTicker[ticker];
+
+      const existingDate = existing.det || '';
+      const newDate = det || '';
+
+      if (newDate && (!existingDate || newDate > existingDate)) {
+        // Nouvelle période plus récente: remplace complètement l'ancienne.
+        existing.name = name || existing.name;
+        existing.dpa = dpa;
+        existing.det = det;
+        existing.pay = pay || '';
+        existing.type = type || '';
+      } else if (newDate && newDate === existingDate) {
+        // Même détachement: cumule Ordinaire + Exceptionnel.
+        existing.dpa += dpa;
+        if (pay) existing.pay = pay;
+        if (type) {
+          if (existing.type && existing.type !== type) {
+            existing.type = existing.type + ' + ' + type;
+          } else {
+            existing.type = type;
+          }
+        }
+      }
+      // Si la nouvelle ligne est plus ancienne, on l'ignore.
+    }
   }
 
   const sheetTickers = Object.keys(rowsByTicker);
