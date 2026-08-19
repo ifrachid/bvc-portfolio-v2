@@ -632,7 +632,7 @@ input::placeholder{color:var(--text3)}
           <button onclick="document.getElementById('div-url-setup').style.display='none'" style="width:100%;padding:8px;border:none;background:none;color:var(--text3);font-size:11px;font-family:inherit;cursor:pointer">Annuler</button>
         </div>
         <button id="div-fetch-btn" onclick="importDividendesFromSheet()" class="btn" style="background:linear-gradient(135deg,var(--green),#059669);font-size:13px;margin-bottom:0">
-          🌿 Sync depuis Google Sheets
+          🌿 Sync dividendes depuis Sheet
         </button>
         <div id="div-import-status" style="display:none;font-size:10px;text-align:center;padding:8px;border-radius:8px;margin-top:8px;line-height:1.6"></div>
 
@@ -1119,11 +1119,29 @@ function loadPortfolioFromStorage() {
     const saved = _readPortfolioKey(PORTFOLIO_STORAGE_KEY) || _readPortfolioKey(PORTFOLIO_BACKUP_KEY);
     if (saved) stocks = saved;
 
+    // Migration automatique TGC -> TGCC pour les anciennes sauvegardes.
+    stocks.forEach(s => {
+      if (String(s.t || '').toUpperCase() === 'TGC') s.t = 'TGCC';
+    });
+
+    // Migrer aussi les clés locales liées à TGC.
+    ['price_','dpa_','det_','pay_','qty_','buy_'].forEach(prefix => {
+      const oldVal = localStorage.getItem(prefix + 'TGC');
+      if (oldVal != null && localStorage.getItem(prefix + 'TGCC') == null) {
+        localStorage.setItem(prefix + 'TGCC', oldVal);
+      }
+    });
+
     // Load saved live prices without touching quantities / buy prices.
     stocks.forEach(s => {
       const p = localStorage.getItem('price_' + s.t);
       if(p) { const n = parseFloat(p); if(n>0) s.live = n; }
     });
+
+    // Enregistrer la migration une fois faite.
+    if (saved && saved.some(s => String(s.t || '').toUpperCase() === 'TGC')) {
+      savePortfolioToStorage();
+    }
     renderAll();
     showTab('port');
     // Set theme
@@ -1134,6 +1152,15 @@ function loadPortfolioFromStorage() {
     renderAll();
     showTab('port');
   }
+}
+
+
+// ─── NORMALISATION TICKERS ─────────────────────────
+// L'app affiche TGCC, mais accepte aussi TGC venant de TradingView / Google Sheets.
+function normalizeTicker(ticker) {
+  const t = String(ticker || '').toUpperCase().trim().replace(/[^A-Z0-9]/g,'');
+  if (t === 'TGC') return 'TGCC';
+  return t;
 }
 
 // ─── CONFIG ───────────────────────────────────────
@@ -1158,7 +1185,7 @@ const DEFAULT_STOCKS = [
   {t:'ATW',n:'Attijariwafa Bank',    q:210,  b:644.92, live:711.00, chg:0, dpa:19.00, det:'2026-06-10', pay:'2026-07-02', an:'2025'},
   {t:'DYT',n:'Disty Technologies',   q:210,  b:372.46, live:335.00, chg:0, dpa:0,     det:null,         pay:null,         an:null},
   {t:'FBR',n:'Fenie Brossette',      q:230,  b:461.52, live:297.90, chg:0, dpa:0,     det:null,         pay:null,         an:null},
-  {t:'TGC',n:'TGCC',                 q:880,  b:707.45, live:775.00, chg:0, dpa:12.00, det:'2026-08-03', pay:'2026-08-24', an:'2025'},
+  {t:'TGCC',n:'TGCC',                 q:880,  b:707.45, live:775.00, chg:0, dpa:12.00, det:'2026-08-03', pay:'2026-08-24', an:'2025'},
   {t:'S2M',n:'S2M',                  q:15,   b:677.64, live:560.00, chg:0, dpa:0,     det:null,         pay:null,         an:null},
   {t:'NKL',n:'Ennakl',               q:3400, b:36.12,  live:52.00,  chg:0, dpa:1.50,  det:'2026-07-14', pay:'2026-07-28', an:'2025'},
   {t:'SMI',n:'SMI',                  q:23,   b:6926.60,live:8240.00,chg:0, dpa:80.00, det:'2026-05-20', pay:'2026-06-10', an:'2025'},
@@ -1193,7 +1220,7 @@ const allBVC=[
   {t:'SMI',n:'SMI',live:0},{t:'AKT',n:'Akdital',live:0},
   {t:'CDM',n:'Crédit du Maroc',live:0},{t:'BOA',n:'Bank of Africa',live:0},
   {t:'CIH',n:'CIH Bank',live:0},{t:'WAA',n:'Wafa Assurance',live:0},
-  {t:'MRS',n:'Marsa Maroc',live:0},{t:'TGC',n:'TGCC',live:0},{t:'T2S',n:'T2S',live:0},
+  {t:'MRS',n:'Marsa Maroc',live:0},{t:'TGCC',n:'TGCC',live:0},{t:'T2S',n:'T2S',live:0},
   {t:'NKL',n:'Ennakl Automobiles',live:0},{t:'DYT',n:'Disty Technologies',live:0},
   {t:'FBR',n:'Fenie Brossette',live:0},{t:'S2M',n:'S2M',live:0},
   {t:'STR',n:'Stroc Industrie',live:0},{t:'MUT',n:'Mutandis',live:0},
@@ -1251,7 +1278,7 @@ function fdateNum(d){
 // ─── TICKER MAPPING (in case website uses different names) ─────
 const tickerMapping = {
   'ATW': ['ATW', 'ATTIJARIWAFA', 'ATTIJARIWAFA BANK'],
-  'TGC': ['TGC', 'TGCC', 'TGCC SA', 'TRAVAUX GENERAUX DE CONSTRUCTION DE CASABLANCA'],
+  'TGCC': ['TGCC', 'TGC', 'TGCC SA', 'TRAVAUX GENERAUX DE CONSTRUCTION DE CASABLANCA'],
   'SMI': ['SMI'],
   'NKL': ['NKL', 'ENNAKL'],
   'DYT': ['DYT', 'DISTY', 'DISTY TECHNOLOGIES'],
@@ -2685,7 +2712,7 @@ function parseGsCSV(csv) {
     if (!line.trim()) return;
     const cols = parseCSVLine(line);
     if (cols.length < 2) return;
-    const ticker = (cols[tickerCol] || '').toUpperCase().trim();
+    const ticker = normalizeTicker(cols[tickerCol] || '');
     if (!ticker || !myTickers.includes(ticker)) return;
     // Handle French decimal comma: "36,10" → "36.10"
     const rawPrice = (cols[priceCol] || '').replace(/\s/g,'').replace(',','.');
@@ -2787,7 +2814,7 @@ async function importPortfolioFromSheet() {
 
   for (let i = 1; i < allLines.length; i++) {
     const cols = parseCSVLine(allLines[i]).map(c => c.replace(/^"|"$/g,''));
-    const ticker = (cols[0]||'').toUpperCase().trim().replace(/\s/g,'');
+    const ticker = normalizeTicker(cols[0] || '');
     if (!ticker || ticker.length < 2 || ticker.length > 6) continue;
     const qty = parseFloat((cols[1]||'').replace(',','.')) || 0;
     const buyPrice = parseFloat((cols[2]||'').replace(',','.')) || 0;
@@ -2830,10 +2857,14 @@ async function importPortfolioFromSheet() {
 
 // ─── DIVIDENDES IMPORT ───────────────────────────────────
 const DIV_URL_KEY = 'gs_div_url';
-const DEFAULT_DIV_URL = 'https://docs.google.com/spreadsheets/d/1Sa9qKWQAe4cWQ7mbxxQxA9i81UUNGH6cWg2yDKc0lEw/gviz/tq?tqx=out:csv&gid=1385950803';
-// Force update si un ancien gid ou ancien format "pub?" était sauvegardé
-if (localStorage.getItem('gs_div_url') && (localStorage.getItem('gs_div_url').includes('pub?') || localStorage.getItem('gs_div_url').includes('gid=1970360697') || localStorage.getItem('gs_div_url').includes('gid=830929235') || localStorage.getItem('gs_div_url').includes('gid=1824541166'))) {
-  localStorage.removeItem('gs_div_url');
+const DEFAULT_DIV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQiTZzyjt1O8ks2MQGzY65MMLftLY-mCgDjIsHCW5Ea7TVswH_LTVTM_VzaCra5lhcWyl-HjBzYu3aZ/pub?gid=1004646786&single=true&output=csv';
+// Source dividendes intégrée dans l'app.
+// Migration unique pour forcer ce nouveau lien, puis l'utilisateur peut toujours le modifier manuellement.
+const DIV_URL_VERSION_KEY = 'gs_div_url_version';
+const DIV_URL_VERSION = '2026-08-19-gid1004646786';
+if (localStorage.getItem(DIV_URL_VERSION_KEY) !== DIV_URL_VERSION) {
+  localStorage.setItem(DIV_URL_KEY, DEFAULT_DIV_URL);
+  localStorage.setItem(DIV_URL_VERSION_KEY, DIV_URL_VERSION);
 }
 
 function showDivUrlSetup() {
@@ -2880,7 +2911,7 @@ async function importDividendesFromSheet() {
 
   if (!csv) {
     if(st){ st.style.color='var(--red)'; st.style.background='rgba(255,69,58,0.08)'; st.innerHTML='❌ Impossible de lire la sheet.'; }
-    if(btn){ btn.disabled = false; btn.textContent = '🌿 Sync depuis Google Sheets'; }
+    if(btn){ btn.disabled = false; btn.textContent = '🌿 Sync dividendes depuis Sheet'; }
     return;
   }
 
@@ -2932,7 +2963,7 @@ async function importDividendesFromSheet() {
     if (!cols.length || first.includes('émetteur') || first.includes('emetteur') || first.includes('derni')) continue;
 
     // Format de ta sheet: Émetteur | Montant | Date Détachement | Date Paiement | Type | Ticker
-    const rawTicker = (cols[5] || '').toUpperCase().trim().replace(/[^A-Z0-9]/g,'');
+    const rawTicker = normalizeTicker(cols[5] || '');
     const ticker = rawTicker.length >= 2 && rawTicker !== '0' ? rawTicker : '';
     const dpa = parseAmount(cols[1]);
     const det = normDate(cols[2]);
@@ -2954,7 +2985,7 @@ async function importDividendesFromSheet() {
 
   if (sheetTickers.length === 0) {
     if(st){ st.style.color='#ff9500'; st.style.background='rgba(255,149,0,0.08)'; st.innerHTML='⚠️ Aucune ligne dividende valide trouvée dans la sheet.'; }
-    if(btn){ btn.disabled = false; btn.textContent = '🌿 Sync depuis Google Sheets'; }
+    if(btn){ btn.disabled = false; btn.textContent = '🌿 Sync dividendes depuis Sheet'; }
     return;
   }
 
@@ -2981,7 +3012,7 @@ async function importDividendesFromSheet() {
       stock.dpa = row.dpa;
       stock.det = row.det || null;
       stock.pay = row.pay || null;
-      stock.an = '2026';
+      stock.an = String(new Date().getFullYear());
       localStorage.setItem('dpa_' + ticker, String(row.dpa));
       if (row.det) localStorage.setItem('det_' + ticker, row.det);
       if (row.pay) localStorage.setItem('pay_' + ticker, row.pay);
@@ -3024,7 +3055,7 @@ async function importDividendesFromSheet() {
     }
   }
 
-  if(btn){ btn.disabled = false; btn.textContent = '🌿 Sync depuis Google Sheets'; }
+  if(btn){ btn.disabled = false; btn.textContent = '🌿 Sync dividendes depuis Sheet'; }
 
   const now = localStorage.getItem('div_sync_date') || new Date().toLocaleString('fr-MA');
   const sdEl = document.getElementById('div-sync-date');
@@ -3637,7 +3668,7 @@ function importPrices(){
     // Go back to portfolio
     setTimeout(()=>showTab('port'),800);
   }else{
-    alert('Aucun prix reconnu.\nFormat accepté:\nATW=700\nTGC=775\n\nOu colle directement le texte du site BVC.');
+    alert('Aucun prix reconnu.\nFormat accepté:\nATW=700\nTGCC=775\n\nOu colle directement le texte du site BVC.');
   }
 }
 
@@ -4202,7 +4233,7 @@ const ALL_BVC = [
   {t:'S2M',n:'S2M'},{t:'SAF',n:'Salafin'},{t:'SAH',n:'Saham Assurance'},
   {t:'SBM',n:'Société des Boissons du Maroc'},{t:'SID',n:'Sonasid'},
   {t:'SLF',n:'Salafin'},{t:'SMI',n:'SMI'},{t:'SNA',n:'Stokvis Nord Afrique'},
-  {t:'SOT',n:'Sothema'},{t:'STR',n:'Stroc Industrie'},{t:'TGC',n:'TGCC'},
+  {t:'SOT',n:'Sothema'},{t:'STR',n:'Stroc Industrie'},{t:'TGCC',n:'TGCC'},
   {t:'TMA',n:'TotalEnergies Marketing Maroc'},{t:'TQM',n:'Taqa Morocco'},
   {t:'UNI',n:'Unimer'},{t:'WAF',n:'Wafa Assurance'},{t:'ZCP',n:'Zellidja'}
 ];
