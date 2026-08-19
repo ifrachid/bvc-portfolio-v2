@@ -694,7 +694,7 @@ input::placeholder{color:var(--text3)}
         <div style="display:flex;gap:7px">
         <button onclick="showAddTradeForm()" style="background:var(--blue-soft);border:1px solid rgba(10,132,255,0.3);border-radius:11px;padding:7px 12px;color:var(--blue);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation">➕ Vente</button>
         <button onclick="showAddDivManuel()" style="background:rgba(90,200,250,0.1);border:1px solid rgba(90,200,250,0.3);border-radius:11px;padding:7px 12px;color:#5ac8fa;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation">🌿 Dividende</button>
-        <button onclick="exportAllPendingGainsToSheet()" style="background:rgba(52,199,89,0.1);border:1px solid rgba(52,199,89,0.3);border-radius:11px;padding:7px 10px;color:var(--green);font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation">☁️ Exporter gains</button>
+        <button onclick="exportAllPendingGainsToSheet()" style="background:rgba(52,199,89,0.1);border:1px solid rgba(52,199,89,0.3);border-radius:11px;padding:7px 10px;color:var(--green);font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation">☁️ Exporter tout</button>
       </div>
       </div>
 
@@ -3926,7 +3926,7 @@ async function exportTradeToSheet(idx, btn) {
 }
 
 async function exportAllPendingGainsToSheet() {
-  // D'abord relire la Sheet pour marquer tout ce qui existe déjà.
+  // La Google Sheet est la source de vérité pour savoir ce qui est déjà exporté.
   let sheetData;
   try{
     sheetData=await getTakeProfitSheetData();
@@ -3937,35 +3937,66 @@ async function exportAllPendingGainsToSheet() {
 
   let already=0;
 
-  trades.forEach(t=>{
-    if(t.type!=='dividende' && Number(t.net)>0 && !t.sheetSynced && tradeExistsInSheet(t,sheetData)){
-      t.sheetSynced=true;
-      t.sheetSyncedAt=new Date().toISOString();
+  // IMPORTANT :
+  // On vérifie TOUTES les ventes présentes dans Take Profit,
+  // même si sheetSynced=true localement.
+  const allSales=trades
+    .map((t,i)=>({t,i}))
+    .filter(x=>x.t.type!=='dividende');
+
+  const pendingSales=[];
+
+  allSales.forEach(x=>{
+    if(tradeExistsInSheet(x.t,sheetData)){
+      x.t.sheetSynced=true;
+      x.t.sheetSyncedAt=x.t.sheetSyncedAt || new Date().toISOString();
       already++;
+    }else{
+      // Si elle n'existe pas réellement dans la Sheet, on force la réexportation.
+      x.t.sheetSynced=false;
+      pendingSales.push(x);
     }
   });
 
-  // Tous les GAINS ventes non exportés.
-  const pendingSales=trades
+  // Même principe pour les dividendes.
+  const allDivs=trades
     .map((t,i)=>({t,i}))
-    .filter(x=>x.t.type!=='dividende' && Number(x.t.net)>0 && !x.t.sheetSynced);
+    .filter(x=>x.t.type==='dividende');
 
-  // On conserve aussi les dividendes non exportés avec le même bouton global.
-  const pendingDivs=trades
-    .map((t,i)=>({t,i}))
-    .filter(x=>x.t.type==='dividende' && !x.t.sheetSynced);
+  const sheetDivs=(sheetData.dividends||[]);
+  const pendingDivs=[];
+
+  allDivs.forEach(x=>{
+    const targetDate=normalizeApiDate(x.t.date);
+    const found=sheetDivs.some(d=>
+      normalizeTicker(d.ticker||'')===normalizeTicker(x.t.ticker||'')
+      && normalizeApiDate(d.date)===targetDate
+    );
+
+    if(found){
+      x.t.sheetSynced=true;
+      x.t.sheetSyncedAt=x.t.sheetSyncedAt || new Date().toISOString();
+      already++;
+    }else{
+      x.t.sheetSynced=false;
+      pendingDivs.push(x);
+    }
+  });
+
+  saveTrades();
+  renderTakeProfit();
 
   if(!pendingSales.length && !pendingDivs.length){
-    saveTrades();
-    renderTakeProfit();
-    alert(already
-      ? already+' gain(s) étaient déjà présents dans Google Sheet. Aucun doublon ajouté.'
-      : 'Tous les gains sont déjà synchronisés avec Google Sheet.');
+    alert(
+      'Toutes les opérations Take Profit sont déjà présentes dans Google Sheet.'
+      +(already ? '\n\n'+already+' opération(s) vérifiée(s).' : '')
+    );
     return;
   }
 
-  let salesOk=0, divOk=0, duplicates=already, failed=0;
+  let salesOk=0, divOk=0, duplicates=0, failed=0;
 
+  // Export de TOUTES les ventes absentes de la Sheet.
   for(const x of pendingSales){
     try{
       const response=await fetch(buildTradeExportUrl(x.t),{
@@ -3973,21 +4004,29 @@ async function exportAllPendingGainsToSheet() {
         cache:'no-store',
         redirect:'follow'
       });
+
       if(!response.ok) throw new Error('HTTP '+response.status);
+
       const result=await response.json();
-      if(!result || result.success===false) throw new Error((result&&result.error)||'Erreur API');
+      if(!result || result.success===false){
+        throw new Error((result&&result.error)||'Erreur API');
+      }
 
       x.t.sheetSynced=true;
       x.t.sheetSyncedAt=new Date().toISOString();
+
       if(result.duplicate) duplicates++;
       else salesOk++;
+
     }catch(e){
-      console.error('Export gain '+x.t.ticker,e);
+      console.error('Export opération '+x.t.ticker,e);
       failed++;
     }
+
     await new Promise(r=>setTimeout(r,180));
   }
 
+  // Export des dividendes absents.
   for(const x of pendingDivs){
     try{
       const response=await fetch(buildDividendExportUrl(x.t),{
@@ -3995,34 +4034,49 @@ async function exportAllPendingGainsToSheet() {
         cache:'no-store',
         redirect:'follow'
       });
+
       if(!response.ok) throw new Error('HTTP '+response.status);
+
       const result=await response.json();
-      if(!result || result.success===false) throw new Error((result&&result.error)||'Erreur API');
+      if(!result || result.success===false){
+        throw new Error((result&&result.error)||'Erreur API');
+      }
 
       x.t.sheetSynced=true;
       x.t.sheetSyncedAt=new Date().toISOString();
+
       if(result.duplicate) duplicates++;
       else divOk++;
+
     }catch(e){
       console.error('Export dividende '+x.t.ticker,e);
       failed++;
     }
+
     await new Promise(r=>setTimeout(r,180));
   }
 
-  // Consolidation finale depuis la Sheet.
-  try{ await importTakeProfitFromApi(true); }catch(e){ console.warn(e); }
+  // Relire la Sheet à la fin pour confirmer et mettre à jour les statuts.
+  try{
+    await new Promise(r=>setTimeout(r,500));
+    await importTakeProfitFromApi(true);
+  }catch(e){
+    console.warn('Consolidation Take Profit:',e);
+  }
+
   saveTrades();
   renderTakeProfit();
 
   showStartupSmartCard(
-    failed?'⚠️ Export partiel':'☁️ Gains synchronisés',
-    '<b>'+salesOk+'</b> gain(s) vente exporté(s)'
+    failed?'⚠️ Export partiel':'☁️ Take Profit synchronisé',
+    '<b>'+salesOk+'</b> vente(s) exportée(s)'
       +(divOk?'<br><b>'+divOk+'</b> dividende(s) exporté(s)':'')
-      +(duplicates?'<br><span style="color:var(--gold)">'+duplicates+' déjà présent(s) · aucun doublon</span>':'')
+      +(already?'<br><span style="color:var(--text2)">'+already+' déjà présent(s)</span>':'')
+      +(duplicates?'<br><span style="color:var(--gold)">'+duplicates+' doublon(s) bloqué(s)</span>':'')
       +(failed?'<br><span style="color:var(--red)">'+failed+' échec(s)</span>':''),
     true
   );
+
   clearTimeout(window.__startupCardTimer);
   window.__startupCardTimer=setTimeout(hideStartupSmartCard,5500);
 }
