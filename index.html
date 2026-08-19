@@ -694,7 +694,7 @@ input::placeholder{color:var(--text3)}
         <div style="display:flex;gap:7px">
         <button onclick="showAddTradeForm()" style="background:var(--blue-soft);border:1px solid rgba(10,132,255,0.3);border-radius:11px;padding:7px 12px;color:var(--blue);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation">➕ Vente</button>
         <button onclick="showAddDivManuel()" style="background:rgba(90,200,250,0.1);border:1px solid rgba(90,200,250,0.3);border-radius:11px;padding:7px 12px;color:#5ac8fa;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;touch-action:manipulation">🌿 Dividende</button>
-        <button onclick="exportAllPendingDividendsToSheet()" style="background:rgba(52,199,89,0.1);border:1px solid rgba(52,199,89,0.3);border-radius:11px;padding:7px 10px;color:var(--green);font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation">☁️ Exporter</button>
+        <button onclick="exportAllPendingGainsToSheet()" style="background:rgba(52,199,89,0.1);border:1px solid rgba(52,199,89,0.3);border-radius:11px;padding:7px 10px;color:var(--green);font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation">☁️ Exporter gains</button>
       </div>
       </div>
 
@@ -1857,6 +1857,11 @@ function renderTakeProfit() {
         <div><div style="font-size:7px;color:var(--text3);margin-bottom:1px">Frais</div><div style="font-size:9px;font-weight:600;color:var(--text)">${f(t.fees)}</div></div>
         <div><div style="font-size:7px;color:var(--text3);margin-bottom:1px">TVA 15%</div><div style="font-size:9px;font-weight:600;color:var(--red)">${f(t.tva)}</div></div>
       </div>
+      ${t.net > 0
+        ? (t.sheetSynced
+            ? '<div style="margin-top:8px;padding:8px;border-radius:9px;text-align:center;background:rgba(52,199,89,.09);border:1px solid rgba(52,199,89,.22);color:var(--green);font-size:10px;font-weight:700">✓ Gain déjà dans Sheet</div>'
+            : '<button onclick="exportTradeToSheet('+realIdx+',this)" style="width:100%;margin-top:8px;padding:9px;border-radius:10px;background:rgba(52,199,89,.10);border:1px solid rgba(52,199,89,.30);color:var(--green);font-size:10.5px;font-weight:800;font-family:inherit;cursor:pointer">☁️ Exporter ce gain</button>')
+        : ''}
     </div>`;
   }).join('');
 }
@@ -3739,8 +3744,19 @@ async function importTakeProfitFromApi(silent=false) {
     const date=normalizeApiDate(x.date);
     const qty=Number(x.qty)||0, buy=Number(x.buy)||0, sell=Number(x.sell)||0;
     if(!ticker || !date || qty<=0 || buy<=0 || sell<=0) return;
-    const exists=trades.find(t=>t.type!=='dividende' && t.ticker===ticker && normalizeApiDate(t.date)===date && Number(t.qty)===qty);
-    if(exists) return;
+    const exists=trades.find(t=>
+      t.type!=='dividende'
+      && normalizeTicker(t.ticker)===normalizeTicker(ticker)
+      && normalizeApiDate(t.date)===date
+      && Number(t.qty)===qty
+      && Math.abs(Number(t.buy)-buy)<0.005
+      && Math.abs(Number(t.sell)-sell)<0.005
+    );
+    if(exists){
+      exists.sheetSynced=true;
+      exists.sheetSyncedAt=exists.sheetSyncedAt || new Date().toISOString();
+      return;
+    }
 
     const valSell=sell*qty, valBuy=buy*qty;
     const fees=(valSell*0.007)*1.1;
@@ -3798,6 +3814,217 @@ async function importTakeProfitFromApi(silent=false) {
     }
   }
   return {importedSales,importedDivs,updatedDivs};
+}
+
+
+function sameTradeIdentity(a,b) {
+  return normalizeTicker(a.ticker)===normalizeTicker(b.ticker)
+    && normalizeApiDate(a.date)===normalizeApiDate(b.date)
+    && Number(a.qty)===Number(b.qty)
+    && Math.abs(Number(a.buy)-Number(b.buy))<0.005
+    && Math.abs(Number(a.sell)-Number(b.sell))<0.005;
+}
+
+function buildTradeExportUrl(t) {
+  const p=new URLSearchParams({
+    action:'addTradeReceipt',
+    ticker:normalizeTicker(t.ticker||''),
+    qty:String(Number(t.qty)||0),
+    buy:String(Number(t.buy)||0),
+    sell:String(Number(t.sell)||0),
+    date:normalizeApiDate(t.date)
+  });
+  return MARKET_WEBAPP_URL+'?'+p.toString()+'&_t='+Date.now();
+}
+
+async function getTakeProfitSheetData() {
+  const res=await fetch(MARKET_WEBAPP_URL+'?action=takeprofit&_t='+Date.now(),{
+    cache:'no-store',
+    redirect:'follow'
+  });
+  if(!res.ok) throw new Error('Lecture Sheet HTTP '+res.status);
+  const data=await res.json();
+  if(!data || data.success===false) throw new Error((data&&data.error)||'Réponse Take Profit invalide');
+  return data;
+}
+
+function tradeExistsInSheet(t, data) {
+  return (data.trades||[]).some(x=>sameTradeIdentity(t,{
+    ticker:x.ticker,
+    qty:Number(x.qty)||0,
+    buy:Number(x.buy)||0,
+    sell:Number(x.sell)||0,
+    date:x.date
+  }));
+}
+
+async function exportTradeToSheet(idx, btn) {
+  const t=trades[idx];
+  if(!t || t.type==='dividende' || Number(t.net)<=0) return;
+
+  if(t.sheetSynced){
+    if(btn){ btn.textContent='✓ Déjà exporté'; btn.disabled=true; }
+    return;
+  }
+
+  if(btn){ btn.disabled=true; btn.textContent='⏳ Vérification...'; }
+
+  try{
+    // 1) Anti-doublon AVANT export : relire la Sheet.
+    const before=await getTakeProfitSheetData();
+    if(tradeExistsInSheet(t,before)){
+      t.sheetSynced=true;
+      t.sheetSyncedAt=new Date().toISOString();
+      saveTrades();
+      renderTakeProfit();
+      return;
+    }
+
+    if(btn) btn.textContent='⏳ Export...';
+
+    // 2) Export. Apps Script fait aussi son propre contrôle anti-doublon.
+    const response=await fetch(buildTradeExportUrl(t),{
+      method:'GET',
+      cache:'no-store',
+      redirect:'follow'
+    });
+    if(!response.ok) throw new Error('HTTP '+response.status);
+
+    const result=await response.json();
+    if(!result || result.success===false){
+      throw new Error((result&&result.error)||'Réponse Apps Script invalide');
+    }
+
+    // 3) Vérification réelle après export.
+    await new Promise(r=>setTimeout(r,500));
+    const after=await getTakeProfitSheetData();
+    if(!tradeExistsInSheet(t,after)){
+      throw new Error('Le gain n’a pas été retrouvé dans Google Sheet');
+    }
+
+    t.sheetSynced=true;
+    t.sheetSyncedAt=new Date().toISOString();
+    saveTrades();
+    renderTakeProfit();
+
+    showStartupSmartCard(
+      result.duplicate?'✓ Gain déjà présent':'✅ Gain exporté',
+      '💹 <b>'+normalizeTicker(t.ticker)+'</b> · +'+f(t.net)+' DH confirmé dans Google Sheet',
+      true
+    );
+    clearTimeout(window.__startupCardTimer);
+    window.__startupCardTimer=setTimeout(hideStartupSmartCard,4000);
+
+  }catch(e){
+    console.error('Export gain:',e);
+    if(btn){
+      btn.disabled=false;
+      btn.textContent='☁️ Réessayer';
+    }
+    alert('Export gain impossible : '+e.message);
+  }
+}
+
+async function exportAllPendingGainsToSheet() {
+  // D'abord relire la Sheet pour marquer tout ce qui existe déjà.
+  let sheetData;
+  try{
+    sheetData=await getTakeProfitSheetData();
+  }catch(e){
+    alert('Impossible de vérifier Google Sheet : '+e.message);
+    return;
+  }
+
+  let already=0;
+
+  trades.forEach(t=>{
+    if(t.type!=='dividende' && Number(t.net)>0 && !t.sheetSynced && tradeExistsInSheet(t,sheetData)){
+      t.sheetSynced=true;
+      t.sheetSyncedAt=new Date().toISOString();
+      already++;
+    }
+  });
+
+  // Tous les GAINS ventes non exportés.
+  const pendingSales=trades
+    .map((t,i)=>({t,i}))
+    .filter(x=>x.t.type!=='dividende' && Number(x.t.net)>0 && !x.t.sheetSynced);
+
+  // On conserve aussi les dividendes non exportés avec le même bouton global.
+  const pendingDivs=trades
+    .map((t,i)=>({t,i}))
+    .filter(x=>x.t.type==='dividende' && !x.t.sheetSynced);
+
+  if(!pendingSales.length && !pendingDivs.length){
+    saveTrades();
+    renderTakeProfit();
+    alert(already
+      ? already+' gain(s) étaient déjà présents dans Google Sheet. Aucun doublon ajouté.'
+      : 'Tous les gains sont déjà synchronisés avec Google Sheet.');
+    return;
+  }
+
+  let salesOk=0, divOk=0, duplicates=already, failed=0;
+
+  for(const x of pendingSales){
+    try{
+      const response=await fetch(buildTradeExportUrl(x.t),{
+        method:'GET',
+        cache:'no-store',
+        redirect:'follow'
+      });
+      if(!response.ok) throw new Error('HTTP '+response.status);
+      const result=await response.json();
+      if(!result || result.success===false) throw new Error((result&&result.error)||'Erreur API');
+
+      x.t.sheetSynced=true;
+      x.t.sheetSyncedAt=new Date().toISOString();
+      if(result.duplicate) duplicates++;
+      else salesOk++;
+    }catch(e){
+      console.error('Export gain '+x.t.ticker,e);
+      failed++;
+    }
+    await new Promise(r=>setTimeout(r,180));
+  }
+
+  for(const x of pendingDivs){
+    try{
+      const response=await fetch(buildDividendExportUrl(x.t),{
+        method:'GET',
+        cache:'no-store',
+        redirect:'follow'
+      });
+      if(!response.ok) throw new Error('HTTP '+response.status);
+      const result=await response.json();
+      if(!result || result.success===false) throw new Error((result&&result.error)||'Erreur API');
+
+      x.t.sheetSynced=true;
+      x.t.sheetSyncedAt=new Date().toISOString();
+      if(result.duplicate) duplicates++;
+      else divOk++;
+    }catch(e){
+      console.error('Export dividende '+x.t.ticker,e);
+      failed++;
+    }
+    await new Promise(r=>setTimeout(r,180));
+  }
+
+  // Consolidation finale depuis la Sheet.
+  try{ await importTakeProfitFromApi(true); }catch(e){ console.warn(e); }
+  saveTrades();
+  renderTakeProfit();
+
+  showStartupSmartCard(
+    failed?'⚠️ Export partiel':'☁️ Gains synchronisés',
+    '<b>'+salesOk+'</b> gain(s) vente exporté(s)'
+      +(divOk?'<br><b>'+divOk+'</b> dividende(s) exporté(s)':'')
+      +(duplicates?'<br><span style="color:var(--gold)">'+duplicates+' déjà présent(s) · aucun doublon</span>':'')
+      +(failed?'<br><span style="color:var(--red)">'+failed+' échec(s)</span>':''),
+    true
+  );
+  clearTimeout(window.__startupCardTimer);
+  window.__startupCardTimer=setTimeout(hideStartupSmartCard,5500);
 }
 
 function buildDividendExportUrl(t) {
